@@ -222,7 +222,7 @@ export const Marketplace: React.FC<MarketplaceProps> = ({ filters, onClearFilter
         {viewMode === 'grid' && (
           <div className="h-full overflow-y-auto p-6 md:p-8 pb-36">
             {filteredHospitals.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-10">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-6 gap-y-10">
                 {filteredHospitals.map(hospital => (
                   <HospitalCard 
                     key={hospital.id} 

@@ -12,6 +12,9 @@ const App: React.FC = () => {
   const [page, setPage] = useState<'home' | 'marketplace' | 'hospital-page'>('home');
   const [isChatOpen, setIsChatOpen] = useState(false);
   
+  // -- Language State --
+  const [selectedLanguage, setSelectedLanguage] = useState('English');
+
   // -- Session Management State --
   const [sessions, setSessions] = useState<ChatSession[]>([]);
   const [currentSessionId, setCurrentSessionId] = useState<string>('');
@@ -217,7 +220,13 @@ const App: React.FC = () => {
   };
 
   if (page === 'home') {
-    return <Hero onQuickSearch={handleQuickSearch} />;
+    return (
+      <Hero 
+        onQuickSearch={handleQuickSearch} 
+        selectedLanguage={selectedLanguage}
+        onLanguageChange={setSelectedLanguage}
+      />
+    );
   }
 
   return (
@@ -257,6 +266,8 @@ const App: React.FC = () => {
                     onSelectSession={setCurrentSessionId}
                     onNewSession={handleNewSessionClick}
                     onUpdateSessionMessages={updateSessionMessages}
+                    language={selectedLanguage}
+                    onLanguageChange={setSelectedLanguage} // Add this
                     
                     // Legacy Props
                     initialQuery={initialQuery && currentSession.messages.length === 0 ? initialQuery : undefined} 

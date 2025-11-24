@@ -1,7 +1,6 @@
 
-
 import React from 'react';
-import { Star, Heart, Plane, Car, MapPin } from 'lucide-react';
+import { Star, Plane, Car, MapPin, Languages, Stethoscope } from 'lucide-react';
 import { Hospital, TravelEstimate } from '../types';
 
 interface HospitalCardProps {
@@ -21,88 +20,78 @@ export const HospitalCard: React.FC<HospitalCardProps> = ({ hospital, onViewDeta
 
   return (
     <div 
-      className="group flex flex-col h-full cursor-pointer bg-transparent relative"
+      className="border border-zinc-200 rounded-xl overflow-hidden bg-white hover:shadow-md transition-all group cursor-pointer flex flex-col h-full"
       onClick={() => onViewDetails(hospital)}
     >
-      {/* Image Container */}
-      <div className="relative aspect-[20/19] overflow-hidden rounded-xl bg-slate-200 mb-3">
+      {/* Image Section */}
+      <div className="relative aspect-[4/3] overflow-hidden bg-zinc-100">
         <img 
           src={hospital.images && hospital.images.length > 0 ? hospital.images[0] : hospital.imageUrl} 
           alt={hospital.name} 
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
+          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
         />
-        
-        {/* Overlay: Guest Favorite / Accreditation Badge */}
-        {hospital.accreditation && hospital.accreditation.length > 0 && (
-            <div className="absolute top-3 left-3 bg-white/95 backdrop-blur-sm px-2.5 py-1 rounded-md text-xs font-bold text-slate-800 shadow-sm">
-            {hospital.accreditation[0]} Verified
-            </div>
-        )}
-
-        {/* Overlay: Heart Icon */}
-        <button 
-            className="absolute top-3 right-3 p-1.5 rounded-full hover:bg-slate-100/20 transition-colors"
-            onClick={(e) => {
-                e.stopPropagation();
-                // Handle save logic
-            }}
-        >
-            <Heart className="w-6 h-6 text-white fill-black/40 active:scale-90 transition-transform hover:fill-red-500 hover:text-red-500" />
-        </button>
+        {/* Rating Overlay - Updated to Yellow/Dark style */}
+        <div className="absolute bottom-2 left-2 bg-[#F1FCA7] text-[#1C1C1C] text-[10px] px-2 py-0.5 rounded flex items-center gap-1 font-medium">
+            <Star className="w-2 h-2 fill-current" /> {hospital.rating}/5
+        </div>
       </div>
-      
-      {/* Content Container - Clean, borderless */}
-      <div className="flex flex-col gap-1">
+
+      {/* Content Section */}
+      <div className="p-4 flex flex-col flex-1 space-y-3">
+        
+        {/* Title & Price */}
         <div className="flex justify-between items-start gap-2">
-          <h3 className="font-semibold text-slate-900 text-[15px] leading-tight truncate">
-            {hospital.name}
-          </h3>
-          <div className="flex items-center gap-1 shrink-0">
-             <Star className="w-3.5 h-3.5 fill-slate-900 text-slate-900" />
-             <span className="text-sm font-light text-slate-900">{hospital.rating}</span>
-          </div>
+            <h3 className="font-semibold text-[#1C1C1C] text-sm truncate" title={hospital.name}>
+                {hospital.name}
+            </h3>
+            <span className="text-xs font-semibold text-[#1C1C1C] shrink-0">{hospital.priceRange}</span>
         </div>
 
-        <p className="text-slate-500 text-[15px] font-light truncate">
-          {hospital.specialties.slice(0, 2).join(', ')} Specialist
-        </p>
-
-        {/* Dynamic Travel Info Line */}
-        {travelEstimate ? (
-           <div 
-             className="mt-1 flex items-center gap-1.5 text-xs font-medium text-slate-700 bg-slate-50 self-start px-2 py-1 rounded-md border border-slate-100 cursor-pointer hover:bg-slate-100 hover:border-slate-300 transition-colors max-w-full"
-             onClick={handleNavigate}
-             title="Click to navigate"
-           >
-              {travelEstimate.mode === 'driving' ? (
-                 <Car className="w-3.5 h-3.5 text-slate-600 shrink-0" />
-              ) : (
-                 <Plane className="w-3.5 h-3.5 text-slate-600 shrink-0" />
-              )}
-              <span className="truncate">{travelEstimate.durationText}</span>
-              <span className="text-slate-300">•</span>
-              <span className="text-slate-500 font-normal truncate">{travelEstimate.distanceText}</span>
-           </div>
-        ) : (
-          <p className="text-slate-500 text-[15px] font-light truncate">
-            {hospital.location}, {hospital.country}
-          </p>
-        )}
-
-        <div className="mt-1 flex items-center justify-between w-full gap-2">
-            <div className="flex items-baseline gap-1 truncate">
-                <span className="font-semibold text-slate-900 text-[15px]">{hospital.priceRange}</span>
-                <span className="text-slate-900 text-[15px] font-light truncate">est. range</span>
-            </div>
+        {/* Location & Travel Info */}
+        <div className="space-y-1">
+            <p className="text-xs text-zinc-500 flex items-center gap-1 truncate">
+                <MapPin className="w-3 h-3 shrink-0" /> 
+                <span className="truncate">{hospital.location}, {hospital.country}</span>
+            </p>
             
-            {/* Quick Map Action */}
-            <button 
-              onClick={handleNavigate}
-              className="text-xs font-semibold text-[#6495ED] hover:underline flex items-center gap-1"
-            >
-              Directions
-            </button>
+            {travelEstimate ? (
+                 <div 
+                    onClick={handleNavigate}
+                    className="text-xs font-medium text-[#1C1C1C] flex items-center gap-1 hover:text-blue-600 transition-colors w-fit"
+                    title={`Click for directions: ${travelEstimate.durationText} • ${travelEstimate.distanceText}`}
+                 >
+                    {travelEstimate.mode === 'driving' ? <Car className="w-3 h-3 shrink-0" /> : <Plane className="w-3 h-3 shrink-0" />}
+                    <span>{travelEstimate.durationText} away</span>
+                 </div>
+            ) : (
+                <p className="text-xs font-medium text-[#1C1C1C] flex items-center gap-1">
+                    <Plane className="w-3 h-3 shrink-0" /> Int'l Travel Ready
+                </p>
+            )}
         </div>
+
+        {/* Description */}
+        <p className="text-xs text-zinc-500 line-clamp-2">
+            {hospital.description}
+        </p>
+        
+        <div className="flex-1" /> {/* Spacer to push footer down */}
+
+        {/* Footer Info */}
+        <div className="flex items-center gap-4 text-[10px] text-zinc-500 pt-2 border-t border-zinc-100 mt-1">
+            <span className="flex items-center gap-1">
+                <Languages className="w-3 h-3" /> English, Local
+            </span>
+            <span className="flex items-center gap-1">
+                <Stethoscope className="w-3 h-3" /> {hospital.specialties.length} specialities
+            </span>
+        </div>
+
+        {/* Action Button */}
+        <button className="w-full border border-zinc-200 rounded-lg py-2 text-xs font-medium text-[#1C1C1C] hover:bg-[#FAF8F7] transition-colors">
+            Hospital Overview
+        </button>
+
       </div>
     </div>
   );

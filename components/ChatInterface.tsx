@@ -6,6 +6,7 @@ import { streamMessageToAria } from '../services/geminiService';
 import { ThinkingProcess } from './ThinkingProcess';
 import { HOSPITALS, calculateDistance, getCoordinatesForCity } from '../constants'; 
 import ReactMarkdown from 'react-markdown';
+import { LanguageSelector } from './ui/Languageselector';
 
 interface ChatInterfaceProps {
   currentSession: ChatSession;
@@ -18,6 +19,8 @@ interface ChatInterfaceProps {
   onClose: () => void;
   initialQuery?: string;
   activeFilters?: FilterState; // New: Receive global active filters for sync
+  language?: string; // New: Language prop
+  onLanguageChange: (lang: string) => void;
 }
 
 const parseStreamedContent = (text: string) => {
@@ -119,7 +122,9 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
   onApplyFilters, 
   onClose,
   initialQuery,
-  activeFilters
+  activeFilters,
+  language = 'English',
+  onLanguageChange
 }) => {
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -242,7 +247,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
         });
 
         // Pass the new message (text + attachment) to service
-        const stream = streamMessageToAria(history, text, userMsg.attachment);
+        const stream = streamMessageToAria(history, text, userMsg.attachment, language);
         let fullText = '';
 
         for await (const chunk of stream) {
@@ -339,13 +344,21 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
                 <span className="text-slate-700">New Chat</span>
             </button>
         </div>
-        <button 
-            onClick={onClose}
-            className="p-2 hover:bg-slate-100 rounded-lg text-slate-500 hover:text-slate-900 transition-colors"
-            title="Close Sidebar"
-        >
-           <PanelLeftClose className="w-5 h-5" />
-        </button>
+        
+        {/* Right Actions */}
+        <div className="flex items-center gap-2">
+            <div className="scale-90 origin-right">
+                <LanguageSelector selectedLanguage={language} onLanguageChange={onLanguageChange} />
+            </div>
+            <div className="h-6 w-px bg-slate-200 mx-1"></div>
+            <button 
+                onClick={onClose}
+                className="p-2 hover:bg-slate-100 rounded-lg text-slate-500 hover:text-slate-900 transition-colors"
+                title="Close Sidebar"
+            >
+            <PanelLeftClose className="w-5 h-5" />
+            </button>
+        </div>
       </div>
 
       <div className="flex-1 flex min-h-0 relative">
@@ -473,17 +486,17 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
                                     </div>
                                 )}
 
-                                {/* WhatsApp CTA Button - Rendered if showConsultationCTA is true */}
+                                {/* WhatsApp CTA Button - Updated to Premium Dark Style */}
                                 {msg.showConsultationCTA && (
                                     <div className="mt-3 animate-in fade-in slide-in-from-top-2 duration-300">
                                         <a 
                                             href="https://wa.me/6281291690707?text=Hello%2C%20I%20was%20chatting%20with%20Aria%20about%20my%20medical%20needs%20and%20would%20like%20more%20insight."
                                             target="_blank"
                                             rel="noopener noreferrer"
-                                            className="inline-flex items-center gap-2.5 bg-[#25D366] hover:bg-[#20bd5a] text-white px-5 py-3 rounded-xl font-semibold shadow-md hover:shadow-lg transition-all active:scale-95 group/wa"
+                                            className="inline-flex items-center justify-center gap-2.5 bg-[#1C1C1C] text-white hover:bg-zinc-800 px-6 py-3 rounded-xl font-semibold shadow-md transition-all active:scale-95 group/wa w-full sm:w-auto"
                                         >
-                                            <MessageCircle className="w-5 h-5 fill-white text-white" />
-                                            <span>Consult with us to get more insight</span>
+                                            <MessageCircle className="w-4 h-4 fill-white/20" />
+                                            <span>Connect with a Care Coordinator</span>
                                             <ArrowRight className="w-4 h-4 opacity-70 group-hover/wa:translate-x-1 transition-transform" />
                                         </a>
                                     </div>
@@ -658,13 +671,13 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
                         <button 
                             onClick={() => handleSend(input)}
                             disabled={(!input.trim() && !selectedFile) || isLoading}
-                            className={`p-2 rounded-full transition-all duration-200 self-end mb-0.5 ${(input.trim() || selectedFile) ? 'bg-slate-900 text-white shadow-md hover:bg-black hover:scale-105' : 'bg-[#F4F0EE] text-slate-300 cursor-not-allowed'}`}
+                            className={`p-2 rounded-full transition-all duration-200 self-end mb-0.5 ${(input.trim() || selectedFile) ? 'bg-slate-900 text-white shadow-md hover:bg-black hover:scale-105' : 'bg-slate-900 text-slate-300 cursor-not-allowed'}`}
                         >
                             <ArrowRight className="w-5 h-5" />
                         </button>
                     </div>
                     <div className="text-center mt-2">
-                        <p className="text-[10px] text-slate-400 font-medium">Medifly AI can make mistakes. Please verify medical information.</p>
+                        <p className="text-[10px] text-slate-400">Aria can make mistakes. Please verify important medical information.</p>
                     </div>
                 </div>
             </div>

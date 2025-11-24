@@ -3,10 +3,17 @@ import { GoogleGenAI } from "@google/genai";
 import { SYSTEM_INSTRUCTION } from '../constants';
 import { Attachment } from '../types';
 
-// Safely access process.env for browser environments
+// Safely access API Key respecting the environment
 const getApiKey = () => {
- 
-  return ((import.meta as any).env?.VITE_GEMINI_API_KEY) || 'YOUR_MAPBOX_ACCESS_TOKEN_HERE';
+  // Check for process.env.API_KEY if defined (injected by environment)
+  if (typeof process !== 'undefined' && process.env && process.env.API_KEY) {
+    return process.env.API_KEY;
+  }
+  // Fallback for Vite environments
+  if ((import.meta as any).env?.VITE_GEMINI_API_KEY) {
+    return (import.meta as any).env.VITE_GEMINI_API_KEY;
+  }
+  return '';
 };
 
 const apiKey = getApiKey();
@@ -14,7 +21,7 @@ const apiKey = getApiKey();
 // Helper to create the client instance securely
 const createClient = () => {
   if (!apiKey) {
-    console.warn("API_KEY is missing or process.env is unavailable.");
+    console.warn("API_KEY is missing. AI features will not work.");
   }
   return new GoogleGenAI({ apiKey });
 };
@@ -24,9 +31,12 @@ const ai = createClient();
 export const streamMessageToAria = async function* (
   history: { role: 'user' | 'model'; parts: { text?: string; inlineData?: { mimeType: string; data: string } }[] }[],
   userMessage: string,
-  attachment?: Attachment
+  attachment: Attachment | undefined,
+  language: string = 'English'
 ) {
   try {
+    // gemini-2.5-flash is currently causing routing errors (404). 
+    // switching to gemini-2.0-flash which is the stable V2 endpoint.
     const model = 'gemini-2.5-flash'; 
     
     // Construct the current message contents
@@ -52,10 +62,12 @@ export const streamMessageToAria = async function* (
         currentMessageParts.push({ text: " " });
     }
     
+    const localizedSystemInstruction = SYSTEM_INSTRUCTION + `\n\n[IMPORTANT INSTRUCTION]: The user has selected the preferred language: "${language}". You MUST provide your ENTIRE response (including reasoning steps) in ${language}, unless the user explicitly asks otherwise. If the selected language is not English, translate all concierge persona responses naturally to that language.`;
+
     const chat = ai.chats.create({
         model: model,
         config: {
-            systemInstruction: SYSTEM_INSTRUCTION,
+            systemInstruction: localizedSystemInstruction,
             temperature: 0.7, // slightly creative but focused
         },
         history: history

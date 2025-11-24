@@ -554,7 +554,7 @@ export const HospitalPage: React.FC<HospitalPageProps> = ({ hospital, onBack }) 
                       <div key={h.id} className="border border-zinc-200 rounded-xl overflow-hidden group cursor-pointer" onClick={() => window.location.href = `/hospitals/${h.name.toLowerCase().replace(/ /g, '-')}`}>
                           <div className="relative aspect-[4/3] overflow-hidden">
                               <img src={h.imageUrl} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" alt={h.name} />
-                              <div className="absolute bottom-2 left-2 bg-[#1C1C1C]/80 text-white text-[10px] px-2 py-0.5 rounded flex items-center gap-1">
+                              <div className="absolute bottom-2 left-2 bg-[#F1FCA7] text-[#1C1C1C] text-[10px] px-2 py-0.5 rounded flex items-center gap-1 font-medium">
                                   <Star className="w-2 h-2 fill-current" /> {h.rating}/5
                               </div>
                           </div>
@@ -588,7 +588,7 @@ export const HospitalPage: React.FC<HospitalPageProps> = ({ hospital, onBack }) 
                   <span className="font-semibold text-lg tracking-tight">Medifly</span>
               </div>
               <div className="text-sm text-zinc-400 text-center md:text-right">
-                  <p>&copy; 2024 Medifly - All rights reserved</p>
+                  <p>&copy; 2025 Medifly - All rights reserved</p>
                   <div className="flex justify-center md:justify-end gap-6 mt-2">
                       <a href="#" className="hover:text-white transition-colors">Privacy Policy</a>
                       <a href="#" className="hover:text-white transition-colors">Terms & Conditions</a>
