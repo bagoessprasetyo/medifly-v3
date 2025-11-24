@@ -1,7 +1,6 @@
 
-
 import React from 'react';
-import { MapPin, Star, ShieldCheck, CheckCircle2, Clock, Globe, ExternalLink, Share, Heart } from 'lucide-react';
+import { MapPin, Star, ShieldCheck, CheckCircle2, Clock, Globe, ExternalLink, Share, Heart, ArrowRight } from 'lucide-react';
 import { Hospital } from '../types';
 import { createSlug } from '../constants';
 
@@ -145,14 +144,12 @@ export const HospitalDetails: React.FC<HospitalDetailsProps> = ({ hospital, onVi
             </div>
          </div>
          
-         <a 
-           href={`/hospitals/${createSlug(hospital.name)}`}
-           target="_blank"
-           rel="noopener noreferrer"
-           className="bg-slate-900 text-white px-6 md:px-8 py-3 rounded-xl font-semibold hover:bg-black transition-all shadow-lg flex items-center gap-2 text-sm md:text-base"
+         <button 
+           onClick={() => onViewFullProfile(hospital)}
+           className="bg-slate-900 text-white px-6 md:px-8 py-3 rounded-xl font-semibold hover:bg-black transition-all shadow-lg flex items-center gap-2 text-sm md:text-base active:scale-95"
          >
-            View Details <ExternalLink className="w-4 h-4" />
-         </a>
+            View Details <ArrowRight className="w-4 h-4" />
+         </button>
       </div>
     </div>
   );

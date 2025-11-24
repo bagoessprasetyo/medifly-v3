@@ -1,5 +1,4 @@
 
-
 import React, { useState } from 'react';
 import { Search, Heart, User, Globe, Menu, Stethoscope, Brain, Bone, Baby, Activity, Star, MapPin, Search as SearchIcon, ArrowRight, MessageSquare, List, Sparkles, ShieldCheck, CheckCircle2, Map, Plane, Navigation, AlertTriangle } from 'lucide-react';
 
@@ -93,16 +92,21 @@ export const Hero: React.FC<HeroProps> = ({ onQuickSearch }) => {
 
   return (
     <div className="min-h-screen bg-white font-sans text-slate-900">
-      {/* Navbar - Airbnb Style (Sticky & Clean) */}
+      {/* Navbar - Sticky & Clean */}
       <nav className="sticky top-0 z-50 bg-white border-b border-slate-100 h-20">
         <div className="max-w-[1760px] mx-auto px-6 md:px-12 h-full flex items-center justify-between">
           {/* Logo */}
-          <div className="flex items-center gap-2 flex-1 lg:flex-none">
-            <div className="w-8 h-8 bg-[#B2D7FF] rounded-lg flex items-center justify-center text-slate-900 font-bold text-xl">M</div>
-            <span className="font-bold text-xl text-slate-900 tracking-tight hidden md:block">medifly.ai</span>
+          <div className="flex items-center gap-2 flex-1 lg:flex-none cursor-pointer" onClick={() => window.location.reload()}>
+             {/* Custom SVG Logo Mark based on request */}
+             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-slate-900">
+                <path d="M4 19L2 5L12 2L22 5L20 19" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M2 5L22 5" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M12 2V22" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+             </svg>
+             <span className="font-bold text-xl text-slate-900 tracking-tight">Medifly</span>
           </div>
 
-          {/* Desktop Center Nav - "Stays" style pills */}
+          {/* Desktop Center Nav */}
           <div className="hidden lg:flex items-center justify-center gap-1 absolute left-1/2 -translate-x-1/2">
              <button 
                 onClick={() => setActiveTab('Find Care')}
@@ -367,7 +371,7 @@ export const Hero: React.FC<HeroProps> = ({ onQuickSearch }) => {
                        </button>
                        {/* Guest Favorite Badge (Conditional) */}
                        {i < 3 && (
-                          <div className="absolute top-3 left-3 bg-white/95 backdrop-blur-sm px-2.5 py-1 rounded-full shadow-sm flex items-center gap-1">
+                          <div className="absolute top-3 left-3 bg-[#F1FCA7] px-2.5 py-1 rounded-full shadow-sm flex items-center gap-1">
                              <ShieldCheck className="w-3 h-3 text-slate-900" />
                              <span className="text-xs font-bold text-slate-900">Guest favorite</span>
                           </div>

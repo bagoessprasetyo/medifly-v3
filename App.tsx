@@ -105,22 +105,61 @@ const App: React.FC = () => {
 
   const currentSession = sessions.find(s => s.id === currentSessionId) || sessions[0];
 
-  // Handle URL routing for hospital pages on load
+  // -- Routing Logic --
+
+  // Handle URL routing on load and popstate (back button)
   useEffect(() => {
-    const path = window.location.pathname;
-    const match = path.match(/^\/hospitals\/(.+)/);
-    if (match) {
+    const handleUrlChange = () => {
+      const path = window.location.pathname;
+      const match = path.match(/^\/hospitals\/(.+)/);
+      
+      if (match) {
         const slug = match[1];
         const hospital = HOSPITALS.find(h => createSlug(h.name) === slug);
         if (hospital) {
             setViewedHospital(hospital);
             setPage('hospital-page');
+            setIsChatOpen(false); // Ensure chat is closed on direct load
+            return;
         }
-    }
-  }, []);
+      }
+      
+      // Default fallback based on path
+      if (path === '/') {
+          if (page === 'hospital-page') {
+             setPage('marketplace'); // Go back to marketplace state if we were deep
+             setViewedHospital(null);
+          }
+      }
+    };
+
+    // Check initial
+    handleUrlChange();
+
+    // Listen for back button
+    window.addEventListener('popstate', handleUrlChange);
+    return () => window.removeEventListener('popstate', handleUrlChange);
+  }, []); // Remove dependencies to avoid loops, trust window location
+
+  const handleNavigateToHospital = (hospital: Hospital) => {
+    setViewedHospital(hospital);
+    setPage('hospital-page');
+    setIsChatOpen(false); // Auto-hide chat sidebar
+    window.history.pushState(null, '', `/hospitals/${createSlug(hospital.name)}`);
+  };
+
+  const handleBackFromHospital = () => {
+      // If we have history, go back, otherwise reset to marketplace
+      if (window.history.state !== null) {
+          window.history.back();
+      } else {
+          setPage('marketplace');
+          setViewedHospital(null);
+          window.history.pushState(null, '', '/');
+      }
+  };
 
   // This state is just to trigger the effect in ChatInterface one time. 
-  // We reset it after use or handle it carefully.
   const [initialQuery, setInitialQuery] = useState<string>('');
 
   const handleQuickSearch = (query: string, origin?: string, location?: { lat: number; lng: number }) => {
@@ -133,6 +172,7 @@ const App: React.FC = () => {
     }));
     setPage('marketplace');
     setIsChatOpen(true);
+    window.history.pushState(null, '', '/');
   };
   
   const handleApplyFilters = (newFilters: FilterState) => {
@@ -154,6 +194,7 @@ const App: React.FC = () => {
 
     // Always switch to marketplace view so user sees results immediately
     setPage('marketplace'); 
+    window.history.pushState(null, '', '/');
   };
 
   const handleClearFilters = () => {
@@ -167,11 +208,6 @@ const App: React.FC = () => {
         }
         return s;
     }));
-  };
-
-  const handleNavigateToHospital = (hospital: Hospital) => {
-    setViewedHospital(hospital);
-    setPage('hospital-page');
   };
 
   const handleNewSessionClick = () => {
@@ -234,11 +270,16 @@ const App: React.FC = () => {
       </div>
 
       {/* Right Panel: Marketplace or Hospital Page */}
-      <div className="flex-1 h-full relative transition-all duration-500 bg-white">
+      <div 
+        id="main-content-area"
+        className={`flex-1 h-full relative transition-all duration-500 bg-white ${page === 'hospital-page' ? 'overflow-y-auto' : ''}`}
+      >
          
-         {/* Mobile Header / Back Button Area */}
-         <div className="md:hidden absolute top-4 left-4 z-20 flex gap-2">
-             <button onClick={() => setPage('home')} className="p-2 bg-white rounded-full shadow-md border border-slate-100">
+         {/* Mobile Header / Back Button Area - Only show if page is NOT hospital-page (hospital page has its own nav) or if on marketplace */}
+         <div className={`md:hidden absolute top-4 left-4 z-20 flex gap-2 ${page === 'hospital-page' ? 'hidden' : ''}`}>
+             <button onClick={() => {
+                 setPage('home');
+             }} className="p-2 bg-white rounded-full shadow-md border border-slate-100">
                 <ArrowLeft className="w-5 h-5 text-slate-700" />
              </button>
              {!isChatOpen && (
@@ -251,7 +292,7 @@ const App: React.FC = () => {
          {page === 'hospital-page' && viewedHospital ? (
             <HospitalPage 
                hospital={viewedHospital} 
-               onBack={() => setPage('marketplace')} 
+               onBack={handleBackFromHospital} 
             />
          ) : (
             <Marketplace 
