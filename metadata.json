@@ -1,0 +1,7 @@
+{
+  "name": "Medifly AI Concierge",
+  "description": "A world-class AI medical concierge and marketplace helping patients find the best care globally.",
+  "requestFramePermissions": [
+    "geolocation"
+  ]
+}
