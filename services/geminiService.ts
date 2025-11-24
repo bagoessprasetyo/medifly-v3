@@ -5,14 +5,8 @@ import { Attachment } from '../types';
 
 // Safely access process.env for browser environments
 const getApiKey = () => {
-  try {
-    if (typeof process !== 'undefined' && process.env) {
-      return process.env.API_KEY || '';
-    }
-  } catch (e) {
-    // Ignore error if process is not defined
-  }
-  return '';
+ 
+  return ((import.meta as any).env?.VITE_GEMINI_API_KEY) || 'YOUR_MAPBOX_ACCESS_TOKEN_HERE';
 };
 
 const apiKey = getApiKey();
