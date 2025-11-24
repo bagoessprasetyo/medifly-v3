@@ -37,7 +37,7 @@ export const streamMessageToAria = async function* (
   try {
     // gemini-2.5-flash is currently causing routing errors (404). 
     // switching to gemini-2.0-flash which is the stable V2 endpoint.
-    const model = 'gemini-2.5-flash'; 
+    const model = 'gemini-2.0-flash'; 
     
     // Construct the current message contents
     const currentMessageParts: { text?: string; inlineData?: { mimeType: string; data: string } }[] = [];
