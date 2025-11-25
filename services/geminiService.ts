@@ -1,7 +1,7 @@
 
 import { GoogleGenAI } from "@google/genai";
 import { SYSTEM_INSTRUCTION } from '../constants';
-import { Attachment, Source } from '../types';
+import { Attachment, Source, GroundingMetadata, StreamChunk } from '../types';
 
 // Safely access API Key respecting the environment
 const getApiKey = () => {
@@ -28,20 +28,52 @@ const createClient = () => {
 
 const ai = createClient();
 
+// Helper to extract grounding metadata from response
+const extractGroundingData = (groundingMetadata: GroundingMetadata | undefined): { sources: Source[]; searchQueries: string[] } => {
+  const sources: Source[] = [];
+  const searchQueries: string[] = [];
+
+  if (!groundingMetadata) {
+    return { sources, searchQueries };
+  }
+
+  // Extract search queries
+  if (groundingMetadata.webSearchQueries && groundingMetadata.webSearchQueries.length > 0) {
+    searchQueries.push(...groundingMetadata.webSearchQueries);
+  }
+
+  // Extract sources from grounding chunks
+  if (groundingMetadata.groundingChunks) {
+    for (const chunk of groundingMetadata.groundingChunks) {
+      if (chunk.web?.uri && chunk.web?.title) {
+        // Avoid duplicates
+        if (!sources.some(s => s.uri === chunk.web!.uri)) {
+          sources.push({
+            title: chunk.web.title,
+            uri: chunk.web.uri
+          });
+        }
+      }
+    }
+  }
+
+  return { sources, searchQueries };
+};
+
 export const streamMessageToAria = async function* (
   history: { role: 'user' | 'model'; parts: { text?: string; inlineData?: { mimeType: string; data: string } }[] }[],
   userMessage: string,
   attachment: Attachment | undefined,
   language: string = 'English',
   isDeepFocus: boolean = false
-) {
+): AsyncGenerator<StreamChunk> {
   try {
     // gemini-2.0-flash is the stable V2 endpoint.
-    const model = 'gemini-2.0-flash'; 
-    
+    const model = 'gemini-2.0-flash';
+
     // Construct the current message contents
     const currentMessageParts: { text?: string; inlineData?: { mimeType: string; data: string } }[] = [];
-    
+
     // Add text prompt
     if (userMessage.trim()) {
         currentMessageParts.push({ text: userMessage });
@@ -61,23 +93,52 @@ export const streamMessageToAria = async function* (
     if (currentMessageParts.length === 0) {
         currentMessageParts.push({ text: " " });
     }
-    
+
     let systemPrompt = SYSTEM_INSTRUCTION + `\n\n[IMPORTANT INSTRUCTION]: The user has selected the preferred language: "${language}". You MUST provide your ENTIRE response (including reasoning steps) in ${language}.`;
 
     if (isDeepFocus) {
-        systemPrompt += `\n\n[DEEP FOCUS MODE ACTIVE]:
-        1. You are now in "Deep Focus / Research Mode".
-        2. Your goal is NO LONGER just to find a hospital, but to provide a comprehensive "Second Opinion" or "Deep Medical Analysis".
-        3. Use the 'googleSearch' tool to find the latest medical research, clinical trials, or news relevant to the user's query.
-        4. Provide CITATIONS. When you state a fact found via search, ensure it is grounded.
-        5. Your thinking process should be rigorous, challenging assumptions, and considering differential diagnoses (while maintaining the disclaimer that you are an AI).
-        6. Output format: Still use <thinking> tags, but make the reasoning deeper.
-        `;
+        systemPrompt += `
+
+[DEEP FOCUS MODE ACTIVE - Enhanced Research Protocol]:
+
+You are now operating in Deep Focus / Research Mode. Your behavior changes significantly:
+
+## Primary Objective
+Provide comprehensive, research-backed medical analysis with proper citations. You are NOT prioritizing hospital bookings - focus on educating and informing the user.
+
+## Research Requirements
+1. USE the googleSearch tool to find the latest medical research, clinical guidelines, treatment protocols, and peer-reviewed information.
+2. Search for multiple perspectives when topics are complex or controversial.
+3. Look for recent studies, meta-analyses, and authoritative medical sources (Mayo Clinic, NIH, WHO, medical journals).
+
+## Citation Format (MANDATORY)
+- When stating facts from your search, use inline citation markers: [1], [2], [3], etc.
+- Place the citation marker immediately after the relevant statement.
+- Example: "Recent studies show that minimally invasive surgery reduces recovery time by 40% [1]."
+- The sources will be automatically displayed to the user - you don't need to list them manually.
+
+## Response Structure
+1. <thinking> - Deep clinical reasoning, differential considerations, what you're searching for and why
+2. Main response with inline citations [1], [2], etc.
+3. Clearly distinguish between established medical consensus vs. emerging research vs. your analytical synthesis
+4. Include limitations and when the user should consult specialists
+
+## Quality Standards
+- Prioritize recency: prefer sources from the last 2-3 years when available
+- Prioritize authority: medical institutions, peer-reviewed journals, official guidelines
+- Be transparent about uncertainty or conflicting evidence
+- Never present searched information as your own knowledge - always cite
+
+## What NOT to do
+- Do NOT suggest hospitals or trigger marketplace filters in Deep Focus mode
+- Do NOT rush to conclusions - thorough analysis is expected
+- Do NOT omit citations - every factual claim from search must be cited
+`;
     }
 
     const config: any = {
         systemInstruction: systemPrompt,
-        temperature: 0.7, 
+        temperature: 0.7,
     };
 
     // Enable Google Search Tool for Deep Focus
@@ -91,29 +152,66 @@ export const streamMessageToAria = async function* (
         history: history
     });
 
+    // Signal that we're starting (and potentially searching in Deep Focus mode)
+    if (isDeepFocus) {
+        yield { text: '', isSearching: true };
+    }
+
     // FIXED: Use 'message' parameter
-    const result = await chat.sendMessageStream({ 
-        message: currentMessageParts 
+    const result = await chat.sendMessageStream({
+        message: currentMessageParts
     });
-    
+
+    let hasYieldedSearchingFalse = false;
+    let accumulatedSources: Source[] = [];
+    let accumulatedSearchQueries: string[] = [];
+
     for await (const chunk of result) {
         const text = chunk.text;
-        // Check for grounding metadata (citations)
-        const groundingMetadata = (chunk as any).groundingMetadata || {};
-        let sources: Source[] = [];
 
-        if (groundingMetadata && groundingMetadata.groundingChunks) {
-            sources = groundingMetadata.groundingChunks
-                .filter((c: any) => c.web?.uri && c.web?.title)
-                .map((c: any) => ({
-                    title: c.web.title,
-                    uri: c.web.uri
-                }));
+        // Check for grounding metadata (may appear in any chunk, but typically later/final)
+        const groundingMetadata = (chunk as any).candidates?.[0]?.groundingMetadata as GroundingMetadata | undefined;
+
+        if (groundingMetadata) {
+            const { sources, searchQueries } = extractGroundingData(groundingMetadata);
+
+            // Accumulate unique sources
+            for (const source of sources) {
+                if (!accumulatedSources.some(s => s.uri === source.uri)) {
+                    accumulatedSources.push(source);
+                }
+            }
+
+            // Accumulate unique search queries
+            for (const query of searchQueries) {
+                if (!accumulatedSearchQueries.includes(query)) {
+                    accumulatedSearchQueries.push(query);
+                }
+            }
         }
 
-        if (text || sources.length > 0) {
-            yield { text, sources };
+        // Once we start getting text, we're no longer in "searching" state
+        if (text && isDeepFocus && !hasYieldedSearchingFalse) {
+            hasYieldedSearchingFalse = true;
+            yield { text: '', isSearching: false };
         }
+
+        if (text) {
+            yield {
+                text,
+                sources: accumulatedSources.length > 0 ? accumulatedSources : undefined,
+                searchQueries: accumulatedSearchQueries.length > 0 ? accumulatedSearchQueries : undefined
+            };
+        }
+    }
+
+    // Final yield with all accumulated metadata (ensures sources are captured even if they come at the end)
+    if (accumulatedSources.length > 0 || accumulatedSearchQueries.length > 0) {
+        yield {
+            text: '',
+            sources: accumulatedSources,
+            searchQueries: accumulatedSearchQueries
+        };
     }
 
   } catch (error) {

@@ -37,18 +37,49 @@ export interface Source {
   uri: string;
 }
 
+export interface GroundingMetadata {
+  webSearchQueries?: string[];
+  searchEntryPoint?: {
+    renderedContent: string;
+  };
+  groundingChunks?: {
+    web?: {
+      uri: string;
+      title: string;
+    };
+  }[];
+  groundingSupports?: {
+    segment: {
+      startIndex?: number;
+      endIndex?: number;
+      text: string;
+    };
+    groundingChunkIndices: number[];
+    confidenceScores: number[];
+  }[];
+}
+
+export interface StreamChunk {
+  text?: string;
+  sources?: Source[];
+  searchQueries?: string[];
+  isSearching?: boolean;
+}
+
 export interface Message {
   id: string;
   role: 'user' | 'ai';
   content: string;
   attachment?: Attachment; // New: For file uploads
-  thinking?: string[]; 
-  suggestedFilters?: FilterState; 
-  isSuggestionApplied?: boolean; 
+  thinking?: string[];
+  suggestedFilters?: FilterState;
+  isSuggestionApplied?: boolean;
   inlineResults?: Hospital[]; // New: For showing cards inside chat
   inlineResultTotalCount?: number; // New: Total count of matches found, used to show "View X more"
   showConsultationCTA?: boolean; // New: Trigger for WhatsApp button
-  sources?: Source[]; // New: For Deep Research citations
+  sources?: Source[]; // For Deep Research citations
+  searchQueries?: string[]; // For Deep Focus: what queries were searched
+  isSearching?: boolean; // For Deep Focus: indicates active web search
 }
 
 export interface FilterState {
