@@ -32,6 +32,11 @@ export interface TravelEstimate {
   mode: 'driving' | 'flying';
 }
 
+export interface Source {
+  title: string;
+  uri: string;
+}
+
 export interface Message {
   id: string;
   role: 'user' | 'ai';
@@ -43,6 +48,7 @@ export interface Message {
   inlineResults?: Hospital[]; // New: For showing cards inside chat
   inlineResultTotalCount?: number; // New: Total count of matches found, used to show "View X more"
   showConsultationCTA?: boolean; // New: Trigger for WhatsApp button
+  sources?: Source[]; // New: For Deep Research citations
 }
 
 export interface FilterState {

@@ -1,7 +1,7 @@
 
 import { GoogleGenAI } from "@google/genai";
 import { SYSTEM_INSTRUCTION } from '../constants';
-import { Attachment } from '../types';
+import { Attachment, Source } from '../types';
 
 // Safely access API Key respecting the environment
 const getApiKey = () => {
@@ -32,11 +32,11 @@ export const streamMessageToAria = async function* (
   history: { role: 'user' | 'model'; parts: { text?: string; inlineData?: { mimeType: string; data: string } }[] }[],
   userMessage: string,
   attachment: Attachment | undefined,
-  language: string = 'English'
+  language: string = 'English',
+  isDeepFocus: boolean = false
 ) {
   try {
-    // gemini-2.5-flash is currently causing routing errors (404). 
-    // switching to gemini-2.0-flash which is the stable V2 endpoint.
+    // gemini-2.0-flash is the stable V2 endpoint.
     const model = 'gemini-2.0-flash'; 
     
     // Construct the current message contents
@@ -62,31 +62,62 @@ export const streamMessageToAria = async function* (
         currentMessageParts.push({ text: " " });
     }
     
-    const localizedSystemInstruction = SYSTEM_INSTRUCTION + `\n\n[IMPORTANT INSTRUCTION]: The user has selected the preferred language: "${language}". You MUST provide your ENTIRE response (including reasoning steps) in ${language}, unless the user explicitly asks otherwise. If the selected language is not English, translate all concierge persona responses naturally to that language.`;
+    let systemPrompt = SYSTEM_INSTRUCTION + `\n\n[IMPORTANT INSTRUCTION]: The user has selected the preferred language: "${language}". You MUST provide your ENTIRE response (including reasoning steps) in ${language}.`;
+
+    if (isDeepFocus) {
+        systemPrompt += `\n\n[DEEP FOCUS MODE ACTIVE]:
+        1. You are now in "Deep Focus / Research Mode".
+        2. Your goal is NO LONGER just to find a hospital, but to provide a comprehensive "Second Opinion" or "Deep Medical Analysis".
+        3. Use the 'googleSearch' tool to find the latest medical research, clinical trials, or news relevant to the user's query.
+        4. Provide CITATIONS. When you state a fact found via search, ensure it is grounded.
+        5. Your thinking process should be rigorous, challenging assumptions, and considering differential diagnoses (while maintaining the disclaimer that you are an AI).
+        6. Output format: Still use <thinking> tags, but make the reasoning deeper.
+        `;
+    }
+
+    const config: any = {
+        systemInstruction: systemPrompt,
+        temperature: 0.7, 
+    };
+
+    // Enable Google Search Tool for Deep Focus
+    if (isDeepFocus) {
+        config.tools = [{ googleSearch: {} }];
+    }
 
     const chat = ai.chats.create({
         model: model,
-        config: {
-            systemInstruction: localizedSystemInstruction,
-            temperature: 0.7, // slightly creative but focused
-        },
+        config: config,
         history: history
     });
 
-    // FIXED: Use 'message' parameter, 'content' is not valid for sendMessageStream in this SDK version
+    // FIXED: Use 'message' parameter
     const result = await chat.sendMessageStream({ 
         message: currentMessageParts 
     });
     
     for await (const chunk of result) {
         const text = chunk.text;
-        if (text) {
-            yield text;
+        // Check for grounding metadata (citations)
+        const groundingMetadata = (chunk as any).groundingMetadata || {};
+        let sources: Source[] = [];
+
+        if (groundingMetadata && groundingMetadata.groundingChunks) {
+            sources = groundingMetadata.groundingChunks
+                .filter((c: any) => c.web?.uri && c.web?.title)
+                .map((c: any) => ({
+                    title: c.web.title,
+                    uri: c.web.uri
+                }));
+        }
+
+        if (text || sources.length > 0) {
+            yield { text, sources };
         }
     }
 
   } catch (error) {
     console.error("Error communicating with Aria:", error);
-    yield "I apologize, but I'm having trouble connecting to my medical knowledge base right now. Please try again in a moment.";
+    yield { text: "I apologize, but I'm having trouble connecting to my medical knowledge base right now. Please try again in a moment." };
   }
 };

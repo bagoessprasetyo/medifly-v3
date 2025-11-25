@@ -11,6 +11,7 @@ import { HOSPITALS, createSlug } from './constants';
 const App: React.FC = () => {
   const [page, setPage] = useState<'home' | 'marketplace' | 'hospital-page'>('home');
   const [isChatOpen, setIsChatOpen] = useState(false);
+  const [isDeepFocusMode, setIsDeepFocusMode] = useState(false); // New State for Deep Focus
   
   // -- Language State --
   const [selectedLanguage, setSelectedLanguage] = useState('English');
@@ -252,10 +253,14 @@ const App: React.FC = () => {
       <div 
         className={`
             h-full flex-shrink-0 bg-white border-r border-slate-200 relative z-30 transition-all duration-500 ease-[cubic-bezier(0.25,1,0.5,1)]
-            ${isChatOpen ? 'w-full md:w-[450px] lg:w-[500px] translate-x-0' : 'w-0 -translate-x-10 opacity-0 overflow-hidden'}
+            ${isChatOpen 
+                ? (isDeepFocusMode ? 'w-full' : 'w-full md:w-[450px] lg:w-[500px]') 
+                : 'w-0 -translate-x-10 opacity-0 overflow-hidden'
+            }
+            ${isDeepFocusMode ? 'border-r-0' : ''}
         `}
       >
-        <div className="w-full h-full md:w-[450px] lg:w-[500px]">
+        <div className="w-full h-full">
             {currentSession && (
                 <ChatInterface 
                     // Add Key to force re-mount on session switch
@@ -267,8 +272,12 @@ const App: React.FC = () => {
                     onNewSession={handleNewSessionClick}
                     onUpdateSessionMessages={updateSessionMessages}
                     language={selectedLanguage}
-                    onLanguageChange={setSelectedLanguage} // Add this
+                    onLanguageChange={setSelectedLanguage}
                     
+                    // Deep Focus Props
+                    isDeepFocusMode={isDeepFocusMode}
+                    onToggleDeepFocus={() => setIsDeepFocusMode(!isDeepFocusMode)}
+
                     // Legacy Props
                     initialQuery={initialQuery && currentSession.messages.length === 0 ? initialQuery : undefined} 
                     onSendMessage={async () => {}} // Not really used directly anymore, handled inside
@@ -281,9 +290,14 @@ const App: React.FC = () => {
       </div>
 
       {/* Right Panel: Marketplace or Hospital Page */}
+      {/* If Deep Focus Mode is active, hide this panel completely to give Chat full width */}
       <div 
         id="main-content-area"
-        className={`flex-1 h-full relative transition-all duration-500 bg-white ${page === 'hospital-page' ? 'overflow-y-auto' : ''}`}
+        className={`
+            flex-1 h-full relative transition-all duration-500 bg-white 
+            ${page === 'hospital-page' ? 'overflow-y-auto' : ''}
+            ${isDeepFocusMode ? 'hidden w-0 opacity-0' : ''} 
+        `}
       >
          
          {/* Mobile Header / Back Button Area - Only show if page is NOT hospital-page (hospital page has its own nav) or if on marketplace */}
