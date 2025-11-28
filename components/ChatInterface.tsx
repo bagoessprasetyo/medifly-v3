@@ -1,13 +1,14 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Send, Sparkles, User, Loader2, ArrowRight, LayoutGrid, MapPin, Star, PanelLeftClose, Paperclip, Bot, History, Plus, MessageSquare, Clock, Check, X, ChevronUp, ChevronDown, Search, Plane, FileText, Image as ImageIcon, MessageCircle, LogOut, Telescope, Globe, ExternalLink } from 'lucide-react';
+import { Send, Sparkles, User, Loader2, ArrowRight, LayoutGrid, MapPin, Star, PanelLeftClose, Paperclip, Bot, History, Plus, MessageSquare, Clock, Check, X, ChevronUp, ChevronDown, Search, Plane, FileText, Image as ImageIcon, MessageCircle, LogOut, Telescope, Globe, ExternalLink, RefreshCw } from 'lucide-react';
 import { Message, FilterState, Hospital, ChatSession, Attachment } from '../types';
 import { streamMessageToAria } from '../services/geminiService';
 import { ThinkingProcess } from './ThinkingProcess';
 import { HOSPITALS, calculateDistance, getCoordinatesForCity } from '../constants'; 
 import ReactMarkdown from 'react-markdown';
+// import { LanguageSelector } from './ui/LanguageSelector';
+import { InteractiveBody } from './InteractiveBody';
 import { LanguageSelector } from './ui/Languageselector';
-
 
 interface ChatInterfaceProps {
   currentSession: ChatSession;
@@ -22,8 +23,8 @@ interface ChatInterfaceProps {
   activeFilters?: FilterState; 
   language?: string; 
   onLanguageChange: (lang: string) => void;
-  isDeepFocusMode?: boolean; // New
-  onToggleDeepFocus?: () => void; // New
+  isDeepFocusMode?: boolean; 
+  onToggleDeepFocus?: () => void;
 }
 
 const parseStreamedContent = (text: string) => {
@@ -143,6 +144,9 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
   const [showHistory, setShowHistory] = useState(false);
   const [selectedFile, setSelectedFile] = useState<Attachment | null>(null);
   
+  // Deep Focus Intro State - Shows body map on entry
+  const [showDeepFocusIntro, setShowDeepFocusIntro] = useState(false);
+  
   // Auth State
   const [user, setUser] = useState<UserProfile | null>(null);
   const [isLoggingIn, setIsLoggingIn] = useState(false);
@@ -152,6 +156,17 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const hasTriggeredInitial = useRef(false);
 
+  // Trigger Deep Focus Intro when mode is toggled ON
+  useEffect(() => {
+    if (isDeepFocusMode) {
+      // Only show intro if we haven't just sent a body part message (optional heuristic)
+      // For now, always showing it when entering the mode provides the requested "first time" feel
+      setShowDeepFocusIntro(true);
+    } else {
+      setShowDeepFocusIntro(false);
+    }
+  }, [isDeepFocusMode]);
+
   const scrollToBottom = () => {
     // Slight delay ensures DOM is fully rendered
     setTimeout(() => {
@@ -160,8 +175,10 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
   };
 
   useEffect(() => {
-    scrollToBottom();
-  }, [currentSession.messages, isLoading, showHistory]);
+    if (!showDeepFocusIntro) {
+      scrollToBottom();
+    }
+  }, [currentSession.messages, isLoading, showHistory, showDeepFocusIntro]);
 
   // Load User from LocalStorage
   useEffect(() => {
@@ -231,16 +248,40 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
     localStorage.removeItem('medifly_user');
   };
 
+  const handleBodyPartSelect = (part: string) => {
+      // Hide intro once selected
+      setShowDeepFocusIntro(false);
+      
+      // Trigger AI logic for the specific body part
+      handleSend(`[System Injection]: The user has identified a potential issue in the **${part}**. Please acknowledge this, act as a specialized clinician for this area, and ask 3-4 specific triage questions to narrow down the symptoms. Keep the tone empathetic and professional.`);
+  };
+
   const handleSend = async (text: string) => {
     if (!text.trim() && !selectedFile) return;
     
+    // Ensure intro is closed if sending message manually
+    if (isDeepFocusMode) setShowDeepFocusIntro(false);
+
     // Add user message
+    // If it's a system injection (hidden prompt), we might want to display something different or hide it
+    // For now, we'll display a formatted version if it's the body part selection
+    let displayContent = text;
+    let role: 'user' | 'ai' = 'user';
+    
+    if (text.startsWith('[System Injection]')) {
+        const partMatch = text.match(/\*\*(.*?)\*\*/);
+        const part = partMatch ? partMatch[1] : 'selected area';
+        displayContent = `I have a concern regarding my ${part}.`;
+    }
+
     const userMsg: Message = { 
         id: Date.now().toString(), 
-        role: 'user', 
-        content: text,
+        role: role, 
+        content: displayContent,
+        timestamp: Date.now(),
         attachment: selectedFile || undefined
     };
+
     const updatedMessages = [...currentSession.messages, userMsg];
     
     // Optimistic update
@@ -254,6 +295,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
     const aiMsgId = (Date.now() + 1).toString();
     const placeholderMsg: Message = {
         id: aiMsgId,
+        timestamp: Date.now(),
         role: 'ai',
         content: '',
         thinking: undefined
@@ -328,7 +370,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
             const parsed = parseStreamedContent(fullText);
 
             // Update the specific AI message in the current session
-            const newMessages = messagesWithPlaceholder.map(m =>
+            onUpdateSessionMessages(currentSession.id, messagesWithPlaceholder.map(m =>
                 m.id === aiMsgId
                 ? {
                     ...m,
@@ -348,11 +390,8 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
                         : undefined
                   }
                 : m
-            );
-
-            onUpdateSessionMessages(currentSession.id, newMessages);
+            ));
         }
-
     } catch (error) {
         console.error("Streaming error:", error);
     } finally {
@@ -401,7 +440,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
   const sortedSessions = [...sessions].sort((a, b) => b.updatedAt - a.updatedAt);
 
   return (
-    <div className="flex flex-col h-full bg-white z-20 relative overflow-hidden">
+    <div className="flex flex-col h-full bg-white z-20 relative overflow-hidden transition-all duration-700">
       {/* Header */}
       <div className="flex-shrink-0 px-4 py-3 flex items-center justify-between bg-white z-50 border-b border-slate-50 shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
         <div className="flex items-center gap-2">
@@ -421,6 +460,14 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
             </button>
         </div>
         
+        {/* Deep Focus Title */}
+        {isDeepFocusMode && (
+             <div className="absolute left-1/2 -translate-x-1/2 hidden md:flex items-center gap-2 px-4 py-1.5 bg-indigo-50 border border-indigo-100 rounded-full animate-in fade-in slide-in-from-top-4">
+                 <Telescope className="w-4 h-4 text-indigo-600" />
+                 <span className="text-xs font-bold text-indigo-900 uppercase tracking-widest">Deep Focus Active</span>
+             </div>
+        )}
+
         {/* Right Actions */}
         <div className="flex items-center gap-2">
             <div className="scale-90 origin-right">
@@ -473,7 +520,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
         </div>
 
         {/* Messages Area */}
-        <div className={`flex-1 flex flex-col min-w-0 bg-white relative transition-all duration-500 ${isDeepFocusMode ? 'max-w-5xl mx-auto w-full' : ''}`}>
+        <div className={`flex-1 flex flex-col min-w-0 bg-white relative transition-all duration-500 ${isDeepFocusMode ? 'max-w-4xl mx-auto w-full' : ''}`}>
             
             {/* Overlay when history is open on mobile/tablet */}
             {showHistory && (
@@ -482,49 +529,78 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
                     onClick={() => setShowHistory(false)}
                 />
             )}
-
-            <div className="flex-1 overflow-y-auto p-4 md:px-6 pb-4 w-full scroll-smooth relative">
-                
-                {/* Warm Welcome Zero State */}
-                {currentSession.messages.length === 0 && !isLoading && (
-                <div className="flex flex-col items-center justify-center h-full text-center px-6 pb-20 animate-in fade-in zoom-in-95 duration-300">
-                    <div className={`w-14 h-14 bg-gradient-to-br ${isDeepFocusMode ? 'from-indigo-50 to-white border-indigo-100' : 'from-[#F4F0EE] to-white border-slate-100'} border rounded-2xl shadow-lg flex items-center justify-center mb-6 transition-colors duration-500`}>
-                        {isDeepFocusMode ? (
-                            <Telescope className="w-7 h-7 text-indigo-600" />
-                        ) : (
-                            <Sparkles className="w-7 h-7 text-[#6495ED]" />
-                        )}
+            
+            {/* Deep Focus Intro Overlay - FORCES BODY MAP ON ENTRY */}
+            {isDeepFocusMode && showDeepFocusIntro && (
+                <div className="absolute inset-0 z-40 bg-white animate-in fade-in duration-500 flex flex-col items-center justify-center p-4">
+                    <div className="w-full max-w-4xl flex flex-col md:flex-row items-center gap-12 -mt-16">
+                        <div className="flex-1 flex flex-col items-center md:items-start text-center md:text-left space-y-6">
+                            <div className="w-16 h-16 bg-gradient-to-br from-indigo-50 to-white border border-indigo-100 rounded-2xl shadow-lg flex items-center justify-center animate-bounce-slow">
+                                <Telescope className="w-8 h-8 text-indigo-600" />
+                            </div>
+                            <div className="space-y-3">
+                                <div className="inline-flex items-center gap-2 px-3 py-1 bg-indigo-50 rounded-full border border-indigo-100 text-indigo-700 text-xs font-bold uppercase tracking-wider">
+                                    Deep Focus Mode Active
+                                </div>
+                                <h2 className="text-4xl font-extrabold text-slate-900 tracking-tight">Interactive Diagnostic</h2>
+                                <p className="text-slate-500 text-lg leading-relaxed max-w-sm">
+                                    I'm switching to clinical specialist mode. Tap the area of concern on the body map below to begin a targeted analysis.
+                                </p>
+                            </div>
+                            <div className="flex flex-wrap gap-2 justify-center md:justify-start">
+                                <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-50 text-slate-600 text-xs font-medium border border-slate-100">
+                                    <Globe className="w-3.5 h-3.5" /> Research Backed
+                                </div>
+                                <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-50 text-slate-600 text-xs font-medium border border-slate-100">
+                                    <Sparkles className="w-3.5 h-3.5" /> Clinical Reasoning
+                                </div>
+                            </div>
+                            
+                            <button 
+                                onClick={() => setShowDeepFocusIntro(false)}
+                                className="mt-4 text-xs font-semibold text-slate-400 hover:text-indigo-600 transition-colors flex items-center gap-1 group"
+                            >
+                                Skip diagnostic & go to chat <ArrowRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
+                            </button>
+                        </div>
+                        
+                        <div className="flex-1 w-full flex justify-center relative">
+                            {/* Interactive Body Component */}
+                            <InteractiveBody onSelectPart={handleBodyPartSelect} />
+                        </div>
                     </div>
-                    <h2 className="text-2xl font-bold text-slate-900 mb-2">
-                        {isDeepFocusMode ? 'Deep Focus Mode' : 'How can I help you today?'}
-                    </h2>
-                    <p className="text-slate-500 max-w-xs leading-relaxed mb-8">
-                        {isDeepFocusMode 
-                            ? 'I will research extensively, cite sources, and provide second opinions. I will not prioritize booking.'
-                            : 'I can help you find top-rated hospitals, compare treatments, or analyze your medical documents.'
-                        }
-                    </p>
-                    
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full max-w-lg">
-                        {isDeepFocusMode ? (
-                            <>
-                                <button onClick={() => handleSend("What are the latest treatments for Type 2 Diabetes?")} className="text-left p-3 rounded-xl border border-indigo-100 bg-indigo-50/50 hover:bg-indigo-50 hover:border-indigo-200 hover:shadow-sm transition-all text-sm text-indigo-800">
-                                    🔬 Latest Diabetes Treatments
-                                </button>
-                                <button onClick={() => handleSend("Analyze this complex case regarding...")} className="text-left p-3 rounded-xl border border-indigo-100 bg-indigo-50/50 hover:bg-indigo-50 hover:border-indigo-200 hover:shadow-sm transition-all text-sm text-indigo-800">
-                                    🧩 Analyze Complex Case
-                                </button>
-                            </>
-                        ) : (
-                            <>
-                                <button onClick={() => handleSend("Best hospitals for heart surgery in Bangkok")} className="text-left p-3 rounded-xl border border-slate-100 bg-[#F4F0EE]/50 hover:bg-[#F4F0EE] hover:border-[#B2D7FF] hover:shadow-sm transition-all text-sm text-slate-700">
-                                    🏥 Heart surgery in Bangkok
-                                </button>
-                                <button onClick={() => handleSend("Analyze this lab report for me")} className="text-left p-3 rounded-xl border border-slate-100 bg-[#F4F0EE]/50 hover:bg-[#F4F0EE] hover:border-[#B2D7FF] hover:shadow-sm transition-all text-sm text-slate-700">
-                                    📄 Analyze Lab Report
-                                </button>
-                            </>
-                        )}
+                </div>
+            )}
+
+            <div className="flex-1 overflow-y-auto p-4 md:px-6 pb-4 w-full scroll-smooth relative" id="chat-scroller">
+                
+                {/* Zero State / Onboarding (Standard Mode only since Deep Focus has overlay) */}
+                {currentSession.messages.length === 0 && !isLoading && !isDeepFocusMode && (
+                <div className="flex flex-col items-center justify-center min-h-[80%] w-full animate-in fade-in zoom-in-95 duration-500 py-10">
+                    <div className="flex flex-col items-center text-center max-w-lg">
+                        <div className={`w-14 h-14 bg-gradient-to-br from-[#F4F0EE] to-white border border-slate-100 rounded-2xl shadow-lg flex items-center justify-center mb-6`}>
+                            <Sparkles className="w-7 h-7 text-[#6495ED]" />
+                        </div>
+                        <h2 className="text-2xl font-bold text-slate-900 mb-2">
+                            How can I help you today?
+                        </h2>
+                        <p className="text-slate-500 max-w-xs leading-relaxed mb-8">
+                            I can help you find top-rated hospitals, compare treatments, or analyze your medical documents.
+                        </p>
+                        
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full">
+                            <button onClick={() => handleSend("Best hospitals for heart surgery in Bangkok")} className="text-left p-3 rounded-xl border border-slate-100 bg-[#F4F0EE]/50 hover:bg-[#F4F0EE] hover:border-[#B2D7FF] hover:shadow-sm transition-all text-sm text-slate-700">
+                                🏥 Heart surgery in Bangkok
+                            </button>
+                            <button onClick={() => handleSend("Analyze this lab report for me")} className="text-left p-3 rounded-xl border border-slate-100 bg-[#F4F0EE]/50 hover:bg-[#F4F0EE] hover:border-[#B2D7FF] hover:shadow-sm transition-all text-sm text-slate-700">
+                                📄 Analyze Lab Report
+                            </button>
+                            {/* Quick Access to Deep Focus if needed */}
+                            <button onClick={onToggleDeepFocus} className="sm:col-span-2 text-left p-3 rounded-xl border border-indigo-100 bg-indigo-50/50 hover:bg-indigo-50 hover:border-indigo-200 hover:shadow-sm transition-all text-sm text-indigo-700 flex items-center justify-between group">
+                                <span className="flex items-center gap-2"><Telescope className="w-4 h-4"/> Try Deep Focus Diagnostic</span>
+                                <ArrowRight className="w-4 h-4 opacity-50 group-hover:translate-x-1 transition-transform" />
+                            </button>
+                        </div>
                     </div>
                 </div>
                 )}
@@ -624,16 +700,6 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
                                                 </div>
                                             </div>
                                         )}
-
-                                        {/* Empty State for Deep Focus with no sources */}
-                                        {isDeepFocusMode && msg.content && !msg.isSearching && !msg.sources?.length && msg.searchQueries && msg.searchQueries.length > 0 && (
-                                            <div className="mt-4 pt-3 border-t border-slate-100">
-                                                <div className="flex items-center gap-2 p-3 rounded-lg bg-amber-50 border border-amber-100 text-xs text-amber-700">
-                                                    <Search className="w-4 h-4 flex-shrink-0" />
-                                                    <span>Search was performed but no citable sources were returned. The response may be based on general knowledge.</span>
-                                                </div>
-                                            </div>
-                                        )}
                                     </div>
                                 )}
 
@@ -654,7 +720,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
                                 )}
 
                                 {/* Interactive Suggestions Pills (Synced with Global State) */}
-                                {msg.suggestedFilters && !isDeepFocusMode && (
+                                {msg.suggestedFilters && (
                                     <div className="mt-2 flex flex-wrap gap-2 animate-in fade-in slide-in-from-top-2 duration-300 pl-1">
                                         {/* Primary "Show List" Pill */}
                                         {(() => {
@@ -695,7 +761,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
                                 )}
 
                                 {/* Inline Results */}
-                                {msg.inlineResults && !isDeepFocusMode && (
+                                {msg.inlineResults && (
                                     <div className="mt-4 grid gap-3 w-full sm:max-w-md animate-in fade-in slide-in-from-top-2 duration-300">
                                         {msg.inlineResults.map(h => {
                                             let distance = null;
@@ -892,7 +958,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
                             value={input}
                             onChange={(e) => setInput(e.target.value)}
                             onKeyDown={handleKeyDown}
-                            placeholder={selectedFile ? "Ask Aria about this document..." : (isDeepFocusMode ? "Research a medical topic..." : "Ask anything...")}
+                            placeholder={selectedFile ? "Ask Aria about this document..." : (isDeepFocusMode ? "Type symptoms here..." : "Ask anything...")}
                             className="flex-1 max-h-32 py-2.5 bg-transparent border-none focus:ring-0 placeholder:text-slate-400 text-slate-800 resize-none text-[15px] leading-relaxed outline-none"
                             rows={1}
                         />

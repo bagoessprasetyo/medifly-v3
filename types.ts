@@ -80,6 +80,9 @@ export interface Message {
   sources?: Source[]; // For Deep Research citations
   searchQueries?: string[]; // For Deep Focus: what queries were searched
   isSearching?: boolean; // For Deep Focus: indicates active web search
+  groundingMetadata?: GroundingMetadata; // For Deep Research: detailed grounding info
+  timestamp: number; // Unix timestamp
+  medicalAnalysis?: MedicalAnalysis; // New: Medical entity extraction and summary
 }
 
 export interface FilterState {
@@ -111,4 +114,33 @@ export interface ThinkingResponse {
     specialty?: string;
     aiListName: string;
   };
+}
+
+export interface MedicalEntity {
+  text: string;
+  category: 'Problem' | 'Treatment' | 'Test' | 'Anatomy' | 'Drug';
+  confidenceScore?: number;
+}
+export interface MedicalAnalysis {
+  entities: MedicalEntity[];
+  summary?: string;
+  isAnalyzing?: boolean;
+  completed?: boolean;
+  provider?: 'Azure' | 'OpenHealth AI' | 'Other';
+  timestamp?: number;
+}
+
+export interface TravelOptions {
+  driving?: TravelEstimate;
+  flying?: TravelEstimate;
+}
+
+export interface HospitalDetails extends Hospital {
+  contactInfo: {
+    phone: string;
+    email: string;
+    website: string;
+  };
+  facilities: string[];
+  travelOptions?: TravelOptions;
 }
