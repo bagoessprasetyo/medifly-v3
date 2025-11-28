@@ -1,24 +1,19 @@
 
 import React, { useState } from 'react';
-import { Search, Heart, User, Globe, Menu, Stethoscope, Brain, Bone, Baby, Activity, Star, MapPin, Search as SearchIcon, ArrowRight, MessageSquare, List, Sparkles, ShieldCheck, CheckCircle2, Map, Plane, Navigation, AlertTriangle, Building2, Package, Users } from 'lucide-react';
-import { LanguageSelector } from './ui/Languageselector';
-// import { LanguageSelector } from './ui/LanguageSelector';
+import { Search, Heart, User, Search as SearchIcon, ArrowRight, MessageSquare, List, Sparkles, ShieldCheck, Map, Navigation, Star } from 'lucide-react';
 
 interface HeroProps {
   onQuickSearch: (query: string, origin?: string, location?: { lat: number; lng: number }) => void;
-  selectedLanguage: string;
-  onLanguageChange: (lang: string) => void;
   onNavigateToMarketplace?: () => void;
-  onNavigateToDoctors?: () => void;
 }
 
 const SPECIALTIES = [
   { name: 'Cardiology', icon: <Heart className="w-6 h-6" /> },
-  { name: 'Orthopedics', icon: <Bone className="w-6 h-6" /> },
-  { name: 'Neurology', icon: <Brain className="w-6 h-6" /> },
-  { name: 'Fertility', icon: <Baby className="w-6 h-6" /> },
-  { name: 'Oncology', icon: <Activity className="w-6 h-6" /> },
-  { name: 'Check-up', icon: <Stethoscope className="w-6 h-6" /> },
+  { name: 'Orthopedics', icon: <div className="w-6 h-6 flex items-center justify-center font-bold text-xl">🦴</div> }, // Fallback icon
+  { name: 'Neurology', icon: <div className="w-6 h-6 flex items-center justify-center font-bold text-xl">🧠</div> },
+  { name: 'Fertility', icon: <div className="w-6 h-6 flex items-center justify-center font-bold text-xl">👶</div> },
+  { name: 'Oncology', icon: <div className="w-6 h-6 flex items-center justify-center font-bold text-xl">🔬</div> },
+  { name: 'Check-up', icon: <div className="w-6 h-6 flex items-center justify-center font-bold text-xl">🩺</div> },
   { name: 'Plastic Surgery', icon: <User className="w-6 h-6" /> },
   { name: 'Dental', icon: <Star className="w-6 h-6" /> },
 ];
@@ -34,7 +29,7 @@ const DESTINATIONS = [
   { country: 'Bali, Indonesia', desc: 'Wellness & recovery', rating: 4.65, price: '$$', img: 'https://picsum.photos/800/800?random=17' }
 ];
 
-export const Hero: React.FC<HeroProps> = ({ onQuickSearch, selectedLanguage, onLanguageChange, onNavigateToMarketplace, onNavigateToDoctors }) => {
+export const Hero: React.FC<HeroProps> = ({ onQuickSearch, onNavigateToMarketplace }) => {
   const [treatment, setTreatment] = useState('');
   const [origin, setOrigin] = useState('');
   const [destination, setDestination] = useState('');
@@ -96,57 +91,7 @@ export const Hero: React.FC<HeroProps> = ({ onQuickSearch, selectedLanguage, onL
   };
 
   return (
-    <div className="min-h-screen bg-white font-sans text-slate-900">
-      {/* Navbar - Sticky & Clean */}
-      <nav className="sticky top-0 z-50 bg-white border-b border-slate-100 h-20">
-        <div className="max-w-[1760px] mx-auto px-6 md:px-12 h-full flex items-center justify-between">
-          {/* Logo */}
-          <div className="flex items-center gap-2 flex-1 lg:flex-none cursor-pointer" onClick={() => window.location.reload()}>
-             {/* Custom SVG Logo Mark based on request */}
-             <div className="w-6 h-6 bg-black rounded-tr-lg rounded-bl-lg rounded-br-sm"></div>
-             <span className="font-bold text-xl text-slate-900 tracking-tight">Medifly</span>
-          </div>
-
-          {/* Desktop Center Nav */}
-          <div className="hidden lg:flex items-center justify-center gap-8 text-sm font-medium text-gray-600 absolute left-1/2 -translate-x-1/2">
-             <button 
-                onClick={onNavigateToMarketplace}
-                className="flex items-center gap-2 hover:text-black transition-colors"
-             >
-                <Building2 className="w-4 h-4" /> Hospitals
-             </button>
-             <button 
-                onClick={onNavigateToDoctors}
-                className="flex items-center gap-2 hover:text-black transition-colors"
-             >
-                <Stethoscope className="w-4 h-4" /> Doctors
-             </button>
-             <button 
-                className="flex items-center gap-2 hover:text-black transition-colors"
-             >
-                <Package className="w-4 h-4" /> Packages
-             </button>
-             <button 
-                className="flex items-center gap-2 hover:text-black transition-colors"
-             >
-                <Users className="w-4 h-4" /> About Us
-             </button>
-          </div>
-
-          {/* Right Actions - User Pill */}
-          <div className="flex-1 flex justify-end gap-3">
-             <div className="hidden md:block">
-                  <LanguageSelector selectedLanguage={selectedLanguage} onLanguageChange={onLanguageChange} />
-             </div>
-             <button className="bg-[#111] text-white text-sm font-medium px-4 py-2 rounded-lg hover:bg-black/90 transition shadow-sm">
-                Get Started
-             </button>
-          </div>
-        </div>
-      </nav>
-
-      {/* Main Content */}
-      <main className="pt-16 pb-20 max-w-[1760px] mx-auto px-6 md:px-12">
+    <div className="pt-10 pb-20 max-w-[1760px] mx-auto px-6 md:px-12">
         
         {/* Search Section - Centered Layout */}
         <div className="flex flex-col items-center justify-center mb-12 text-center">
@@ -394,31 +339,6 @@ export const Hero: React.FC<HeroProps> = ({ onQuickSearch, selectedLanguage, onL
               ))}
            </div>
         </section>
-
-      </main>
-      
-      {/* Simple Footer */}
-      <footer className="border-t border-slate-100 py-10 bg-[#F4F0EE]">
-         <div className="max-w-[1760px] mx-auto px-6 md:px-12 flex flex-col md:flex-row justify-between items-center gap-4">
-            <div className="flex items-center gap-2">
-               <p className="text-sm text-slate-500">© 2024 Medifly AI, Inc.</p>
-               <span className="text-slate-400">·</span>
-               <a href="#" className="text-sm text-slate-500 hover:underline">Privacy</a>
-               <span className="text-slate-400">·</span>
-               <a href="#" className="text-sm text-slate-500 hover:underline">Terms</a>
-            </div>
-            <div className="flex gap-6 text-sm font-semibold text-slate-700">
-               <div className="flex items-center gap-2 cursor-pointer hover:bg-white px-3 py-2 rounded-full transition-colors">
-                  <Globe className="w-4 h-4" />
-                  <span>English (US)</span>
-               </div>
-               <div className="flex items-center gap-2 cursor-pointer hover:bg-white px-3 py-2 rounded-full transition-colors">
-                  <span>$ USD</span>
-               </div>
-            </div>
-         </div>
-      </footer>
-
     </div>
   );
 };

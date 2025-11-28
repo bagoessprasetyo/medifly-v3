@@ -1,11 +1,12 @@
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { 
   Activity, Building2, Stethoscope, Package, Users, MapPin, Languages, 
   Award, Bed, Trophy, ChevronDown, ChevronRight, Navigation, Plane, 
   Bus, Flag, Wind, Heart, Link, Brain, Droplet, HeartPulse, Bone, Dna, 
   BrainCircuit, Baby, Utensils, Eye, Ear, ChevronUp, Star, LayoutGrid,
-  CheckCircle2, ArrowLeft, ArrowRight
+  CheckCircle2, ArrowLeft, ArrowRight, Microscope, Filter, Clock, ChevronLeft,
+  GraduationCap, Scan, CheckCircle, Scissors
 } from 'lucide-react';
 import { Hospital } from '../types';
 import { HOSPITALS } from '../constants';
@@ -30,6 +31,7 @@ export const HospitalPage: React.FC<HospitalPageProps> = ({ hospital, onBack, on
   }, [hospital.id]);
 
   const relatedHospitals = HOSPITALS.filter(h => h.id !== hospital.id && h.country === hospital.country).slice(0, 4);
+  const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(2);
 
   // Helper to safely get images or fallback
   const getImages = (count: number) => {
@@ -46,39 +48,25 @@ export const HospitalPage: React.FC<HospitalPageProps> = ({ hospital, onBack, on
   return (
     <div className="bg-white text-[#1C1C1C] font-sans antialiased w-full min-h-full">
 
-      {/* Navbar */}
-      <nav className="border-b border-[#FAF8F7] sticky top-0 z-[50] bg-white/90 backdrop-blur-md">
-          <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                  <button 
-                      onClick={onBack}
-                      className="p-1 hover:bg-zinc-100 rounded-full transition-colors md:hidden"
-                  >
-                      <ArrowLeft className="w-5 h-5 text-[#1C1C1C]" />
-                  </button>
-                  <div className="flex items-center gap-2 cursor-pointer" onClick={onBack}>
-                      <div className="w-6 h-6 bg-black rounded-tr-lg rounded-bl-lg rounded-br-sm"></div>
-                      <span className="font-semibold text-lg tracking-tight text-[#1C1C1C]">Medifly</span>
-                  </div>
-              </div>
-              
-              <div className="hidden md:flex items-center gap-8 text-sm font-medium text-gray-600">
-                  <button onClick={onNavigateToHospitals} className="flex items-center gap-2 hover:text-[#1C1C1C] transition-colors"><Building2 className="w-4 h-4" /> Hospitals</button>
-                  <button onClick={onNavigateToDoctors} className="flex items-center gap-2 hover:text-[#1C1C1C] transition-colors"><Stethoscope className="w-4 h-4" /> Doctors</button>
-                  <button className="flex items-center gap-2 hover:text-[#1C1C1C] transition-colors"><Package className="w-4 h-4" /> Packages</button>
-                  <button className="flex items-center gap-2 hover:text-[#1C1C1C] transition-colors"><Users className="w-4 h-4" /> About Us</button>
-              </div>
+      {/* Mobile Back Button (Desktop nav is handled by Layout) */}
+      <div className="md:hidden sticky top-0 z-[50] bg-white/90 backdrop-blur-sm border-b border-[#FAF8F7] px-6 h-16 flex items-center">
+          <button 
+              onClick={onBack}
+              className="p-1 hover:bg-zinc-100 rounded-full transition-colors flex items-center gap-2"
+          >
+              <ArrowLeft className="w-5 h-5 text-[#1C1C1C]" />
+              <span className="font-semibold text-[#1C1C1C]">Back</span>
+          </button>
+      </div>
 
-              <div className="flex items-center gap-3">
-                 <button className="bg-[#1C1C1C] text-white text-sm px-4 py-2 rounded-md font-medium hover:bg-zinc-800 transition-colors shadow-sm">Get Started</button>
-              </div>
-          </div>
-      </nav>
-
-      {/* Sub Nav */}
-      <div className="border-b border-[#FAF8F7] bg-white sticky top-16 z-40 hidden md:block">
+      {/* Sub Nav - Sticky below main Navbar (top-20 because main nav is h-20) */}
+      <div className="border-b border-[#FAF8F7] bg-white sticky top-20 z-40 hidden md:block">
           <div className="max-w-7xl mx-auto px-6">
               <div className="flex gap-8 text-sm overflow-x-auto no-scrollbar">
+                  <button onClick={onBack} className="py-4 text-zinc-500 hover:text-[#1C1C1C] transition-colors flex items-center gap-2">
+                     <ArrowLeft className="w-4 h-4" /> Back
+                  </button>
+                  <div className="w-px h-6 bg-zinc-200 my-auto"></div>
                   <button className="py-4 text-[#1C1C1C] border-b-2 border-[#1C1C1C] font-medium">Overview</button>
                   <button className="py-4 text-zinc-500 hover:text-[#1C1C1C] transition-colors">Specialization</button>
                   <button className="py-4 text-zinc-500 hover:text-[#1C1C1C] transition-colors">Facilities</button>
@@ -259,6 +247,302 @@ export const HospitalPage: React.FC<HospitalPageProps> = ({ hospital, onBack, on
 
           </div>
       </div>
+
+      {/* --- Appended Details Sections --- */}
+
+      {/* 1. Top Expertise */}
+      <section className="max-w-7xl mx-auto px-6 py-16">
+        <h2 className="text-3xl font-semibold text-center tracking-tight mb-12">Our Top Expertise</h2>
+        
+        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6">
+            {[
+                { icon: Wind, title: "Pulmonology", desc: "Advanced care for lungs with leading specialists and integrated treatments." },
+                { icon: HeartPulse, title: "Cardiology", desc: "Trusted heart specialists offering preventive and corrective care." },
+                { icon: Microscope, title: "Oncology", desc: "Expert cancer care and support utilizing latest surgery protocols." },
+                { icon: BrainCircuit, title: "Neurology", desc: "Specialized brain & nerve care with precise diagnosis tools." },
+                { icon: Droplet, title: "Hematology", desc: "State-of-the-art care, diagnosis and concerns for blood-related issues." },
+            ].map((item, idx) => (
+                <div key={idx} className="group p-6 rounded-xl border border-gray-100 bg-white hover:shadow-lg hover:border-gray-200 transition-all duration-300">
+                    <div className="w-10 h-10 rounded-full bg-lime-100 flex items-center justify-center mb-4 text-lime-700">
+                        <item.icon strokeWidth={1.5} className="w-5 h-5" />
+                    </div>
+                    <h3 className="text-lg font-medium mb-2 tracking-tight">{item.title}</h3>
+                    <p className="text-sm text-gray-500 leading-relaxed">{item.desc}</p>
+                </div>
+            ))}
+        </div>
+
+        {/* Specialization Tags */}
+        <div className="mt-16">
+            <h4 className="text-center text-sm font-medium text-gray-900 mb-6">Specialization Available in Our Hospital</h4>
+            <div className="flex flex-wrap justify-center gap-3 px-4 max-w-4xl mx-auto">
+                {[
+                    { icon: Heart, label: "Cardiology" },
+                    { icon: Bone, label: "Orthopedics" },
+                    { icon: Activity, label: "Oncology" },
+                    { icon: Brain, label: "Neurology" },
+                    { icon: Baby, label: "Fertility & IVF" },
+                    { icon: Stethoscope, label: "Gastroenterology" },
+                    { icon: Eye, label: "Ophthalmology" },
+                    { icon: Ear, label: "ENT" },
+                    { icon: Scissors, label: "General Surgery" },
+                    { icon: Microscope, label: "Pathology" },
+                    { icon: Scan, label: "Radiology" }
+                ].map((tag, i) => (
+                    <span key={i} className="inline-flex items-center px-4 py-2 rounded-full border border-gray-200 text-xs text-gray-600 bg-white hover:bg-gray-50 cursor-default transition-colors">
+                        <tag.icon className="w-3 h-3 mr-2" /> {tag.label}
+                    </span>
+                ))}
+            </div>
+        </div>
+      </section>
+
+      {/* Gradient Divider */}
+      <div className="w-full h-px bg-gray-100 mb-12 relative overflow-hidden">
+          <div className="absolute top-0 left-0 h-full w-32 bg-gradient-to-r from-purple-500 to-blue-500"></div>
+      </div>
+
+      {/* 2. Explore Specialists */}
+      <section className="max-w-7xl mx-auto px-6 py-12">
+        <div className="flex flex-col md:flex-row md:items-center justify-between mb-8">
+            <h2 className="text-2xl font-semibold tracking-tight text-gray-900">Explore Specialists</h2>
+        </div>
+
+        {/* Filter Tabs */}
+        <div className="flex gap-3 overflow-x-auto no-scrollbar pb-6">
+            <button className="px-5 py-2.5 bg-gray-100 text-gray-900 text-sm font-medium rounded-lg border border-transparent whitespace-nowrap">All Doctors</button>
+            {[
+                { icon: Heart, label: "Cardiologist" },
+                { icon: Bone, label: "Orthopedics" },
+                { icon: Activity, label: "Oncology" },
+                { icon: Brain, label: "Neurology" },
+                { icon: Baby, label: "Fertility & IVF" },
+            ].map((tab, i) => (
+                <button key={i} className="px-5 py-2.5 bg-white text-gray-600 text-sm font-medium rounded-lg border border-gray-200 hover:bg-gray-50 whitespace-nowrap flex items-center">
+                    <tab.icon className="w-4 h-4 mr-2 text-gray-400" />{tab.label}
+                </button>
+            ))}
+             <button className="px-5 py-2.5 bg-white text-gray-600 text-sm font-medium rounded-lg border border-gray-200 hover:bg-gray-50 whitespace-nowrap flex items-center">
+                <Filter className="w-4 h-4 mr-2" /> +10 More
+            </button>
+        </div>
+
+        {/* Doctors Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {[
+                { name: "Dr. Khoo Eng Huei", role: "Nephrology", img: "https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?auto=format&fit=crop&q=80&w=400", time: "Mon, Wed, Fri" },
+                { name: "Dr. Tan Wei Ching", role: "Cardiology", img: "https://images.unsplash.com/photo-1537368910025-700350fe46c7?auto=format&fit=crop&q=80&w=400", time: "Tue, Thu" },
+                { name: "Dr. Lim Chee Yeong", role: "Oncology", img: "https://images.unsplash.com/photo-1622253692010-333f2da6031d?auto=format&fit=crop&q=80&w=400", time: "Mon-Fri" },
+                { name: "Dr. Sarah Lee", role: "Pediatrics", img: "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?auto=format&fit=crop&q=80&w=400", time: "Sat" }
+            ].map((doc, i) => (
+                <div key={i} className="group border border-gray-200 rounded-xl overflow-hidden hover:shadow-md transition-all">
+                    <div className="bg-gray-50 aspect-[4/3] relative">
+                        <img src={doc.img} alt="Doctor" className="w-full h-full object-cover object-top mix-blend-multiply opacity-90 group-hover:scale-105 transition-transform duration-500" />
+                    </div>
+                    <div className="p-5">
+                        <h3 className="text-base font-semibold text-gray-900 mb-1">{doc.name}</h3>
+                        <div className="flex items-center text-xs text-gray-500 mb-3">
+                            <span className="w-2 h-2 rounded-full bg-red-500 mr-2"></span>
+                            {hospital.name}, {hospital.country}
+                        </div>
+                        <p className="text-xs font-medium text-gray-900 mb-1">{doc.role}</p>
+                        <p className="text-xs text-gray-400 mb-4 line-clamp-1">{doc.role}, Internal Medicine, Surgery</p>
+                        
+                        <div className="flex gap-2 text-xs text-gray-500 mb-2">
+                            <Clock className="w-3 h-3 mt-0.5" /> {doc.time} (09:00 - 16:00)
+                        </div>
+                        <div className="flex gap-2 text-xs text-gray-500 mb-4">
+                            <Languages className="w-3 h-3 mt-0.5" /> English, Local
+                        </div>
+
+                        <button className="w-full py-2.5 rounded-lg border border-gray-200 text-xs font-medium text-gray-700 hover:bg-gray-50 transition-colors">Overview</button>
+                    </div>
+                </div>
+            ))}
+        </div>
+
+        <div className="flex justify-center gap-2 mt-8">
+            <button className="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center hover:bg-gray-50"><ChevronLeft className="w-4 h-4 text-gray-500" /></button>
+            <button className="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center hover:bg-gray-50"><ChevronRight className="w-4 h-4 text-gray-500" /></button>
+        </div>
+      </section>
+
+      {/* 3. Facilities */}
+      <section className="max-w-7xl mx-auto px-6 py-16 bg-white">
+        <h2 className="text-2xl font-semibold text-center tracking-tight mb-12">Facilities</h2>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {[
+                { title: "Medical & Treatment Centres", img: "https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?auto=format&fit=crop&q=80&w=400", items: ["Accident & Emergency (A&E)", "Intensive Care Unit (ICU)", "Blood/Stem Cell Bio", "Cardiology Clinic"] },
+                { title: "Treatment Technology", img: "https://images.unsplash.com/photo-1581594693702-fbdc51b2763b?auto=format&fit=crop&q=80&w=400", items: ["Robotic Surgery System", "Varian TrueBeam Linear", "3T MRI Scan", "1024-Slice CT Scan"] },
+                { title: "Patient Care & Recovery", img: "https://images.unsplash.com/photo-1596541223130-5d31a73fb6c6?auto=format&fit=crop&q=80&w=400", items: ["Inpatient Rooms", "Maternity Rooms", "Paediatric Care Services", "Rehabilitation & Physio"] },
+                { title: "Amenities & Support Services", img: "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&q=80&w=400", items: ["Pharmacy", "Food & Beverage", "Laboratory Services", "Billing & Insurance"] }
+            ].map((fac, idx) => (
+                <div key={idx}>
+                    <div className="aspect-video rounded-lg overflow-hidden mb-4 bg-gray-100 relative group">
+                        <img src={fac.img} alt={fac.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                    </div>
+                    <h3 className="text-sm font-semibold mb-3">{fac.title}</h3>
+                    <ul className="space-y-2">
+                        {fac.items.map((item, i) => (
+                            <li key={i} className="flex items-start text-xs text-gray-500">
+                                <CheckCircle className="w-3 h-3 text-gray-400 mr-2 mt-0.5" /> {item}
+                            </li>
+                        ))}
+                        <li className="flex items-start text-xs text-gray-400 ml-5">+{Math.floor(Math.random() * 10) + 5} More</li>
+                    </ul>
+                </div>
+            ))}
+        </div>
+
+        <div className="flex justify-center mt-10">
+            <button className="inline-flex items-center px-6 py-2.5 border border-gray-200 shadow-sm text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50">
+                View All Facilities
+                <ChevronRight className="w-4 h-4 ml-2" />
+            </button>
+        </div>
+      </section>
+
+      {/* 4. Treatment Package */}
+      <section className="max-w-7xl mx-auto px-6 py-16 bg-gray-50/50">
+        <div className="text-center max-w-2xl mx-auto mb-12">
+             <h2 className="text-2xl font-semibold tracking-tight text-gray-900 mb-3">Treatment Package</h2>
+             <p className="text-sm text-gray-500">Discover our curated medical packages with world-class supervision, advanced technology, and personalized treatments.</p>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {[
+                "https://images.unsplash.com/photo-1579684385127-1ef15d508118?auto=format&fit=crop&q=80&w=400",
+                "https://images.unsplash.com/photo-1530497610245-94d3c16cda28?auto=format&fit=crop&q=80&w=400",
+                "https://images.unsplash.com/photo-1505751172876-fa1923c5c528?auto=format&fit=crop&q=80&w=400",
+                "https://images.unsplash.com/photo-1576765608535-5f04d1e3f289?auto=format&fit=crop&q=80&w=400"
+            ].map((img, i) => (
+                <div key={i} className="bg-white rounded-xl overflow-hidden border border-gray-100 hover:shadow-lg transition-all duration-300 group">
+                    <div className="h-40 overflow-hidden relative">
+                        <img src={img} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                    </div>
+                    <div className="p-5">
+                        <h3 className="text-sm font-semibold mb-1">Basic Medical Check-Up</h3>
+                        <p className="text-xs text-gray-500 mb-3">Medical Check-Up</p>
+                        <div className="flex items-center gap-2 mb-3">
+                            <div className="w-4 h-4 rounded-full bg-lime-400 flex items-center justify-center text-[8px] text-white">✓</div>
+                            <span className="text-[10px] text-gray-500 uppercase tracking-wide truncate">{hospital.name}</span>
+                        </div>
+                        <p className="text-sm font-medium text-gray-900 mb-4">$450</p>
+                        <button className="w-full py-2 rounded border border-gray-200 text-xs font-medium hover:bg-gray-50 transition-colors">View Detail</button>
+                    </div>
+                </div>
+            ))}
+        </div>
+
+        <div className="flex justify-center mt-12">
+            <button className="px-8 py-3 bg-gray-900 text-white rounded-lg text-xs font-medium hover:bg-gray-800 transition-colors shadow-lg shadow-gray-900/10">View All Packages</button>
+        </div>
+      </section>
+
+      {/* 5. Backed by experts */}
+      <section className="max-w-7xl mx-auto px-6 py-20">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
+            <div className="col-span-1 py-4">
+                <h2 className="text-3xl font-semibold tracking-tight text-gray-900 mb-6 leading-tight">Backed by the country's leading health experts</h2>
+                <p className="text-base text-gray-500 leading-relaxed mb-6">
+                    At {hospital.name}, our mission is to provide the best of clinical care. Top medical experts across disciplines are part of our extensive health network. With their broad range of achievements, clinical efficiency, and caring touch, rest assured, you are in the right hands.
+                </p>
+            </div>
+
+            <div className="col-span-1 lg:col-span-2 overflow-hidden">
+                <div className="flex gap-6 overflow-x-auto no-scrollbar pb-6">
+                    {[
+                        { name: "Rachel Yew", role: "Chief Executive Officer", img: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=400", uni: "University of Malaysia", exp: "15 Years" },
+                        { name: "Dr. Kelvin Ching", role: "Chief Medical Officer", img: "https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&q=80&w=400", uni: "University of Glasgow", exp: "20 Years" },
+                        { name: "Dr. Kamal Amzan", role: "Chief Operations Officer", img: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&q=80&w=400", uni: "University of Malaya", exp: "MBA Healthcare" }
+                    ].map((exec, i) => (
+                        <div key={i} className="min-w-[280px] md:min-w-[320px]">
+                            <div className="h-48 overflow-hidden rounded-t-xl bg-gray-100">
+                                <img src={exec.img} className="w-full h-full object-cover object-top hover:scale-105 transition-transform duration-500" />
+                            </div>
+                            <div className="bg-gray-50 p-6 rounded-b-xl border-x border-b border-gray-100">
+                                <h3 className="font-semibold text-gray-900">{exec.name}</h3>
+                                <p className="text-xs text-gray-500 mb-4">{exec.role}</p>
+                                <p className="text-xs text-gray-500 leading-relaxed mb-4 line-clamp-3">Leading with extensive experience to ensure the highest operational and clinical standards.</p>
+                                <div className="flex flex-col gap-1 text-[10px] text-gray-500">
+                                    <span className="flex items-center"><GraduationCap className="w-3 h-3 mr-1" /> {exec.uni}</span>
+                                    <span className="flex items-center"><Award className="w-3 h-3 mr-1" /> {exec.exp}</span>
+                                </div>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+                 <div className="flex justify-end gap-2 mt-4">
+                    <button className="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center hover:bg-gray-50"><ChevronLeft className="w-4 h-4 text-gray-500" /></button>
+                    <button className="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center hover:bg-gray-50"><ChevronRight className="w-4 h-4 text-gray-500" /></button>
+                </div>
+            </div>
+        </div>
+      </section>
+
+      {/* 6. FAQ */}
+      <section className="max-w-7xl mx-auto px-6 py-12 border-t border-gray-100">
+        <h2 className="text-2xl font-semibold tracking-tight text-gray-900 mb-8">Frequently Asked Question</h2>
+        
+        <div className="space-y-4">
+            {[
+                "Is this hospital provider decent standard?",
+                "How does Medifly AI works?",
+                "Can Medifly AI help me to hire medical trip?",
+                "How do I book a for treatment?"
+            ].map((q, i) => (
+                <div key={i} className="border-b border-gray-100 pb-4">
+                    <button 
+                        onClick={() => setOpenFaqIndex(openFaqIndex === i ? null : i)}
+                        className="flex items-center justify-between w-full text-left focus:outline-none group"
+                    >
+                        <span className={`text-sm font-medium ${openFaqIndex === i ? 'text-gray-900' : 'text-gray-700 group-hover:text-gray-900'}`}>{q}</span>
+                        {openFaqIndex === i ? <ChevronUp className="w-4 h-4 text-gray-400" /> : <ChevronDown className="w-4 h-4 text-gray-400" />}
+                    </button>
+                    {openFaqIndex === i && (
+                        <div className="mt-3 animate-in slide-in-from-top-1 duration-200">
+                             <p className="text-sm text-gray-500 leading-relaxed pr-8">Absolutely. Medifly AI assists you through every step of your medical journey — from finding the right hospital and doctor to estimating costs, planning your stay, and arranging travel details. We create medical trips around, smarten, and stress-free.</p>
+                        </div>
+                    )}
+                </div>
+            ))}
+        </div>
+      </section>
+
+      {/* 7. Related Hospitals */}
+      <section className="max-w-7xl mx-auto px-6 py-16">
+        <h2 className="text-2xl font-semibold text-center tracking-tight mb-12">Hospitals You May Also Like</h2>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {relatedHospitals.map((related, i) => (
+                <div key={i} className="border border-gray-200 rounded-xl bg-white overflow-hidden flex flex-col hover:shadow-lg transition-all duration-300 group cursor-pointer">
+                    <div className="h-40 bg-gray-200 relative">
+                        <img src={related.imageUrl} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                        <div className="absolute top-2 right-2 bg-black/50 text-white text-[10px] px-2 py-1 rounded backdrop-blur-sm">{related.rating} ★ ({related.reviewCount})</div>
+                    </div>
+                    <div className="p-4 flex-1 flex flex-col">
+                        <h3 className="font-semibold text-sm mb-1 truncate">{related.name}</h3>
+                        <p className="text-xs text-gray-500 mb-3 flex items-center"><MapPin className="w-3 h-3 mr-1" /> {related.location}, {related.country}</p>
+                        {related.accreditation && related.accreditation.length > 0 && (
+                            <div className="flex items-center gap-1 text-[10px] text-lime-600 bg-lime-50 px-2 py-1 rounded w-fit mb-3 border border-lime-100">
+                                <CheckCircle className="w-3 h-3" /> {related.accreditation[0]} Accredited
+                            </div>
+                        )}
+                        <p className="text-xs text-gray-400 line-clamp-2 mb-4">{related.description}</p>
+                        <div className="mt-auto pt-3 border-t border-gray-100 flex gap-2 text-[10px] text-gray-500">
+                            <span className="flex items-center"><Languages className="w-3 h-3 mr-1" /> English, Local</span>
+                            <span className="flex items-center ml-auto"><Bed className="w-3 h-3 mr-1" /> 200+ Beds</span>
+                        </div>
+                        <button className="mt-4 w-full py-2 border border-gray-200 rounded text-xs font-medium hover:bg-gray-50 transition-colors">Hospital Overview</button>
+                    </div>
+                </div>
+            ))}
+            {relatedHospitals.length === 0 && (
+                <div className="col-span-full text-center text-gray-400 py-10">No other hospitals in this region available yet.</div>
+            )}
+        </div>
+      </section>
       
     </div>
   );

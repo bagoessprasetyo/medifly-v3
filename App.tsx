@@ -4,16 +4,16 @@ import { Hero } from './components/Hero';
 import { ChatInterface } from './components/ChatInterface';
 import { Marketplace } from './components/Marketplace';
 import { HospitalPage } from './components/HospitalPage';
-// import { DoctorsPage } from './components/DoctorsPage'; // Import new page
+import { DoctorsPage } from './components/DoctorsPage'; 
+import { Layout } from './components/Layout'; // Import new Layout
 import { FilterState, Hospital, ChatSession, Message } from './types';
-import { ArrowLeft, MessageSquare, Sparkles } from 'lucide-react';
+import { ArrowLeft, MessageSquare } from 'lucide-react';
 import { HOSPITALS, createSlug } from './constants';
-import { DoctorsPage } from './components/DoctorsPage';
 
 const App: React.FC = () => {
   const [page, setPage] = useState<'home' | 'marketplace' | 'hospital-page' | 'doctors'>('home');
   const [isChatOpen, setIsChatOpen] = useState(false);
-  const [isDeepFocusMode, setIsDeepFocusMode] = useState(false); // New State for Deep Focus
+  const [isDeepFocusMode, setIsDeepFocusMode] = useState(false); 
   
   // -- Language State --
   const [selectedLanguage, setSelectedLanguage] = useState('English');
@@ -245,17 +245,14 @@ const App: React.FC = () => {
       window.history.pushState(null, '', '/');
   }
 
-  if (page === 'home') {
-    return (
-      <Hero 
-        onQuickSearch={handleQuickSearch} 
-        selectedLanguage={selectedLanguage}
-        onLanguageChange={setSelectedLanguage}
-        onNavigateToMarketplace={navigateToMarketplace}
-        onNavigateToDoctors={navigateToDoctors}
-      />
-    );
-  }
+  // Common Layout Props
+  const layoutProps = {
+    onNavigateToHome: navigateToHome,
+    onNavigateToMarketplace: navigateToMarketplace,
+    onNavigateToDoctors: navigateToDoctors,
+    selectedLanguage,
+    onLanguageChange: setSelectedLanguage
+  };
 
   return (
     <div className="h-[100dvh] w-screen overflow-hidden flex bg-white relative">
@@ -316,18 +313,15 @@ const App: React.FC = () => {
         </div>
       </div>
 
-      {/* Right Panel: Marketplace, Hospital Page or Doctors */}
-      {/* If Deep Focus Mode is active, hide this panel completely to give Chat full width */}
+      {/* Right Panel: Main Content with Layout */}
       <div 
         id="main-content-area"
         className={`
-            flex-1 h-full relative transition-all duration-500 bg-white 
-            ${page === 'hospital-page' || page === 'doctors' || page === 'marketplace' ? 'overflow-y-auto' : ''}
+            flex-1 h-full relative transition-all duration-500 bg-white overflow-y-auto
             ${isDeepFocusMode ? 'hidden w-0 opacity-0' : ''} 
         `}
       >
-         
-         {/* Mobile Header / Back Button Area - Only show if NOT deep page OR on marketplace */}
+         {/* Mobile Back Button Area - Only show if NOT deep page OR on marketplace */}
          <div className={`md:hidden absolute top-4 left-4 z-20 flex gap-2 ${page === 'hospital-page' || page === 'doctors' || page === 'marketplace' ? 'hidden' : ''}`}>
              <button onClick={() => {
                  setPage('home');
@@ -341,29 +335,41 @@ const App: React.FC = () => {
              )}
          </div>
 
-         {page === 'hospital-page' && viewedHospital ? (
-            <HospitalPage 
-               hospital={viewedHospital} 
-               onBack={handleBackFromHospital} 
-               onNavigateToHospitals={navigateToMarketplace}
-               onNavigateToDoctors={navigateToDoctors}
-            />
-         ) : page === 'doctors' ? (
-             <DoctorsPage 
-                onBack={() => setPage('home')}
-                onNavigateToHospitals={navigateToMarketplace}
-                onNavigateToDoctors={() => {}} // Already here
-             />
-         ) : (
-            <Marketplace 
-              filters={filters} 
-              onClearFilters={handleClearFilters}
-              onViewHospitalPage={handleNavigateToHospital}
-              onUpdateFilters={handleApplyFilters}
-              onNavigateToDoctors={navigateToDoctors}
-              onNavigateToHome={navigateToHome}
-            />
-         )}
+         {/* Layout Wrapper applying Navbar and Footer to all pages */}
+         <Layout {...layoutProps}>
+            {page === 'home' && (
+                <Hero 
+                    onQuickSearch={handleQuickSearch} 
+                    onNavigateToMarketplace={navigateToMarketplace}
+                />
+            )}
+
+            {page === 'marketplace' && (
+                <Marketplace 
+                    filters={filters} 
+                    onClearFilters={handleClearFilters}
+                    onViewHospitalPage={handleNavigateToHospital}
+                    onUpdateFilters={handleApplyFilters}
+                />
+            )}
+
+            {page === 'hospital-page' && viewedHospital && (
+                <HospitalPage 
+                    hospital={viewedHospital} 
+                    onBack={handleBackFromHospital} 
+                    onNavigateToHospitals={navigateToMarketplace}
+                    onNavigateToDoctors={navigateToDoctors}
+                />
+            )}
+
+            {page === 'doctors' && (
+                <DoctorsPage 
+                    onBack={() => setPage('home')}
+                    onNavigateToHospitals={navigateToMarketplace}
+                    onNavigateToDoctors={() => {}} // Already here
+                />
+            )}
+         </Layout>
       </div>
     </div>
   );

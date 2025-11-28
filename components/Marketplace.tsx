@@ -1,6 +1,6 @@
 
 import React, { useState, useMemo, useEffect } from 'react';
-import { X, Search, Map, List, BriefcaseMedical, MapPin, Star, MessageSquare, Check, Building2, Stethoscope, Package, Users } from 'lucide-react';
+import { X, Search, Map, List, BriefcaseMedical, MapPin, Star, MessageSquare, Check, ChevronDown } from 'lucide-react';
 import { FilterState, Hospital, TravelEstimate } from '../types';
 import { HOSPITALS, getCoordinatesForCity } from '../constants';
 import { HospitalCard } from './HospitalCard';
@@ -14,8 +14,6 @@ interface MarketplaceProps {
   onClearFilters: () => void;
   onViewHospitalPage: (hospital: Hospital) => void;
   onUpdateFilters?: (filters: FilterState) => void;
-  onNavigateToDoctors?: () => void;
-  onNavigateToHome?: () => void;
 }
 
 export const Marketplace: React.FC<MarketplaceProps> = ({ 
@@ -23,8 +21,6 @@ export const Marketplace: React.FC<MarketplaceProps> = ({
   onClearFilters, 
   onViewHospitalPage, 
   onUpdateFilters,
-  onNavigateToDoctors,
-  onNavigateToHome
 }) => {
   const [viewMode, setViewMode] = useState<'grid' | 'map'>('grid');
   const [sheetHospital, setSheetHospital] = useState<Hospital | null>(null);
@@ -40,6 +36,9 @@ export const Marketplace: React.FC<MarketplaceProps> = ({
   
   // Travel Estimates
   const [travelEstimates, setTravelEstimates] = useState<Record<string, TravelEstimate>>({});
+
+  // Pagination State
+  const [visibleCount, setVisibleCount] = useState(6);
 
   // Sync props to state
   useEffect(() => {
@@ -88,6 +87,9 @@ export const Marketplace: React.FC<MarketplaceProps> = ({
     });
   }, [specialtyInput, locationInput, activePrice, activeAccreditation, minRating]);
 
+  // Visible Items
+  const displayedHospitals = filteredHospitals.slice(0, visibleCount);
+
   const togglePrice = (price: string) => {
       const newPrices = activePrice.includes(price) ? activePrice.filter(p => p !== price) : [...activePrice, price];
       setActivePrice(newPrices);
@@ -116,54 +118,17 @@ export const Marketplace: React.FC<MarketplaceProps> = ({
       });
   };
 
+  const loadMore = () => {
+      setVisibleCount(prev => prev + 6);
+  };
+
   return (
     <div className="bg-white text-gray-900 font-sans min-h-screen flex flex-col">
-        
-        {/* Navbar */}
-        <nav className="border-b border-gray-100 sticky top-0 bg-white/95 backdrop-blur-sm z-50">
-            <div className="max-w-[1400px] mx-auto px-6 h-20 flex items-center justify-between">
-                {/* Logo */}
-                <div className="flex items-center gap-2 cursor-pointer" onClick={onNavigateToHome}>
-                    <div className="bg-black text-white p-1.5 rounded-lg">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M12 2L2 7L12 12L22 7L12 2Z" />
-                            <path d="M2 17L12 22L22 17" />
-                            <path d="M2 12L12 17L22 12" />
-                        </svg>
-                    </div>
-                    <span className="text-xl font-semibold tracking-tight">Medifly</span>
-                </div>
-
-                {/* Nav */}
-                <div className="hidden md:flex items-center gap-8">
-                    <button className="flex items-center gap-2 text-sm font-medium text-black transition-colors">
-                        <Building2 className="w-4 h-4" /> Hospitals
-                    </button>
-                    <button onClick={onNavigateToDoctors} className="flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-black transition-colors">
-                        <Stethoscope className="w-4 h-4" /> Doctors
-                    </button>
-                    <button className="flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-black transition-colors">
-                        <Package className="w-4 h-4" /> Packages
-                    </button>
-                    <button className="flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-black transition-colors">
-                        <Users className="w-4 h-4" /> About Us
-                    </button>
-                </div>
-
-                {/* CTA */}
-                <div>
-                    <button className="bg-black text-white text-sm font-medium px-5 py-2.5 rounded-full hover:bg-gray-800 transition-colors">
-                        Get Started
-                    </button>
-                </div>
-            </div>
-        </nav>
-
         {/* Main Layout Container */}
-        <div className="max-w-[1600px] mx-auto w-full px-4 md:px-6 pt-6 md:pt-8 pb-20 flex flex-col lg:flex-row gap-8 lg:gap-12 flex-1">
+        <div className="max-w-[1600px] mx-auto w-full px-4 md:px-6 pt-6 md:pt-8 pb-20 flex flex-col lg:flex-row gap-8 lg:gap-12 flex-1 relative">
             
-            {/* Sidebar Filters (Desktop) */}
-            <aside className="w-full lg:w-64 flex-shrink-0 space-y-8 hidden lg:block">
+            {/* Sidebar Filters (Desktop) - Added Sticky */}
+            <aside className="w-full lg:w-64 flex-shrink-0 space-y-8 hidden lg:block sticky top-24 h-fit">
                 <div>
                     <h2 className="text-lg font-semibold tracking-tight mb-6 text-gray-900">Filters</h2>
                     
@@ -363,22 +328,35 @@ export const Marketplace: React.FC<MarketplaceProps> = ({
                 {/* Content View */}
                 <div className="flex-1 relative">
                     {viewMode === 'grid' ? (
-                        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 pb-20">
-                            {filteredHospitals.map(hospital => (
-                                <HospitalCard 
-                                    key={hospital.id} 
-                                    hospital={hospital} 
-                                    onViewDetails={(h) => setSheetHospital(h)}
-                                    travelEstimate={travelEstimates[hospital.id]}
-                                />
-                            ))}
-                            {filteredHospitals.length === 0 && (
-                                <div className="col-span-full py-20 text-center text-gray-400">
-                                    <p>No hospitals found matching your criteria.</p>
-                                    <button onClick={onClearFilters} className="mt-4 text-blue-600 hover:underline">Clear all filters</button>
+                        <>
+                            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 pb-8">
+                                {displayedHospitals.map(hospital => (
+                                    <HospitalCard 
+                                        key={hospital.id} 
+                                        hospital={hospital} 
+                                        onViewDetails={(h) => setSheetHospital(h)}
+                                        travelEstimate={travelEstimates[hospital.id]}
+                                    />
+                                ))}
+                                {filteredHospitals.length === 0 && (
+                                    <div className="col-span-full py-20 text-center text-gray-400">
+                                        <p>No hospitals found matching your criteria.</p>
+                                        <button onClick={onClearFilters} className="mt-4 text-blue-600 hover:underline">Clear all filters</button>
+                                    </div>
+                                )}
+                            </div>
+                            {/* Load More Button */}
+                            {visibleCount < filteredHospitals.length && (
+                                <div className="flex justify-center pb-20">
+                                    <button 
+                                        onClick={loadMore}
+                                        className="flex items-center gap-2 px-6 py-3 rounded-full border border-gray-300 text-gray-700 font-medium hover:bg-gray-50 hover:border-gray-400 transition-all active:scale-95 bg-white shadow-sm"
+                                    >
+                                        Load More Results <ChevronDown className="w-4 h-4" />
+                                    </button>
                                 </div>
                             )}
-                        </div>
+                        </>
                     ) : (
                         <div className="h-[600px] w-full rounded-xl overflow-hidden border border-gray-200">
                              <MapboxMap 
