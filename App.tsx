@@ -408,7 +408,7 @@ const App: React.FC = () => {
                 <MessageSquare className="w-5 h-5" />
                 <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-[#B2D7FF] rounded-full border-2 border-slate-900 animate-pulse" />
             </div>
-            <span className="font-semibold text-sm">Ask Concierge</span>
+            <span className="font-semibold text-sm">Ask Aria</span>
          </button>
       </div>
       )}

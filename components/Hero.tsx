@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Search, Heart, User, Search as SearchIcon, ArrowRight, MessageSquare, List, Sparkles, ShieldCheck, Map, Navigation, Star } from 'lucide-react';
+import { Search, Heart, User, Search as SearchIcon, ArrowRight, MessageSquare, List, Sparkles, ShieldCheck, Map, Navigation, Star, X } from 'lucide-react';
 
 interface HeroProps {
   onQuickSearch: (query: string, origin?: string, location?: { lat: number; lng: number }) => void;
@@ -9,7 +9,7 @@ interface HeroProps {
 
 const SPECIALTIES = [
   { name: 'Cardiology', icon: <Heart className="w-6 h-6" /> },
-  { name: 'Orthopedics', icon: <div className="w-6 h-6 flex items-center justify-center font-bold text-xl">🦴</div> }, // Fallback icon
+  { name: 'Orthopedics', icon: <div className="w-6 h-6 flex items-center justify-center font-bold text-xl">🦴</div> },
   { name: 'Neurology', icon: <div className="w-6 h-6 flex items-center justify-center font-bold text-xl">🧠</div> },
   { name: 'Fertility', icon: <div className="w-6 h-6 flex items-center justify-center font-bold text-xl">👶</div> },
   { name: 'Oncology', icon: <div className="w-6 h-6 flex items-center justify-center font-bold text-xl">🔬</div> },
@@ -35,6 +35,9 @@ export const Hero: React.FC<HeroProps> = ({ onQuickSearch, onNavigateToMarketpla
   const [destination, setDestination] = useState('');
   const [isLoadingLocation, setIsLoadingLocation] = useState(false);
   const [userCoords, setUserCoords] = useState<{ lat: number; lng: number } | undefined>(undefined);
+  
+  // Mobile Modal State
+  const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
 
   const handleUseLocation = () => {
     if (!navigator.geolocation) {
@@ -55,45 +58,38 @@ export const Hero: React.FC<HeroProps> = ({ onQuickSearch, onNavigateToMarketpla
       },
       (error) => {
         console.error("Geolocation error:", error);
-        
-        // Proper error handling
         let msg = "Unable to retrieve location.";
         if (error.code === 1) msg = "Location permission denied.";
         else if (error.code === 2) msg = "Location unavailable.";
         else if (error.code === 3) msg = "Location request timed out.";
-        
         alert(`${msg} Please enter your city manually.`);
         setIsLoadingLocation(false);
       },
-      { 
-        enableHighAccuracy: true, 
-        timeout: 8000, 
-        maximumAge: 0 
-      }
+      { enableHighAccuracy: true, timeout: 8000, maximumAge: 0 }
     );
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
     if (treatment.trim()) {
         const parts = [];
         parts.push(`I am looking for ${treatment}`);
         if (destination.trim()) parts.push(`in ${destination.trim()}`);
         if (origin.trim()) parts.push(`traveling from ${origin.trim()}`);
         
-        // Explicitly instruct AI to consider distance if origin is provided
         if (origin.trim()) {
             parts.push(`\n\n[System Note: The user is located in ${origin.trim()}. Please explicitly calculate/estimate the flight time and distance range to potential destinations. If multiple destinations offer similar quality for ${treatment}, prioritize or highlight those with shorter travel distance/time. Mention the estimated flight duration in your response.]`);
         }
         
         onQuickSearch(parts.join(' '), origin.trim(), userCoords);
+        setIsSearchModalOpen(false); // Close modal on mobile
     }
   };
 
   return (
-    <div className="pt-10 pb-20 max-w-[1760px] mx-auto px-6 md:px-12">
+    <div className="pt-6 md:pt-10 pb-20 max-w-[1760px] mx-auto px-6 md:px-12">
         
-        {/* Search Section - Centered Layout */}
+        {/* Search Section */}
         <div className="flex flex-col items-center justify-center mb-12 text-center">
            
            <h1 className="text-4xl md:text-6xl font-extrabold text-slate-900 tracking-tight mb-6 max-w-4xl leading-[1.1]">
@@ -101,14 +97,14 @@ export const Hero: React.FC<HeroProps> = ({ onQuickSearch, onNavigateToMarketpla
               <span className="text-[#6495ED]">Anywhere in Southeast Asia.</span>
            </h1>
            
-           <p className="text-lg text-slate-500 max-w-2xl mb-10 leading-relaxed">
+           <p className="text-lg text-slate-500 max-w-2xl mb-10 leading-relaxed hidden md:block">
               Discover trusted hospitals, doctors, and treatments — guided by an AI concierge who reasons with you, not for you.
            </p>
 
-           {/* The Big Search Pill - Now with 3 sections */}
-           <div className="w-full max-w-4xl bg-white rounded-full border border-slate-200 shadow-[0_6px_16px_rgba(0,0,0,0.08)] hover:shadow-[0_6px_20px_rgba(0,0,0,0.12)] transition-all p-0 flex items-center divide-x divide-slate-100 relative h-[66px] z-20">
+           {/* DESKTOP: The Big Search Pill */}
+           <div className="hidden md:flex w-full max-w-4xl bg-white rounded-full border border-slate-200 shadow-[0_6px_16px_rgba(0,0,0,0.08)] hover:shadow-[0_6px_20px_rgba(0,0,0,0.12)] transition-all p-0 items-center divide-x divide-slate-100 relative h-[66px] z-20">
                
-               {/* Input 1: Treatment (Semantic) */}
+               {/* Input 1: Treatment */}
                <div className="flex-[1.5] px-8 py-3 text-left hover:bg-[#F4F0EE] rounded-l-full cursor-pointer group relative h-full flex flex-col justify-center transition-colors">
                    <label className="block text-xs font-bold text-slate-800 tracking-wide mb-0.5">Treatment</label>
                    <input 
@@ -122,7 +118,7 @@ export const Hero: React.FC<HeroProps> = ({ onQuickSearch, onNavigateToMarketpla
                </div>
 
                {/* Input 2: Fly From */}
-               <div className="flex-1 px-6 py-3 text-left hover:bg-[#F4F0EE] cursor-pointer group hidden sm:flex flex-col justify-center h-full transition-colors relative">
+               <div className="flex-1 px-6 py-3 text-left hover:bg-[#F4F0EE] cursor-pointer group flex flex-col justify-center h-full transition-colors relative">
                    <div className="flex justify-between items-center">
                         <label className="block text-xs font-bold text-slate-800 tracking-wide mb-0.5">Fly From</label>
                         <button 
@@ -145,7 +141,7 @@ export const Hero: React.FC<HeroProps> = ({ onQuickSearch, onNavigateToMarketpla
                </div>
 
                {/* Input 3: Destination */}
-               <div className="flex-1 px-6 py-3 text-left hover:bg-[#F4F0EE] cursor-pointer group hidden md:flex flex-col justify-center h-full transition-colors relative">
+               <div className="flex-1 px-6 py-3 text-left hover:bg-[#F4F0EE] cursor-pointer group flex flex-col justify-center h-full transition-colors relative">
                    <label className="block text-xs font-bold text-slate-800 tracking-wide mb-0.5">Destination</label>
                    <input 
                       type="text" 
@@ -168,29 +164,133 @@ export const Hero: React.FC<HeroProps> = ({ onQuickSearch, onNavigateToMarketpla
                </div>
            </div>
 
+           {/* MOBILE: Fake Search Pill Trigger */}
+           <button 
+              onClick={() => setIsSearchModalOpen(true)}
+              className="md:hidden w-full bg-white rounded-full shadow-[0_4px_12px_rgba(0,0,0,0.08)] border border-slate-200 py-3 px-5 flex items-center gap-4 transition-transform active:scale-95 text-left"
+           >
+              <div className="w-10 h-10 rounded-full bg-[#F4F0EE] flex items-center justify-center text-slate-700 shrink-0">
+                  <SearchIcon className="w-5 h-5" />
+              </div>
+              <div className="flex-1 min-w-0">
+                  <div className="font-bold text-slate-900 text-sm truncate">Where to?</div>
+                  <div className="text-xs text-slate-500 truncate flex items-center gap-1">
+                      <span>Anywhere</span>
+                      <span className="text-[8px]">•</span>
+                      <span>Any treatment</span>
+                  </div>
+              </div>
+              <div className="w-8 h-8 rounded-full border border-slate-100 flex items-center justify-center">
+                  <List className="w-4 h-4 text-slate-600" />
+              </div>
+           </button>
+
            {/* Categories Strip */}
-           <div className="mt-12 w-full border-t border-slate-100 pt-8">
-               <div className="flex items-center justify-start md:justify-center gap-10 overflow-x-auto w-full no-scrollbar pb-4 px-4">
+           <div className="mt-8 md:mt-12 w-full border-t border-slate-100 pt-6 md:pt-8">
+               <div className="flex items-center justify-start md:justify-center gap-8 md:gap-10 overflow-x-auto w-full no-scrollbar pb-4 px-4">
                    {SPECIALTIES.map((spec) => (
                       <button 
                         key={spec.name}
                         onClick={() => onQuickSearch(`Show me ${spec.name} options`, origin.trim(), userCoords)}
-                        className="flex flex-col items-center gap-3 group cursor-pointer min-w-fit opacity-60 hover:opacity-100 transition-all border-b-2 border-transparent hover:border-[#B2D7FF] pb-2"
+                        className="flex flex-col items-center gap-2 md:gap-3 group cursor-pointer min-w-fit opacity-70 hover:opacity-100 transition-all border-b-2 border-transparent hover:border-[#B2D7FF] pb-2"
                       >
                          <div className="text-slate-500 group-hover:text-slate-900 group-hover:scale-105 transition-all duration-200">
                             {spec.icon}
                          </div>
-                         <span className="text-xs font-semibold text-slate-600 group-hover:text-slate-900 whitespace-nowrap">{spec.name}</span>
+                         <span className="text-[10px] md:text-xs font-semibold text-slate-600 group-hover:text-slate-900 whitespace-nowrap">{spec.name}</span>
                       </button>
                    ))}
                </div>
            </div>
         </div>
 
-        {/* How Medifly Works - 4 Columns */}
-        <section className="mt-20 mb-20">
+        {/* MOBILE SEARCH MODAL (Full Screen / Bottom Sheet style) */}
+        {isSearchModalOpen && (
+            <div className="fixed inset-0 z-[60] bg-slate-50 md:hidden flex flex-col animate-in slide-in-from-bottom-5 duration-300">
+                {/* Header */}
+                <div className="bg-white px-4 py-4 flex items-center gap-4 shadow-sm relative z-10">
+                    <button onClick={() => setIsSearchModalOpen(false)} className="p-2 rounded-full border border-slate-200 hover:bg-slate-50 transition-colors">
+                        <X className="w-5 h-5 text-slate-700" />
+                    </button>
+                    <h2 className="text-lg font-bold text-slate-900 flex-1 text-center pr-10">Find Care</h2>
+                </div>
+
+                {/* Body - Stacked Inputs */}
+                <div className="flex-1 p-4 overflow-y-auto">
+                    <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 space-y-4">
+                        
+                        {/* Input 1 */}
+                        <div className="p-3 bg-slate-50 rounded-xl border border-slate-100 focus-within:border-[#B2D7FF] focus-within:ring-2 focus-within:ring-[#B2D7FF]/20 transition-all">
+                            <label className="text-xs font-bold text-slate-500 uppercase tracking-wide block mb-1">Treatment</label>
+                            <input 
+                                type="text" 
+                                placeholder="Surgery, Check-up, IVF..." 
+                                value={treatment}
+                                onChange={(e) => setTreatment(e.target.value)}
+                                className="w-full bg-transparent border-none p-0 text-lg font-semibold text-slate-900 placeholder:text-slate-300 focus:ring-0 outline-none"
+                                autoFocus
+                            />
+                        </div>
+
+                        {/* Input 2 */}
+                        <div className="p-3 bg-slate-50 rounded-xl border border-slate-100 focus-within:border-[#B2D7FF] focus-within:ring-2 focus-within:ring-[#B2D7FF]/20 transition-all">
+                            <div className="flex justify-between items-center mb-1">
+                                <label className="text-xs font-bold text-slate-500 uppercase tracking-wide">Fly From</label>
+                                <button 
+                                    onClick={handleUseLocation}
+                                    className="text-xs font-semibold text-[#6495ED] flex items-center gap-1"
+                                >
+                                    {isLoadingLocation ? 'Locating...' : 'Use Current Location'}
+                                    <Navigation className="w-3 h-3" />
+                                </button>
+                            </div>
+                            <input 
+                                type="text" 
+                                placeholder="Your City" 
+                                value={origin}
+                                onChange={(e) => setOrigin(e.target.value)}
+                                className="w-full bg-transparent border-none p-0 text-lg font-semibold text-slate-900 placeholder:text-slate-300 focus:ring-0 outline-none"
+                            />
+                        </div>
+
+                        {/* Input 3 */}
+                        <div className="p-3 bg-slate-50 rounded-xl border border-slate-100 focus-within:border-[#B2D7FF] focus-within:ring-2 focus-within:ring-[#B2D7FF]/20 transition-all">
+                            <label className="text-xs font-bold text-slate-500 uppercase tracking-wide block mb-1">Destination</label>
+                            <input 
+                                type="text" 
+                                placeholder="Anywhere" 
+                                value={destination}
+                                onChange={(e) => setDestination(e.target.value)}
+                                className="w-full bg-transparent border-none p-0 text-lg font-semibold text-slate-900 placeholder:text-slate-300 focus:ring-0 outline-none"
+                            />
+                        </div>
+                    </div>
+                </div>
+
+                {/* Footer Actions */}
+                <div className="p-4 bg-white border-t border-slate-100 flex items-center justify-between">
+                    <button 
+                        onClick={() => { setTreatment(''); setOrigin(''); setDestination(''); }}
+                        className="text-slate-500 font-semibold underline decoration-slate-300 text-sm px-4"
+                    >
+                        Clear all
+                    </button>
+                    <button 
+                        onClick={() => handleSubmit()}
+                        className="bg-[#E5484D] text-white px-8 py-3.5 rounded-xl font-bold text-base shadow-lg flex items-center gap-2 active:scale-95 transition-transform"
+                    >
+                        <SearchIcon className="w-5 h-5 stroke-[2.5px]" />
+                        Search
+                    </button>
+                </div>
+            </div>
+        )}
+
+        {/* How Medifly Works */}
+        <section className="mt-16 md:mt-20 mb-20">
             <h2 className="text-2xl font-bold text-slate-900 mb-10 text-center md:text-left">How Medifly Works</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                {/* ... (Existing Items) ... */}
                 <div className="flex flex-col gap-4">
                     <div className="w-12 h-12 bg-[#F4F0EE] rounded-xl flex items-center justify-center text-slate-700 mb-2">
                         <MessageSquare className="w-6 h-6" />
@@ -222,7 +322,9 @@ export const Hero: React.FC<HeroProps> = ({ onQuickSearch, onNavigateToMarketpla
             </div>
         </section>
 
-        {/* Why People Love Medifly - Soft Brown Background Section */}
+        {/* ... (Rest of the component remains largely the same, ensuring responsiveness) ... */}
+        
+        {/* Why People Love Medifly */}
         <section className="my-20 bg-[#F7F5F3] -mx-6 md:-mx-12 px-6 md:px-12 py-20 rounded-3xl">
             <div className="max-w-[1760px] mx-auto text-center">
                 <div className="mb-12 flex flex-col items-center">
@@ -247,10 +349,9 @@ export const Hero: React.FC<HeroProps> = ({ onQuickSearch, onNavigateToMarketpla
             </div>
         </section>
 
-        {/* Aria Banner - "Reasoning Concierge" */}
+        {/* Aria Banner */}
         <section className="mb-24">
             <div className="rounded-3xl overflow-hidden relative bg-[#F9FAFB] min-h-[520px] flex items-center shadow-sm border border-slate-100">
-                {/* Content */}
                 <div className="relative z-10 max-w-2xl p-10 md:p-20">
                     <div className="inline-flex items-center gap-2 bg-white/80 backdrop-blur px-3 py-1 rounded-full text-xs font-bold text-slate-900 mb-6 uppercase tracking-widest border border-white/50 shadow-sm">
                         <Sparkles className="w-3 h-3 text-[#6495ED]" /> Medifly Concierge
@@ -269,8 +370,6 @@ export const Hero: React.FC<HeroProps> = ({ onQuickSearch, onNavigateToMarketpla
                         Chat with Aria <ArrowRight className="w-5 h-5" />
                     </button>
                 </div>
-                
-                {/* Background Graphic/Image */}
                 <div className="absolute right-0 top-0 bottom-0 w-full md:w-[60%] h-full">
                      <img 
                         src="https://images.unsplash.com/photo-1516549655169-df83a0774514?auto=format&fit=crop&q=80&w=2070" 
@@ -301,7 +400,6 @@ export const Hero: React.FC<HeroProps> = ({ onQuickSearch, onNavigateToMarketpla
                     className="group cursor-pointer flex flex-col gap-2"
                     onClick={() => onQuickSearch(`Hospitals in ${dest.country.split(',')[0]}`, origin.trim(), userCoords)}
                  >
-                    {/* Card Image */}
                     <div className="relative aspect-square overflow-hidden rounded-xl bg-slate-200 mb-1">
                        <img 
                          src={dest.img} 
@@ -311,7 +409,6 @@ export const Hero: React.FC<HeroProps> = ({ onQuickSearch, onNavigateToMarketpla
                        <button className="absolute top-3 right-3 p-1.5 hover:scale-110 transition-transform">
                           <Heart className="w-6 h-6 text-white fill-black/50 stroke-[2px]" />
                        </button>
-                       {/* Guest Favorite Badge (Conditional) */}
                        {i < 3 && (
                           <div className="absolute top-3 left-3 bg-[#F1FCA7] px-2.5 py-1 rounded-full shadow-sm flex items-center gap-1">
                              <ShieldCheck className="w-3 h-3 text-slate-900" />
@@ -320,7 +417,6 @@ export const Hero: React.FC<HeroProps> = ({ onQuickSearch, onNavigateToMarketpla
                        )}
                     </div>
 
-                    {/* Card Content */}
                     <div className="flex justify-between items-start">
                         <div className="flex flex-col gap-0.5">
                             <h3 className="font-semibold text-slate-900 text-[15px] leading-tight">{dest.country}</h3>
