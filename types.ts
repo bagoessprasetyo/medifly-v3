@@ -34,6 +34,20 @@ export interface Doctor {
   reviewCount: number;
 }
 
+export interface MedicalPackage {
+  id: string;
+  title: string;
+  category: string; // e.g. "Medical Check-Up"
+  hospitalName: string;
+  location: string; // e.g. "Penang, Malaysia"
+  imageUrl: string;
+  price: string; // Formatted price string "Rp 400.000"
+  originalPrice?: string; // Optional original price for strikethrough
+  discount?: string; // e.g. "30% off"
+  validUntil?: string; // e.g. "20/11/2025 - 10/12/2025"
+  tags?: string[];
+}
+
 export interface Attachment {
   name: string;
   type: string; // MIME type

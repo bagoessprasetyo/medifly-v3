@@ -16,9 +16,11 @@ interface HospitalPageProps {
   onBack: () => void;
   onNavigateToHospitals: () => void;
   onNavigateToDoctors: () => void;
+  onViewGallery: () => void;
+  onViewFacilities: () => void;
 }
 
-export const HospitalPage: React.FC<HospitalPageProps> = ({ hospital, onBack, onNavigateToHospitals, onNavigateToDoctors }) => {
+export const HospitalPage: React.FC<HospitalPageProps> = ({ hospital, onBack, onNavigateToHospitals, onNavigateToDoctors, onViewGallery, onViewFacilities }) => {
   
   // Scroll to top on mount
   useEffect(() => {
@@ -35,10 +37,14 @@ export const HospitalPage: React.FC<HospitalPageProps> = ({ hospital, onBack, on
 
   // Helper to safely get images or fallback
   const getImages = (count: number) => {
-      const imgs = (hospital.images && hospital.images.length > 0) ? [...hospital.images] : [hospital.imageUrl];
-      // Pad with main image if not enough
+      // Default to empty array if undefined
+      const sourceImages = hospital.images || [];
+      // Use array spread to copy, or fallback to main image if array is empty
+      const imgs = sourceImages.length > 0 ? [...sourceImages] : [hospital.imageUrl];
+      
+      // Pad with main image if not enough to fill the grid (prevents layout break)
       while (imgs.length < count) {
-          imgs.push(imgs[0] || hospital.imageUrl); // Fallback to first available or main imageUrl
+          imgs.push(imgs[0] || hospital.imageUrl || 'https://via.placeholder.com/800x600');
       }
       return imgs.slice(0, count);
   };
@@ -80,7 +86,7 @@ export const HospitalPage: React.FC<HospitalPageProps> = ({ hospital, onBack, on
       <div className="max-w-7xl mx-auto px-4 md:px-6 py-8">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 h-[400px] md:h-[500px]">
               {/* Main Image */}
-              <div className="md:col-span-2 relative rounded-2xl overflow-hidden group h-full">
+              <div className="md:col-span-2 relative rounded-2xl overflow-hidden group h-full cursor-pointer" onClick={onViewGallery}>
                   <img src={galleryImages[0]} alt={hospital.name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
                   <div className="absolute bottom-4 right-4 bg-[#1C1C1C]/90 backdrop-blur text-white text-xs px-3 py-1.5 rounded-full flex items-center gap-1.5 font-medium">
                       <Star className="w-3 h-3 fill-[#F1FCA7] text-[#F1FCA7]" />
@@ -90,10 +96,13 @@ export const HospitalPage: React.FC<HospitalPageProps> = ({ hospital, onBack, on
               {/* Side Images Grid */}
               <div className="grid grid-cols-2 gap-4 h-full">
                   {galleryImages.slice(1, 5).map((img, idx) => (
-                      <div key={idx} className="rounded-2xl overflow-hidden relative h-full">
-                          <img src={img} alt={`Facility ${idx}`} className="w-full h-full object-cover" />
+                      <div key={idx} className="rounded-2xl overflow-hidden relative h-full cursor-pointer group" onClick={onViewGallery}>
+                          <img src={img} alt={`Facility ${idx}`} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
                           {idx === 3 && (
-                              <button className="absolute bottom-4 right-4 bg-white/90 hover:bg-white text-[#1C1C1C] text-xs font-medium px-3 py-1.5 rounded-md shadow-sm flex items-center gap-1.5 transition-colors">
+                              <button 
+                                onClick={(e) => { e.stopPropagation(); onViewGallery(); }}
+                                className="absolute bottom-4 right-4 bg-white/90 hover:bg-white text-[#1C1C1C] text-xs font-medium px-3 py-1.5 rounded-md shadow-sm flex items-center gap-1.5 transition-colors z-10"
+                              >
                                   <LayoutGrid className="w-3.5 h-3.5" /> Show All
                               </button>
                           )}
@@ -396,7 +405,10 @@ export const HospitalPage: React.FC<HospitalPageProps> = ({ hospital, onBack, on
         </div>
 
         <div className="flex justify-center mt-10">
-            <button className="inline-flex items-center px-6 py-2.5 border border-gray-200 shadow-sm text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50">
+            <button 
+                onClick={onViewFacilities}
+                className="inline-flex items-center px-6 py-2.5 border border-gray-200 shadow-sm text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50"
+            >
                 View All Facilities
                 <ChevronRight className="w-4 h-4 ml-2" />
             </button>

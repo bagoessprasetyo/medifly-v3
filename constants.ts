@@ -1,5 +1,5 @@
 
-import { Doctor, Hospital } from './types';
+import { Doctor, Hospital, MedicalPackage } from './types';
 
 export const createSlug = (name: string) => {
   return name.toLowerCase()
@@ -2065,6 +2065,7 @@ export const HOSPITALS: Hospital[] = [
     accreditation: ['MOH Timor-Leste'],
   },
 ];
+
 export const DOCTORS: Doctor[] = [
     {
         id: '1',
@@ -2155,7 +2156,196 @@ export const DOCTORS: Doctor[] = [
         gender: 'Female',
         rating: 4.9,
         reviewCount: 156
+    },
+    {
+        id: '7',
+        name: 'Dr. Michael Chen',
+        specialty: 'Orthopedic',
+        hospitalId: '21',
+        hospitalName: 'Mount Elizabeth Hospital',
+        hospitalCountry: 'Singapore',
+        imageUrl: 'https://images.unsplash.com/photo-1550831107-1553da8c8464?auto=format&fit=crop&q=80&w=800',
+        languages: ['English', 'Mandarin', 'Cantonese'],
+        experienceYears: 25,
+        procedures: ['Knee Replacement', 'Hip Replacement', 'Sports Medicine'],
+        gender: 'Male',
+        rating: 5.0,
+        reviewCount: 312
+    },
+    {
+        id: '8',
+        name: 'Dr. Priyanki Kapoor',
+        specialty: 'Dermatology',
+        hospitalId: '1',
+        hospitalName: 'Bumrungrad International',
+        hospitalCountry: 'Thailand',
+        imageUrl: 'https://images.unsplash.com/photo-1594824476967-48c8b964273f?auto=format&fit=crop&q=80&w=800',
+        languages: ['English', 'Hindi', 'Thai'],
+        experienceYears: 10,
+        procedures: ['Laser Therapy', 'Skin Cancer Screening', 'Cosmetic Dermatology'],
+        gender: 'Female',
+        rating: 4.7,
+        reviewCount: 88
+    },
+    {
+        id: '9',
+        name: 'Dr. James Wilson',
+        specialty: 'Cardiology',
+        hospitalId: '38',
+        hospitalName: 'Gleneagles Hospital',
+        hospitalCountry: 'Malaysia',
+        imageUrl: 'https://images.unsplash.com/photo-1622253692010-333f2da6031d?auto=format&fit=crop&q=80&w=800',
+        languages: ['English'],
+        experienceYears: 30,
+        procedures: ['Coronary Artery Bypass', 'Valve Repair', 'Arrhythmia Management'],
+        gender: 'Male',
+        rating: 4.9,
+        reviewCount: 420
+    },
+    {
+        id: '10',
+        name: 'Dr. Lee Ji-eun',
+        specialty: 'Fertility',
+        hospitalId: '999',
+        hospitalName: 'CHA Medical Center',
+        hospitalCountry: 'South Korea',
+        imageUrl: 'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?auto=format&fit=crop&q=80&w=800',
+        languages: ['Korean', 'English', 'Japanese'],
+        experienceYears: 15,
+        procedures: ['IVF', 'Egg Freezing', 'PCOS Treatment'],
+        gender: 'Female',
+        rating: 4.8,
+        reviewCount: 190
+    },
+    {
+        id: '11',
+        name: 'Dr. Ahmed Al-Fayed',
+        specialty: 'Urology',
+        hospitalId: '24',
+        hospitalName: 'Raffles Hospital',
+        hospitalCountry: 'Singapore',
+        imageUrl: 'https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?auto=format&fit=crop&q=80&w=800',
+        languages: ['English', 'Arabic', 'Malay'],
+        experienceYears: 14,
+        procedures: ['Kidney Stones', 'Prostate Surgery', 'Men\'s Health'],
+        gender: 'Male',
+        rating: 4.6,
+        reviewCount: 110
+    },
+    {
+        id: '12',
+        name: 'Dr. Elena Rossi',
+        specialty: 'Pediatrics',
+        hospitalId: '3',
+        hospitalName: 'Samitivej Sukhumvit',
+        hospitalCountry: 'Thailand',
+        imageUrl: 'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?auto=format&fit=crop&q=80&w=800',
+        languages: ['English', 'Italian', 'Thai'],
+        experienceYears: 8,
+        procedures: ['General Pediatrics', 'Neonatology', 'Child Development'],
+        gender: 'Female',
+        rating: 4.9,
+        reviewCount: 130
     }
+];
+
+export const PACKAGES: MedicalPackage[] = [
+  {
+    id: '1',
+    title: 'Basic Medical Check-Up (8 Tests)',
+    category: 'Medical Check-Up',
+    hospitalName: 'Gleneagles Hospital, Penang',
+    location: 'Penang, Malaysia',
+    imageUrl: 'https://images.unsplash.com/photo-1579684385127-1ef15d508118?auto=format&fit=crop&q=80&w=800',
+    price: 'Rp 240.000',
+    originalPrice: 'Rp 400.000',
+    discount: '30% off',
+    validUntil: '20/11/2025 - 10/12/2025'
+  },
+  {
+    id: '2',
+    title: 'Executive Full Body Check',
+    category: 'Medical Check-Up',
+    hospitalName: 'Gleneagles Hospital, Penang',
+    location: 'Penang, Malaysia',
+    imageUrl: 'https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?auto=format&fit=crop&q=80&w=800',
+    price: 'Rp 1.200.000',
+    originalPrice: 'Rp 1.500.000',
+    validUntil: '01/01/2025 - 31/12/2025'
+  },
+  {
+    id: '3',
+    title: 'Comprehensive Heart Screening',
+    category: 'Heart Screening',
+    hospitalName: 'Bumrungrad International',
+    location: 'Bangkok, Thailand',
+    imageUrl: 'https://images.unsplash.com/photo-1505751172876-fa1923c5c528?auto=format&fit=crop&q=80&w=800',
+    price: 'Rp 3.500.000',
+    validUntil: 'Valid all year'
+  },
+  {
+    id: '4',
+    title: 'MRI Scan Package (Head & Neck)',
+    category: 'MRI Scan Packages',
+    hospitalName: 'Mount Elizabeth Hospital',
+    location: 'Singapore',
+    imageUrl: 'https://images.unsplash.com/photo-1516549655169-df83a0774514?auto=format&fit=crop&q=80&w=800',
+    price: 'Rp 8.000.000',
+    discount: '10% off',
+    originalPrice: 'Rp 9.000.000'
+  },
+  {
+    id: '5',
+    title: 'Post-Surgery Physiotherapy',
+    category: 'Recovery & Physiotherapy',
+    hospitalName: 'Sunway Medical Centre',
+    location: 'Kuala Lumpur, Malaysia',
+    imageUrl: 'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&q=80&w=800',
+    price: 'Rp 400.000',
+    validUntil: 'Per Session'
+  },
+  {
+    id: '6',
+    title: 'Advanced Cancer Screening',
+    category: 'Cancer Screening',
+    hospitalName: 'Raffles Hospital',
+    location: 'Singapore',
+    imageUrl: 'https://images.unsplash.com/photo-1579154204601-01588f351e67?auto=format&fit=crop&q=80&w=800',
+    price: 'Rp 4.500.000',
+    validUntil: 'Valid all year'
+  },
+  {
+    id: '7',
+    title: 'Basic Dental Check & Scaling',
+    category: 'Beauty & Wellness',
+    hospitalName: 'Yanhee International',
+    location: 'Bangkok, Thailand',
+    imageUrl: 'https://images.unsplash.com/photo-1606811971618-4486d14f3f99?auto=format&fit=crop&q=80&w=800',
+    price: 'Rp 850.000',
+    discount: '15% off',
+    originalPrice: 'Rp 1.000.000'
+  },
+  {
+    id: '8',
+    title: 'Fertility Assessment Couple',
+    category: 'Women Health',
+    hospitalName: 'Thomson Fertility Centre',
+    location: 'Singapore',
+    imageUrl: 'https://images.unsplash.com/photo-1587351021759-3e566b9af922?auto=format&fit=crop&q=80&w=800',
+    price: 'Rp 2.800.000',
+    validUntil: 'Valid all year'
+  },
+  {
+    id: '9',
+    title: 'Lasik Surgery Standard',
+    category: 'Beauty & Wellness',
+    hospitalName: 'Tun Hussein Onn Eye Hospital',
+    location: 'Kuala Lumpur, Malaysia',
+    imageUrl: 'https://images.unsplash.com/photo-1580256081112-e49377338b7f?auto=format&fit=crop&q=80&w=800',
+    price: 'Rp 12.000.000',
+    discount: 'Promo',
+    originalPrice: 'Rp 15.000.000'
+  }
 ];
 
 

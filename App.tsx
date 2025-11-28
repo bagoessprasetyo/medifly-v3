@@ -4,14 +4,21 @@ import { Hero } from './components/Hero';
 import { ChatInterface } from './components/ChatInterface';
 import { Marketplace } from './components/Marketplace';
 import { HospitalPage } from './components/HospitalPage';
+import { HospitalGalleryPage } from './components/HospitalGalleryPage';
+import { FacilityGalleryPage } from './components/FacilityGalleryPage';
+import { FacilityDetailsPage } from './components/FacilityDetailsPage'; 
 import { DoctorsPage } from './components/DoctorsPage'; 
-import { Layout } from './components/Layout'; // Import new Layout
-import { FilterState, Hospital, ChatSession, Message } from './types';
+import { DoctorDetailsPage } from './components/DoctorDetailsPage';
+// import { PackagesPage } from './components/PackagesPage'; 
+import { PackageDetailsPage } from './components/PackageDetailsPage'; // New Component
+import { Layout } from './components/Layout';
+import { FilterState, Hospital, ChatSession, Message, Doctor, MedicalPackage } from './types';
 import { ArrowLeft, MessageSquare } from 'lucide-react';
-import { HOSPITALS, createSlug } from './constants';
+import { HOSPITALS, DOCTORS, PACKAGES, createSlug } from './constants';
+import { PackagesPage } from './components/PackagesPage';
 
 const App: React.FC = () => {
-  const [page, setPage] = useState<'home' | 'marketplace' | 'hospital-page' | 'doctors'>('home');
+  const [page, setPage] = useState<'home' | 'marketplace' | 'hospital-page' | 'doctors' | 'doctor-details' | 'gallery' | 'facilities' | 'facility-details' | 'packages' | 'package-details'>('home');
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [isDeepFocusMode, setIsDeepFocusMode] = useState(false); 
   
@@ -27,8 +34,11 @@ const App: React.FC = () => {
     searchQuery: '',
   });
 
-  // Detailed Hospital Page State
+  // Detailed Page State
   const [viewedHospital, setViewedHospital] = useState<Hospital | null>(null);
+  const [viewedFacilityName, setViewedFacilityName] = useState<string | null>(null);
+  const [viewedDoctor, setViewedDoctor] = useState<Doctor | null>(null);
+  const [viewedPackage, setViewedPackage] = useState<MedicalPackage | null>(null);
 
   // Load Sessions from LocalStorage on Mount
   useEffect(() => {
@@ -64,7 +74,7 @@ const App: React.FC = () => {
     if (session && session.lastActiveFilters) {
         setFilters(session.lastActiveFilters);
         // If the session has filters, assume we want to see the marketplace (unless specific page)
-        if (page !== 'hospital-page' && page !== 'doctors') {
+        if (['home', 'marketplace'].includes(page)) {
            setPage('marketplace');
         }
     } else if (session && page === 'marketplace') {
@@ -117,17 +127,57 @@ const App: React.FC = () => {
   useEffect(() => {
     const handleUrlChange = () => {
       const path = window.location.pathname;
-      const match = path.match(/^\/hospitals\/(.+)/);
       
-      if (match) {
-        const slug = match[1];
-        const hospital = HOSPITALS.find(h => createSlug(h.name) === slug);
-        if (hospital) {
-            setViewedHospital(hospital);
-            setPage('hospital-page');
-            setIsChatOpen(false); // Ensure chat is closed on direct load
-            return;
-        }
+      // Check for /hospitals/:slug or subpages
+      if (path.startsWith('/hospitals/')) {
+          const parts = path.split('/');
+          // parts[0] = "", parts[1] = "hospitals", parts[2] = slug, parts[3] = "tour" | "facilities"
+          const slug = parts[2];
+          const subPage = parts[3];
+          const subItem = parts[4]; // Facility Name (Slug)
+          
+          const hospital = HOSPITALS.find(h => createSlug(h.name) === slug);
+          if (hospital) {
+              setViewedHospital(hospital);
+              
+              if (subPage === 'tour') {
+                  setPage('gallery');
+              } else if (subPage === 'facilities') {
+                  if (subItem) {
+                      const name = subItem.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+                      setViewedFacilityName(name);
+                      setPage('facility-details');
+                  } else {
+                      setPage('facilities');
+                  }
+              } else {
+                  setPage('hospital-page');
+              }
+              setIsChatOpen(false); 
+              return;
+          }
+      }
+
+      if (path.startsWith('/doctors/')) {
+          const slug = path.split('/')[2];
+          const doctor = DOCTORS.find(d => createSlug(d.name) === slug);
+          if (doctor) {
+              setViewedDoctor(doctor);
+              setPage('doctor-details');
+              setIsChatOpen(false);
+              return;
+          }
+      }
+
+      if (path.startsWith('/packages/')) {
+          const slug = path.split('/')[2];
+          const pkg = PACKAGES.find(p => createSlug(p.title) === slug);
+          if (pkg) {
+              setViewedPackage(pkg);
+              setPage('package-details');
+              setIsChatOpen(false);
+              return;
+          }
       }
 
       if (path === '/doctors') {
@@ -135,12 +185,21 @@ const App: React.FC = () => {
           setIsChatOpen(false);
           return;
       }
+
+      if (path === '/packages') {
+          setPage('packages');
+          setIsChatOpen(false);
+          return;
+      }
       
       // Default fallback based on path
       if (path === '/') {
-          if (page === 'hospital-page' || page === 'doctors') {
-             setPage('marketplace'); // Go back to marketplace state if we were deep
+          if (page !== 'home') {
+             // Go back to home if user hits back to root
+             setPage('home'); 
              setViewedHospital(null);
+             setViewedDoctor(null);
+             setViewedPackage(null);
           }
       }
     };
@@ -151,13 +210,20 @@ const App: React.FC = () => {
     // Listen for back button
     window.addEventListener('popstate', handleUrlChange);
     return () => window.removeEventListener('popstate', handleUrlChange);
-  }, []); // Remove dependencies to avoid loops, trust window location
+  }, []); 
 
   const handleNavigateToHospital = (hospital: Hospital) => {
     setViewedHospital(hospital);
     setPage('hospital-page');
     setIsChatOpen(false); // Auto-hide chat sidebar
     window.history.pushState(null, '', `/hospitals/${createSlug(hospital.name)}`);
+  };
+
+  const handleNavigateToHospitalById = (hospitalId: string) => {
+      const hospital = HOSPITALS.find(h => h.id === hospitalId);
+      if (hospital) {
+          handleNavigateToHospital(hospital);
+      }
   };
 
   const handleBackFromHospital = () => {
@@ -169,6 +235,74 @@ const App: React.FC = () => {
           setViewedHospital(null);
           window.history.pushState(null, '', '/');
       }
+  };
+
+  const handleNavigateToGallery = () => {
+      if (viewedHospital) {
+        setPage('gallery');
+        window.history.pushState(null, '', `/hospitals/${createSlug(viewedHospital.name)}/tour`);
+      }
+  };
+
+  const handleBackFromGallery = () => {
+      if (viewedHospital) {
+        setPage('hospital-page');
+        window.history.pushState(null, '', `/hospitals/${createSlug(viewedHospital.name)}`);
+      }
+  };
+
+  const handleNavigateToFacilities = () => {
+      if (viewedHospital) {
+        setPage('facilities');
+        window.history.pushState(null, '', `/hospitals/${createSlug(viewedHospital.name)}/facilities`);
+      }
+  };
+
+  const handleNavigateToFacilityDetails = (facilityName: string) => {
+      if (viewedHospital) {
+          setViewedFacilityName(facilityName);
+          setPage('facility-details');
+          const facilitySlug = createSlug(facilityName);
+          window.history.pushState(null, '', `/hospitals/${createSlug(viewedHospital.name)}/facilities/${facilitySlug}`);
+      }
+  }
+
+  const handleBackFromFacilities = () => {
+      if (viewedHospital) {
+        setPage('hospital-page');
+        window.history.pushState(null, '', `/hospitals/${createSlug(viewedHospital.name)}`);
+      }
+  };
+
+  const handleBackFromFacilityDetails = () => {
+      if (viewedHospital) {
+          setPage('facilities');
+          window.history.pushState(null, '', `/hospitals/${createSlug(viewedHospital.name)}/facilities`);
+      }
+  }
+
+  const handleNavigateToDoctor = (doctor: Doctor) => {
+      setViewedDoctor(doctor);
+      setPage('doctor-details');
+      setIsChatOpen(false);
+      window.history.pushState(null, '', `/doctors/${createSlug(doctor.name)}`);
+  };
+
+  const handleBackFromDoctor = () => {
+      setPage('doctors');
+      window.history.pushState(null, '', '/doctors');
+  };
+
+  const handleNavigateToPackage = (pkg: MedicalPackage) => {
+      setViewedPackage(pkg);
+      setPage('package-details');
+      setIsChatOpen(false);
+      window.history.pushState(null, '', `/packages/${createSlug(pkg.title)}`);
+  };
+
+  const handleBackFromPackage = () => {
+      setPage('packages');
+      window.history.pushState(null, '', '/packages');
   };
 
   // This state is just to trigger the effect in ChatInterface one time. 
@@ -240,6 +374,11 @@ const App: React.FC = () => {
       window.history.pushState(null, '', '/doctors');
   }
 
+  const navigateToPackages = () => {
+      setPage('packages');
+      window.history.pushState(null, '', '/packages');
+  }
+
   const navigateToHome = () => {
       setPage('home');
       window.history.pushState(null, '', '/');
@@ -250,6 +389,7 @@ const App: React.FC = () => {
     onNavigateToHome: navigateToHome,
     onNavigateToMarketplace: navigateToMarketplace,
     onNavigateToDoctors: navigateToDoctors,
+    onNavigateToPackages: navigateToPackages,
     selectedLanguage,
     onLanguageChange: setSelectedLanguage
   };
@@ -322,7 +462,7 @@ const App: React.FC = () => {
         `}
       >
          {/* Mobile Back Button Area - Only show if NOT deep page OR on marketplace */}
-         <div className={`md:hidden absolute top-4 left-4 z-20 flex gap-2 ${page === 'hospital-page' || page === 'doctors' || page === 'marketplace' ? 'hidden' : ''}`}>
+         <div className={`md:hidden absolute top-4 left-4 z-20 flex gap-2 ${['hospital-page', 'doctors', 'marketplace', 'gallery', 'facilities', 'facility-details', 'doctor-details', 'packages', 'package-details'].includes(page) ? 'hidden' : ''}`}>
              <button onClick={() => {
                  setPage('home');
              }} className="p-2 bg-white rounded-full shadow-md border border-slate-100">
@@ -359,6 +499,32 @@ const App: React.FC = () => {
                     onBack={handleBackFromHospital} 
                     onNavigateToHospitals={navigateToMarketplace}
                     onNavigateToDoctors={navigateToDoctors}
+                    onViewGallery={handleNavigateToGallery}
+                    onViewFacilities={handleNavigateToFacilities}
+                />
+            )}
+
+            {page === 'gallery' && viewedHospital && (
+                <HospitalGalleryPage 
+                    hospital={viewedHospital}
+                    onBack={handleBackFromGallery}
+                />
+            )}
+
+            {page === 'facilities' && viewedHospital && (
+                <FacilityGalleryPage 
+                    hospital={viewedHospital}
+                    onBack={handleBackFromFacilities}
+                    onViewFacilityDetails={handleNavigateToFacilityDetails}
+                />
+            )}
+
+            {page === 'facility-details' && viewedHospital && viewedFacilityName && (
+                <FacilityDetailsPage
+                    hospital={viewedHospital}
+                    facilityName={viewedFacilityName}
+                    onBack={handleBackFromFacilityDetails}
+                    onNavigateToHospital={() => handleNavigateToHospital(viewedHospital)}
                 />
             )}
 
@@ -367,6 +533,31 @@ const App: React.FC = () => {
                     onBack={() => setPage('home')}
                     onNavigateToHospitals={navigateToMarketplace}
                     onNavigateToDoctors={() => {}} // Already here
+                    onViewDoctor={handleNavigateToDoctor}
+                />
+            )}
+
+            {page === 'doctor-details' && viewedDoctor && (
+                <DoctorDetailsPage
+                    doctor={viewedDoctor}
+                    onBack={handleBackFromDoctor}
+                    onNavigateToHospital={handleNavigateToHospitalById}
+                    onViewDoctor={handleNavigateToDoctor}
+                />
+            )}
+
+            {page === 'packages' && (
+                <PackagesPage 
+                    onBack={() => setPage('home')}
+                    onViewPackage={handleNavigateToPackage}
+                />
+            )}
+
+            {page === 'package-details' && viewedPackage && (
+                <PackageDetailsPage
+                    medicalPackage={viewedPackage}
+                    onBack={handleBackFromPackage}
+                    onNavigateToHospital={handleNavigateToHospital}
                 />
             )}
          </Layout>

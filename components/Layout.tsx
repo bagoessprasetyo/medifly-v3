@@ -8,6 +8,7 @@ interface LayoutProps {
   onNavigateToHome: () => void;
   onNavigateToMarketplace: () => void;
   onNavigateToDoctors: () => void;
+  onNavigateToPackages?: () => void;
   selectedLanguage: string;
   onLanguageChange: (lang: string) => void;
 }
@@ -17,6 +18,7 @@ export const Layout: React.FC<LayoutProps> = ({
   onNavigateToHome,
   onNavigateToMarketplace,
   onNavigateToDoctors,
+  onNavigateToPackages,
   selectedLanguage,
   onLanguageChange
 }) => {
@@ -26,6 +28,7 @@ export const Layout: React.FC<LayoutProps> = ({
         onNavigateToHome={onNavigateToHome}
         onNavigateToMarketplace={onNavigateToMarketplace}
         onNavigateToDoctors={onNavigateToDoctors}
+        onNavigateToPackages={onNavigateToPackages}
         selectedLanguage={selectedLanguage}
         onLanguageChange={onLanguageChange}
       />

@@ -8,6 +8,7 @@ interface NavbarProps {
   onNavigateToHome: () => void;
   onNavigateToMarketplace: () => void;
   onNavigateToDoctors: () => void;
+  onNavigateToPackages?: () => void;
   selectedLanguage: string;
   onLanguageChange: (lang: string) => void;
 }
@@ -16,6 +17,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   onNavigateToHome, 
   onNavigateToMarketplace, 
   onNavigateToDoctors,
+  onNavigateToPackages,
   selectedLanguage,
   onLanguageChange
 }) => {
@@ -43,6 +45,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 <Stethoscope className="w-4 h-4" /> Doctors
              </button>
              <button 
+                onClick={onNavigateToPackages}
                 className="flex items-center gap-2 hover:text-black transition-colors"
              >
                 <Package className="w-4 h-4" /> Packages

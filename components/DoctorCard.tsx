@@ -54,7 +54,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = ({ doctor, onViewDetails })
 
             <button 
                 onClick={() => onViewDetails?.(doctor)}
-                className="w-full mt-5 border border-gray-200 text-sm font-medium text-gray-700 py-2.5 rounded-lg hover:bg-gray-50 hover:border-gray-300 transition-all"
+                className="w-full mt-5 border border-gray-200 text-sm font-medium text-gray-700 py-2.5 rounded-lg hover:bg-gray-50 hover:border-gray-300 transition-all hover:bg-slate-50"
             >
                 Overview
             </button>

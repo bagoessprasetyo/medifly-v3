@@ -9,9 +9,10 @@ interface DoctorsPageProps {
   onBack: () => void;
   onNavigateToHospitals: () => void;
   onNavigateToDoctors: () => void;
+  onViewDoctor?: (doctor: Doctor) => void;
 }
 
-export const DoctorsPage: React.FC<DoctorsPageProps> = ({ onBack, onNavigateToHospitals, onNavigateToDoctors }) => {
+export const DoctorsPage: React.FC<DoctorsPageProps> = ({ onBack, onNavigateToHospitals, onNavigateToDoctors, onViewDoctor }) => {
   const [specialtyInput, setSpecialtyInput] = useState('');
   const [locationInput, setLocationInput] = useState('');
   
@@ -66,8 +67,8 @@ export const DoctorsPage: React.FC<DoctorsPageProps> = ({ onBack, onNavigateToHo
         {/* Main Content Layout */}
         <div className="flex-1 max-w-[1400px] mx-auto w-full px-6 py-8 flex gap-12 relative">
             
-            {/* Sidebar Filters - Added Sticky */}
-            <aside className="w-64 flex-shrink-0 hidden lg:block pt-2 sticky top-24 h-fit">
+            {/* Sidebar Filters - Sticky with Independent Scroll */}
+            <aside className="w-64 flex-shrink-0 hidden lg:block pt-2 sticky top-24 h-[calc(100vh-8rem)] overflow-y-auto custom-scrollbar pr-2">
                 <h2 className="text-lg font-semibold mb-8 tracking-tight">Filter</h2>
 
                 {/* Gender Filter */}
@@ -254,7 +255,11 @@ export const DoctorsPage: React.FC<DoctorsPageProps> = ({ onBack, onNavigateToHo
                 {/* Doctor Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 pb-8">
                     {displayedDoctors.map(doctor => (
-                        <DoctorCard key={doctor.id} doctor={doctor} />
+                        <DoctorCard 
+                            key={doctor.id} 
+                            doctor={doctor} 
+                            onViewDetails={onViewDoctor}
+                        />
                     ))}
                     {filteredDoctors.length === 0 && (
                         <div className="col-span-full py-20 text-center text-gray-400">
@@ -269,9 +274,10 @@ export const DoctorsPage: React.FC<DoctorsPageProps> = ({ onBack, onNavigateToHo
                     <div className="flex justify-center pb-20">
                         <button 
                             onClick={loadMore}
-                            className="flex items-center gap-2 px-6 py-3 rounded-full border border-gray-300 text-gray-700 font-medium hover:bg-gray-50 hover:border-gray-400 transition-all active:scale-95 bg-white shadow-sm"
+                            className="group flex items-center gap-2 px-8 py-3 rounded-full border border-gray-200 bg-white text-gray-900 font-medium hover:bg-gray-50 hover:border-gray-300 transition-all active:scale-95 shadow-sm hover:shadow-md"
                         >
-                            Load More Results <ChevronDown className="w-4 h-4" />
+                            Load More Results 
+                            <ChevronDown className="w-4 h-4 text-gray-400 group-hover:text-gray-600 transition-colors" />
                         </button>
                     </div>
                 )}
