@@ -4,12 +4,14 @@ import { Hero } from './components/Hero';
 import { ChatInterface } from './components/ChatInterface';
 import { Marketplace } from './components/Marketplace';
 import { HospitalPage } from './components/HospitalPage';
+// import { DoctorsPage } from './components/DoctorsPage'; // Import new page
 import { FilterState, Hospital, ChatSession, Message } from './types';
 import { ArrowLeft, MessageSquare, Sparkles } from 'lucide-react';
 import { HOSPITALS, createSlug } from './constants';
+import { DoctorsPage } from './components/DoctorsPage';
 
 const App: React.FC = () => {
-  const [page, setPage] = useState<'home' | 'marketplace' | 'hospital-page'>('home');
+  const [page, setPage] = useState<'home' | 'marketplace' | 'hospital-page' | 'doctors'>('home');
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [isDeepFocusMode, setIsDeepFocusMode] = useState(false); // New State for Deep Focus
   
@@ -61,8 +63,8 @@ const App: React.FC = () => {
     const session = sessions.find(s => s.id === currentSessionId);
     if (session && session.lastActiveFilters) {
         setFilters(session.lastActiveFilters);
-        // If the session has filters, assume we want to see the marketplace
-        if (page !== 'hospital-page') {
+        // If the session has filters, assume we want to see the marketplace (unless specific page)
+        if (page !== 'hospital-page' && page !== 'doctors') {
            setPage('marketplace');
         }
     } else if (session && page === 'marketplace') {
@@ -127,10 +129,16 @@ const App: React.FC = () => {
             return;
         }
       }
+
+      if (path === '/doctors') {
+          setPage('doctors');
+          setIsChatOpen(false);
+          return;
+      }
       
       // Default fallback based on path
       if (path === '/') {
-          if (page === 'hospital-page') {
+          if (page === 'hospital-page' || page === 'doctors') {
              setPage('marketplace'); // Go back to marketplace state if we were deep
              setViewedHospital(null);
           }
@@ -220,12 +228,31 @@ const App: React.FC = () => {
       handleClearFilters();
   };
 
+  // Helper for direct navigation
+  const navigateToMarketplace = () => {
+      setPage('marketplace');
+      setFilters({ searchQuery: '' }); // Optional: Reset filters when clicking "Hospitals" directly
+      window.history.pushState(null, '', '/');
+  };
+
+  const navigateToDoctors = () => {
+      setPage('doctors');
+      window.history.pushState(null, '', '/doctors');
+  }
+
+  const navigateToHome = () => {
+      setPage('home');
+      window.history.pushState(null, '', '/');
+  }
+
   if (page === 'home') {
     return (
       <Hero 
         onQuickSearch={handleQuickSearch} 
         selectedLanguage={selectedLanguage}
         onLanguageChange={setSelectedLanguage}
+        onNavigateToMarketplace={navigateToMarketplace}
+        onNavigateToDoctors={navigateToDoctors}
       />
     );
   }
@@ -289,19 +316,19 @@ const App: React.FC = () => {
         </div>
       </div>
 
-      {/* Right Panel: Marketplace or Hospital Page */}
+      {/* Right Panel: Marketplace, Hospital Page or Doctors */}
       {/* If Deep Focus Mode is active, hide this panel completely to give Chat full width */}
       <div 
         id="main-content-area"
         className={`
             flex-1 h-full relative transition-all duration-500 bg-white 
-            ${page === 'hospital-page' ? 'overflow-y-auto' : ''}
+            ${page === 'hospital-page' || page === 'doctors' || page === 'marketplace' ? 'overflow-y-auto' : ''}
             ${isDeepFocusMode ? 'hidden w-0 opacity-0' : ''} 
         `}
       >
          
-         {/* Mobile Header / Back Button Area - Only show if page is NOT hospital-page (hospital page has its own nav) or if on marketplace */}
-         <div className={`md:hidden absolute top-4 left-4 z-20 flex gap-2 ${page === 'hospital-page' ? 'hidden' : ''}`}>
+         {/* Mobile Header / Back Button Area - Only show if NOT deep page OR on marketplace */}
+         <div className={`md:hidden absolute top-4 left-4 z-20 flex gap-2 ${page === 'hospital-page' || page === 'doctors' || page === 'marketplace' ? 'hidden' : ''}`}>
              <button onClick={() => {
                  setPage('home');
              }} className="p-2 bg-white rounded-full shadow-md border border-slate-100">
@@ -318,13 +345,23 @@ const App: React.FC = () => {
             <HospitalPage 
                hospital={viewedHospital} 
                onBack={handleBackFromHospital} 
+               onNavigateToHospitals={navigateToMarketplace}
+               onNavigateToDoctors={navigateToDoctors}
             />
+         ) : page === 'doctors' ? (
+             <DoctorsPage 
+                onBack={() => setPage('home')}
+                onNavigateToHospitals={navigateToMarketplace}
+                onNavigateToDoctors={() => {}} // Already here
+             />
          ) : (
             <Marketplace 
               filters={filters} 
               onClearFilters={handleClearFilters}
               onViewHospitalPage={handleNavigateToHospital}
               onUpdateFilters={handleApplyFilters}
+              onNavigateToDoctors={navigateToDoctors}
+              onNavigateToHome={navigateToHome}
             />
          )}
       </div>

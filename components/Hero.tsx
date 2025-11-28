@@ -1,9 +1,15 @@
 
 import React, { useState } from 'react';
-import { Search, Heart, User, Globe, Menu, Stethoscope, Brain, Bone, Baby, Activity, Star, MapPin, Search as SearchIcon, ArrowRight, MessageSquare, List, Sparkles, ShieldCheck, CheckCircle2, Map, Plane, Navigation, AlertTriangle } from 'lucide-react';
+import { Search, Heart, User, Globe, Menu, Stethoscope, Brain, Bone, Baby, Activity, Star, MapPin, Search as SearchIcon, ArrowRight, MessageSquare, List, Sparkles, ShieldCheck, CheckCircle2, Map, Plane, Navigation, AlertTriangle, Building2, Package, Users } from 'lucide-react';
+import { LanguageSelector } from './ui/Languageselector';
+// import { LanguageSelector } from './ui/LanguageSelector';
 
 interface HeroProps {
   onQuickSearch: (query: string, origin?: string, location?: { lat: number; lng: number }) => void;
+  selectedLanguage: string;
+  onLanguageChange: (lang: string) => void;
+  onNavigateToMarketplace?: () => void;
+  onNavigateToDoctors?: () => void;
 }
 
 const SPECIALTIES = [
@@ -28,11 +34,10 @@ const DESTINATIONS = [
   { country: 'Bali, Indonesia', desc: 'Wellness & recovery', rating: 4.65, price: '$$', img: 'https://picsum.photos/800/800?random=17' }
 ];
 
-export const Hero: React.FC<HeroProps> = ({ onQuickSearch }) => {
+export const Hero: React.FC<HeroProps> = ({ onQuickSearch, selectedLanguage, onLanguageChange, onNavigateToMarketplace, onNavigateToDoctors }) => {
   const [treatment, setTreatment] = useState('');
   const [origin, setOrigin] = useState('');
   const [destination, setDestination] = useState('');
-  const [activeTab, setActiveTab] = useState<string>('Find Care');
   const [isLoadingLocation, setIsLoadingLocation] = useState(false);
   const [userCoords, setUserCoords] = useState<{ lat: number; lng: number } | undefined>(undefined);
 
@@ -98,52 +103,44 @@ export const Hero: React.FC<HeroProps> = ({ onQuickSearch }) => {
           {/* Logo */}
           <div className="flex items-center gap-2 flex-1 lg:flex-none cursor-pointer" onClick={() => window.location.reload()}>
              {/* Custom SVG Logo Mark based on request */}
-             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-slate-900">
-                <path d="M4 19L2 5L12 2L22 5L20 19" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
-                <path d="M2 5L22 5" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
-                <path d="M12 2V22" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
-             </svg>
+             <div className="w-6 h-6 bg-black rounded-tr-lg rounded-bl-lg rounded-br-sm"></div>
              <span className="font-bold text-xl text-slate-900 tracking-tight">Medifly</span>
           </div>
 
           {/* Desktop Center Nav */}
-          <div className="hidden lg:flex items-center justify-center gap-1 absolute left-1/2 -translate-x-1/2">
+          <div className="hidden lg:flex items-center justify-center gap-8 text-sm font-medium text-gray-600 absolute left-1/2 -translate-x-1/2">
              <button 
-                onClick={() => setActiveTab('Find Care')}
-                className={`px-4 py-2.5 text-sm font-medium rounded-full transition-colors ${activeTab === 'Find Care' ? 'text-slate-900 font-semibold bg-[#F4F0EE]' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'}`}
+                onClick={onNavigateToMarketplace}
+                className="flex items-center gap-2 hover:text-black transition-colors"
              >
-                Find Care
+                <Building2 className="w-4 h-4" /> Hospitals
              </button>
              <button 
-                onClick={() => setActiveTab('Destinations')}
-                className={`px-4 py-2.5 text-sm font-medium rounded-full transition-colors ${activeTab === 'Destinations' ? 'text-slate-900 font-semibold bg-[#F4F0EE]' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'}`}
+                onClick={onNavigateToDoctors}
+                className="flex items-center gap-2 hover:text-black transition-colors"
              >
-                Destinations
+                <Stethoscope className="w-4 h-4" /> Doctors
              </button>
              <button 
-                onClick={() => setActiveTab('Concierge')}
-                className={`px-4 py-2.5 text-sm font-medium rounded-full transition-colors ${activeTab === 'Concierge' ? 'text-slate-900 font-semibold bg-[#F4F0EE]' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'}`}
+                className="flex items-center gap-2 hover:text-black transition-colors"
              >
-                Concierge
+                <Package className="w-4 h-4" /> Packages
+             </button>
+             <button 
+                className="flex items-center gap-2 hover:text-black transition-colors"
+             >
+                <Users className="w-4 h-4" /> About Us
              </button>
           </div>
 
           {/* Right Actions - User Pill */}
-          <div className="flex-1 flex justify-end">
-             <div className="flex items-center gap-2">
-                <button className="text-sm font-semibold text-slate-900 hover:bg-slate-50 px-4 py-2.5 rounded-full transition-colors hidden md:block">
-                    Add your hospital
-                </button>
-                <button className="p-2 hover:bg-slate-50 rounded-full mr-1">
-                   <Globe className="w-4 h-4 text-slate-900" />
-                </button>
-                <div className="flex items-center gap-2 p-1 pl-3 pr-1 border border-slate-200 rounded-full hover:shadow-md transition-shadow cursor-pointer">
-                    <Menu className="w-4 h-4 text-slate-600" />
-                    <div className="w-8 h-8 bg-slate-500 rounded-full flex items-center justify-center text-white overflow-hidden">
-                        <User className="w-5 h-5 fill-current relative top-1" />
-                    </div>
-                </div>
+          <div className="flex-1 flex justify-end gap-3">
+             <div className="hidden md:block">
+                  <LanguageSelector selectedLanguage={selectedLanguage} onLanguageChange={onLanguageChange} />
              </div>
+             <button className="bg-[#111] text-white text-sm font-medium px-4 py-2 rounded-lg hover:bg-black/90 transition shadow-sm">
+                Get Started
+             </button>
           </div>
         </div>
       </nav>
@@ -281,23 +278,23 @@ export const Hero: React.FC<HeroProps> = ({ onQuickSearch }) => {
         </section>
 
         {/* Why People Love Medifly - Soft Brown Background Section */}
-        <section className="my-20 bg-[#F4F0EE] -mx-6 md:-mx-12 px-6 md:px-12 py-20 rounded-3xl">
-            <div className="max-w-[1760px] mx-auto">
-                <div className="mb-12">
+        <section className="my-20 bg-[#F7F5F3] -mx-6 md:-mx-12 px-6 md:px-12 py-20 rounded-3xl">
+            <div className="max-w-[1760px] mx-auto text-center">
+                <div className="mb-12 flex flex-col items-center">
                    <h2 className="text-3xl font-bold text-slate-900 mb-4">A peaceful, modern experience.</h2>
-                   <p className="text-lg text-slate-600 max-w-2xl">Your health journey deserves more than a search box. We bring together expert guidance and transparent information.</p>
+                   <p className="text-lg text-slate-600 max-w-2xl text-center">Your health journey deserves more than a search box. We bring together expert guidance and transparent information.</p>
                 </div>
                 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
-                    <div className="space-y-4">
+                    <div className="space-y-4 flex flex-col items-center text-center">
                         <h3 className="text-xl font-bold text-slate-900">A calmer way to explore</h3>
                         <p className="text-slate-600 leading-relaxed">No pressure. No noise. No endless tabs. Just clear guidance that meets you where you are in your journey.</p>
                     </div>
-                    <div className="space-y-4">
+                    <div className="space-y-4 flex flex-col items-center text-center">
                         <h3 className="text-xl font-bold text-slate-900">AI you can actually trust</h3>
                         <p className="text-slate-600 leading-relaxed">Aria shows her reasoning step-by-step, so you always understand the “why” behind her suggestions.</p>
                     </div>
-                    <div className="space-y-4">
+                    <div className="space-y-4 flex flex-col items-center text-center">
                         <h3 className="text-xl font-bold text-slate-900">Choice stays in your hands</h3>
                         <p className="text-slate-600 leading-relaxed">Aria helps you think. You decide when to update the marketplace. It's designed for real decisions.</p>
                     </div>
@@ -347,7 +344,7 @@ export const Hero: React.FC<HeroProps> = ({ onQuickSearch }) => {
                   <h2 className="text-2xl font-bold text-slate-900 mb-2">A Marketplace Built for Comfort & Clarity</h2>
                   <p className="text-slate-500">Curated hospitals and specialists, organized to help you discover.</p>
                </div>
-               <button onClick={() => setActiveTab('Destinations')} className="text-slate-900 font-semibold underline decoration-slate-200 hover:decoration-slate-900 transition-all self-start md:self-end">
+               <button onClick={onNavigateToMarketplace} className="text-slate-900 font-semibold underline decoration-slate-200 hover:decoration-slate-900 transition-all self-start md:self-end">
                   See all regions
                </button>
            </div>

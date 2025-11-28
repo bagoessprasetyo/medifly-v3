@@ -1,5 +1,5 @@
 
-import { Hospital } from './types';
+import { Doctor, Hospital } from './types';
 
 export const createSlug = (name: string) => {
   return name.toLowerCase()
@@ -2065,6 +2065,99 @@ export const HOSPITALS: Hospital[] = [
     accreditation: ['MOH Timor-Leste'],
   },
 ];
+export const DOCTORS: Doctor[] = [
+    {
+        id: '1',
+        name: 'Dr. Khoo Eng Hooi',
+        specialty: 'Orthopedic',
+        hospitalId: '38', // Gleneagles Penang
+        hospitalName: 'Gleneagles Hospital',
+        hospitalCountry: 'Malaysia',
+        imageUrl: 'https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?auto=format&fit=crop&q=80&w=800',
+        languages: ['English', 'Bahasa Melayu', 'Hokkien'],
+        experienceYears: 18,
+        procedures: ['Spinal Surgery', 'Orthopedic Trauma', 'Robotic Joint Surgery'],
+        gender: 'Male',
+        rating: 4.9,
+        reviewCount: 142
+    },
+    {
+        id: '2',
+        name: 'Dr. Sarah Lim',
+        specialty: 'Cardiology',
+        hospitalId: '21', // Mount Elizabeth
+        hospitalName: 'Mount Elizabeth Hospital',
+        hospitalCountry: 'Singapore',
+        imageUrl: 'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?auto=format&fit=crop&q=80&w=800',
+        languages: ['English', 'Mandarin'],
+        experienceYears: 12,
+        procedures: ['Angioplasty', 'Heart Failure Management', 'Pacemaker Implantation'],
+        gender: 'Female',
+        rating: 4.8,
+        reviewCount: 98
+    },
+    {
+        id: '3',
+        name: 'Dr. Somchai V.',
+        specialty: 'Oncology',
+        hospitalId: '1', // Bumrungrad
+        hospitalName: 'Bumrungrad International',
+        hospitalCountry: 'Thailand',
+        imageUrl: 'https://images.unsplash.com/photo-1622253692010-333f2da6031d?auto=format&fit=crop&q=80&w=800',
+        languages: ['English', 'Thai'],
+        experienceYears: 22,
+        procedures: ['Chemotherapy', 'Immunotherapy', 'Targeted Therapy'],
+        gender: 'Male',
+        rating: 4.9,
+        reviewCount: 215
+    },
+    {
+        id: '4',
+        name: 'Dr. Aminah Binti Yusof',
+        specialty: 'Fertility',
+        hospitalId: '34', // Sunway
+        hospitalName: 'Sunway Medical Centre',
+        hospitalCountry: 'Malaysia',
+        imageUrl: 'https://images.unsplash.com/photo-1594824476967-48c8b964273f?auto=format&fit=crop&q=80&w=800',
+        languages: ['English', 'Bahasa Melayu'],
+        experienceYears: 14,
+        procedures: ['IVF', 'IUI', 'Fertility Preservation'],
+        gender: 'Female',
+        rating: 4.7,
+        reviewCount: 86
+    },
+    {
+        id: '5',
+        name: 'Dr. Kim Min-jun',
+        specialty: 'Plastic Surgery',
+        hospitalId: '999', // Placeholder
+        hospitalName: 'ID Hospital',
+        hospitalCountry: 'South Korea',
+        imageUrl: 'https://images.unsplash.com/photo-1537368910025-700350fe46c7?auto=format&fit=crop&q=80&w=800',
+        languages: ['English', 'Korean'],
+        experienceYears: 16,
+        procedures: ['Rhinoplasty', 'Facelift', 'Blepharoplasty'],
+        gender: 'Male',
+        rating: 4.8,
+        reviewCount: 310
+    },
+    {
+        id: '6',
+        name: 'Dr. Anita Desai',
+        specialty: 'Neurology',
+        hospitalId: '24', // Raffles
+        hospitalName: 'Raffles Hospital',
+        hospitalCountry: 'Singapore',
+        imageUrl: 'https://images.unsplash.com/photo-1527613426441-4da17471b66d?auto=format&fit=crop&q=80&w=800',
+        languages: ['English', 'Hindi', 'Tamil'],
+        experienceYears: 19,
+        procedures: ['Stroke Management', 'Epilepsy Treatment', 'Migraine Therapy'],
+        gender: 'Female',
+        rating: 4.9,
+        reviewCount: 156
+    }
+];
+
 
 export const SYSTEM_INSTRUCTION = `
 You are Dr. Aria, the Senior Medical Concierge and AI health consultant for medifly.ai.

@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Star, Plane, Car, MapPin, Languages, Stethoscope } from 'lucide-react';
+import { Star, Plane, MapPin, Languages, Stethoscope, BriefcaseMedical } from 'lucide-react';
 import { Hospital, TravelEstimate } from '../types';
 
 interface HospitalCardProps {
@@ -11,88 +11,94 @@ interface HospitalCardProps {
 
 export const HospitalCard: React.FC<HospitalCardProps> = ({ hospital, onViewDetails, travelEstimate }) => {
   
-  const handleNavigate = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    // Open Google Maps Directions
-    const url = `https://www.google.com/maps/dir/?api=1&destination=${hospital.coordinates.lat},${hospital.coordinates.lng}`;
-    window.open(url, '_blank');
-  };
-
   return (
     <div 
-      className="border border-zinc-200 rounded-xl overflow-hidden bg-white hover:shadow-md transition-all group cursor-pointer flex flex-col h-full"
-      onClick={() => onViewDetails(hospital)}
+        className="bg-white rounded-xl overflow-hidden group flex flex-col cursor-pointer hover:shadow-lg transition-all duration-300 border border-transparent hover:border-slate-100"
+        onClick={() => onViewDetails(hospital)}
     >
-      {/* Image Section */}
-      <div className="relative aspect-[4/3] overflow-hidden bg-zinc-100">
-        <img 
-          src={hospital.images && hospital.images.length > 0 ? hospital.images[0] : hospital.imageUrl} 
-          alt={hospital.name} 
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-        />
-        {/* Rating Overlay - Updated to Yellow/Dark style */}
-        <div className="absolute bottom-2 left-2 bg-[#F1FCA7] text-[#1C1C1C] text-[10px] px-2 py-0.5 rounded flex items-center gap-1 font-medium">
-            <Star className="w-2 h-2 fill-current" /> {hospital.rating}/5
-        </div>
-      </div>
-
-      {/* Content Section */}
-      <div className="p-4 flex flex-col flex-1 space-y-3">
-        
-        {/* Title & Price */}
-        <div className="flex justify-between items-start gap-2">
-            <h3 className="font-semibold text-[#1C1C1C] text-sm truncate" title={hospital.name}>
-                {hospital.name}
-            </h3>
-            <span className="text-xs font-semibold text-[#1C1C1C] shrink-0">{hospital.priceRange}</span>
+        {/* Image Container */}
+        <div className="relative h-48 bg-gray-100 overflow-hidden">
+            <img 
+                src={hospital.images && hospital.images.length > 0 ? hospital.images[0] : hospital.imageUrl} 
+                alt={hospital.name} 
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+            />
+            {/* Google Rating Badge */}
+            <div className="absolute bottom-2 left-2 bg-[#222222]/90 backdrop-blur-md rounded-md px-2 py-1 flex items-center gap-2 shadow-lg border border-white/10">
+                <div className="w-4 h-4 bg-white rounded-full flex items-center justify-center p-0.5">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg" alt="G" className="w-full h-full" />
+                </div>
+                <div className="flex items-center gap-1">
+                    <Star className="w-2.5 h-2.5 text-white fill-white" />
+                    <span className="text-[10px] font-semibold text-white">{hospital.rating}/5</span>
+                    <span className="text-[10px] text-gray-400">({hospital.reviewCount} reviews)</span>
+                </div>
+            </div>
         </div>
 
-        {/* Location & Travel Info */}
-        <div className="space-y-1">
-            <p className="text-xs text-zinc-500 flex items-center gap-1 truncate">
-                <MapPin className="w-3 h-3 shrink-0" /> 
-                <span className="truncate">{hospital.location}, {hospital.country}</span>
-            </p>
+        {/* Card Body */}
+        <div className="pt-4 flex-1 flex flex-col px-4 pb-4">
+            <div className="flex justify-between items-start mb-1">
+                <h3 className="text-base font-semibold text-gray-900 tracking-tight line-clamp-1" title={hospital.name}>
+                    {hospital.name}
+                </h3>
+                <span className="text-sm font-medium flex tracking-tighter shrink-0 ml-2">
+                    <span className="text-gray-900">{hospital.priceRange.substring(0, 1)}</span>
+                    <span className="text-gray-300">{hospital.priceRange.substring(1).padEnd(2, '$')}</span>
+                </span>
+            </div>
             
+            <div className="flex items-center gap-1.5 mb-3">
+                {/* Flag placeholder - using emoji for simplicity/reliability */}
+                <span className="text-sm">
+                    {hospital.country === 'Thailand' ? '🇹🇭' : 
+                     hospital.country === 'Singapore' ? '🇸🇬' : 
+                     hospital.country === 'Malaysia' ? '🇲🇾' : 
+                     hospital.country === 'South Korea' ? '🇰🇷' : 
+                     hospital.country === 'Indonesia' ? '🇮🇩' : '🏳️'}
+                </span>
+                <span className="text-xs text-gray-500 font-normal truncate">{hospital.location}, {hospital.country}</span>
+            </div>
+
             {travelEstimate ? (
-                 <div 
-                    onClick={handleNavigate}
-                    className="text-xs font-medium text-[#1C1C1C] flex items-center gap-1 hover:text-blue-600 transition-colors w-fit"
-                    title={`Click for directions: ${travelEstimate.durationText} • ${travelEstimate.distanceText}`}
-                 >
-                    {travelEstimate.mode === 'driving' ? <Car className="w-3 h-3 shrink-0" /> : <Plane className="w-3 h-3 shrink-0" />}
-                    <span>{travelEstimate.durationText} away</span>
-                 </div>
+                <div className="inline-flex items-center gap-1.5 bg-[#E4F28A] self-start px-2 py-1 rounded-[4px] mb-4 max-w-full">
+                    <Plane className="w-3 h-3 text-gray-800 rotate-[-45deg] shrink-0" />
+                    <span className="text-[10px] font-medium text-gray-800 truncate">
+                        {travelEstimate.durationText} Away
+                    </span>
+                </div>
             ) : (
-                <p className="text-xs font-medium text-[#1C1C1C] flex items-center gap-1">
-                    <Plane className="w-3 h-3 shrink-0" /> Int'l Travel Ready
-                </p>
+                <div className="inline-flex items-center gap-1.5 bg-slate-100 self-start px-2 py-1 rounded-[4px] mb-4">
+                    <Plane className="w-3 h-3 text-slate-500 rotate-[-45deg]" />
+                    <span className="text-[10px] font-medium text-slate-600">Global Travel Ready</span>
+                </div>
             )}
+
+            <p className="text-xs text-gray-600 leading-relaxed mb-4 line-clamp-2 min-h-[2.5em]">
+                {hospital.description}
+            </p>
+
+            <div className="border-t border-gray-100 pt-3 mt-auto space-y-3">
+                <div className="flex items-center gap-2">
+                    <Languages className="w-3.5 h-3.5 text-gray-400 shrink-0" />
+                    <span className="text-[11px] text-gray-600 font-medium truncate">English, Local, Mandarin</span>
+                </div>
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                        <Stethoscope className="w-3.5 h-3.5 text-gray-400 shrink-0" />
+                        <span className="text-[11px] text-gray-500">100+ specialists</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <BriefcaseMedical className="w-3.5 h-3.5 text-gray-400 shrink-0" />
+                        <span className="text-[11px] text-gray-500">{hospital.specialties.length}+ treatments</span>
+                    </div>
+                </div>
+                
+                <button className="w-full border border-gray-200 rounded-lg py-2 text-xs font-medium text-gray-700 hover:bg-gray-50 hover:border-gray-300 transition mt-2">
+                    Hospital Overview
+                </button>
+            </div>
         </div>
-
-        {/* Description */}
-        <p className="text-xs text-zinc-500 line-clamp-2">
-            {hospital.description}
-        </p>
-        
-        <div className="flex-1" /> {/* Spacer to push footer down */}
-
-        {/* Footer Info */}
-        <div className="flex items-center gap-4 text-[10px] text-zinc-500 pt-2 border-t border-zinc-100 mt-1">
-            <span className="flex items-center gap-1">
-                <Languages className="w-3 h-3" /> English, Local
-            </span>
-            <span className="flex items-center gap-1">
-                <Stethoscope className="w-3 h-3" /> {hospital.specialties.length} specialities
-            </span>
-        </div>
-
-        {/* Action Button */}
-        <button className="w-full border border-zinc-200 rounded-lg py-2 text-xs font-medium text-[#1C1C1C] hover:bg-[#FAF8F7] transition-colors">
-            Hospital Overview
-        </button>
-
-      </div>
     </div>
   );
 };

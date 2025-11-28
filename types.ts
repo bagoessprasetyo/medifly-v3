@@ -18,6 +18,22 @@ export interface Hospital {
   accreditation: string[];
 }
 
+export interface Doctor {
+  id: string;
+  name: string;
+  specialty: string;
+  hospitalId: string;
+  hospitalName: string;
+  hospitalCountry: string;
+  imageUrl: string;
+  languages: string[];
+  experienceYears: number;
+  procedures: string[];
+  gender: 'Male' | 'Female';
+  rating: number;
+  reviewCount: number;
+}
+
 export interface Attachment {
   name: string;
   type: string; // MIME type
@@ -66,6 +82,12 @@ export interface StreamChunk {
   isSearching?: boolean;
 }
 
+export interface ArtifactData {
+  type: 'chart' | 'comparison' | 'table' | 'report';
+  title: string;
+  data: any; // Flexible payload for different visualizations
+}
+
 export interface Message {
   id: string;
   role: 'user' | 'ai';
@@ -80,9 +102,7 @@ export interface Message {
   sources?: Source[]; // For Deep Research citations
   searchQueries?: string[]; // For Deep Focus: what queries were searched
   isSearching?: boolean; // For Deep Focus: indicates active web search
-  groundingMetadata?: GroundingMetadata; // For Deep Research: detailed grounding info
-  timestamp: number; // Unix timestamp
-  medicalAnalysis?: MedicalAnalysis; // New: Medical entity extraction and summary
+  artifact?: ArtifactData; // New: For Canvas/Artifact view
 }
 
 export interface FilterState {
@@ -120,27 +140,4 @@ export interface MedicalEntity {
   text: string;
   category: 'Problem' | 'Treatment' | 'Test' | 'Anatomy' | 'Drug';
   confidenceScore?: number;
-}
-export interface MedicalAnalysis {
-  entities: MedicalEntity[];
-  summary?: string;
-  isAnalyzing?: boolean;
-  completed?: boolean;
-  provider?: 'Azure' | 'OpenHealth AI' | 'Other';
-  timestamp?: number;
-}
-
-export interface TravelOptions {
-  driving?: TravelEstimate;
-  flying?: TravelEstimate;
-}
-
-export interface HospitalDetails extends Hospital {
-  contactInfo: {
-    phone: string;
-    email: string;
-    website: string;
-  };
-  facilities: string[];
-  travelOptions?: TravelOptions;
 }

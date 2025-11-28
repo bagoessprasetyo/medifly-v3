@@ -278,7 +278,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
         id: Date.now().toString(), 
         role: role, 
         content: displayContent,
-        timestamp: Date.now(),
+        // timestamp: Date.now(),
         attachment: selectedFile || undefined
     };
 
@@ -295,7 +295,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
     const aiMsgId = (Date.now() + 1).toString();
     const placeholderMsg: Message = {
         id: aiMsgId,
-        timestamp: Date.now(),
+        // timestamp: Date.now(),
         role: 'ai',
         content: '',
         thinking: undefined
