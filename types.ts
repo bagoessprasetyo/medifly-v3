@@ -16,6 +16,7 @@ export interface Hospital {
   priceRange: string;
   description: string;
   accreditation: string[];
+  languages?: string[]; // Supported languages at the hospital
 }
 
 export interface Doctor {
@@ -102,17 +103,24 @@ export interface ArtifactData {
   data: any; // Flexible payload for different visualizations
 }
 
+export interface SuggestedAction {
+  label: string;
+  intent: string;
+  description?: string;
+}
+
 export interface Message {
   id: string;
   role: 'user' | 'ai';
   content: string;
   attachment?: Attachment; // New: For file uploads
-  thinking?: string[];
+  thinking?: string | string[]; // Supports both string and array format
   suggestedFilters?: FilterState;
   isSuggestionApplied?: boolean;
   inlineResults?: Hospital[]; // New: For showing cards inside chat
   inlineResultTotalCount?: number; // New: Total count of matches found, used to show "View X more"
   showConsultationCTA?: boolean; // New: Trigger for WhatsApp button
+  suggestedActions?: SuggestedAction[]; // New: Guided action pills
   sources?: Source[]; // For Deep Research citations
   searchQueries?: string[]; // For Deep Focus: what queries were searched
   isSearching?: boolean; // For Deep Focus: indicates active web search
@@ -128,8 +136,11 @@ export interface FilterState {
   priceRange?: string[]; // e.g. ['$$', '$$$']
   minRating?: number;    // e.g. 4.5
   accreditation?: string[]; // e.g. ['JCI']
+  languages?: string[]; // e.g. ['English', 'Mandarin']
   userOrigin?: string; // Text-based origin (e.g. "London")
   userLocation?: { lat: number; lng: number }; // Precise GPS coordinates
+  // Sorting
+  sortBy?: 'nearest' | 'rating' | 'price_low' | 'price_high'; // Sort option
 }
 
 export interface ChatSession {
@@ -141,7 +152,7 @@ export interface ChatSession {
 }
 
 export interface ThinkingResponse {
-  thinking: string[];
+  thinking: string;
   message: string;
   suggestedFilters?: {
     country?: string;

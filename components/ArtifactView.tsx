@@ -1,8 +1,8 @@
 
 import React from 'react';
 import { ArtifactData } from '../types';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from 'recharts';
-import { X, ExternalLink, ArrowRight, Table, GitCompare, BarChart3, FileText } from 'lucide-react';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, Legend } from 'recharts';
+import { X, Table, GitCompare, BarChart3, FileText, Sparkles, Download, Copy, Check } from 'lucide-react';
 
 interface ArtifactViewProps {
   artifact: ArtifactData;
@@ -10,7 +10,8 @@ interface ArtifactViewProps {
 }
 
 export const ArtifactView: React.FC<ArtifactViewProps> = ({ artifact, onClose }) => {
-  
+  const [copied, setCopied] = React.useState(false);
+
   const renderContent = () => {
     switch (artifact.type) {
       case 'comparison':
@@ -25,44 +26,79 @@ export const ArtifactView: React.FC<ArtifactViewProps> = ({ artifact, onClose })
   };
 
   const getIcon = () => {
-      switch (artifact.type) {
-          case 'comparison': return <GitCompare className="w-5 h-5 text-indigo-500" />;
-          case 'chart': return <BarChart3 className="w-5 h-5 text-emerald-500" />;
-          case 'table': return <Table className="w-5 h-5 text-blue-500" />;
-          default: return <FileText className="w-5 h-5 text-slate-500" />;
-      }
+    switch (artifact.type) {
+      case 'comparison': return <GitCompare className="w-4 h-4" />;
+      case 'chart': return <BarChart3 className="w-4 h-4" />;
+      case 'table': return <Table className="w-4 h-4" />;
+      default: return <FileText className="w-4 h-4" />;
+    }
+  };
+
+  const getIconBg = () => {
+    switch (artifact.type) {
+      case 'comparison': return 'bg-indigo-100 text-indigo-600';
+      case 'chart': return 'bg-emerald-100 text-emerald-600';
+      case 'table': return 'bg-blue-100 text-blue-600';
+      default: return 'bg-slate-100 text-slate-600';
+    }
+  };
+
+  const handleCopy = () => {
+    // Copy artifact data as JSON
+    navigator.clipboard.writeText(JSON.stringify(artifact.data, null, 2));
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
   };
 
   return (
-    <div className="h-full flex flex-col bg-white overflow-hidden rounded-l-2xl shadow-2xl border-l border-slate-100 animate-in slide-in-from-right duration-500">
-      {/* Header */}
-      <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+    <div className="h-full w-full flex flex-col bg-white overflow-hidden">
+      {/* Claude-style Header */}
+      <div className="flex-shrink-0 px-4 py-3 border-b border-slate-100 flex items-center justify-between bg-white">
         <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-white rounded-lg border border-slate-200 flex items-center justify-center shadow-sm">
-                {getIcon()}
+          <div className={`p-2 rounded-lg ${getIconBg()}`}>
+            {getIcon()}
+          </div>
+          <div>
+            <h3 className="font-semibold text-slate-900 text-sm leading-tight">{artifact.title}</h3>
+            <div className="flex items-center gap-1.5 mt-0.5">
+              <Sparkles className="w-3 h-3 text-amber-500" />
+              <span className="text-[10px] text-slate-400 uppercase tracking-wider font-medium">AI Generated</span>
             </div>
-            <div>
-                <h3 className="font-bold text-slate-900 leading-tight">{artifact.title}</h3>
-                <p className="text-xs text-slate-500 uppercase tracking-wide font-medium">Deep Focus Artifact</p>
-            </div>
+          </div>
         </div>
-        <button 
-          onClick={onClose}
-          className="p-2 hover:bg-white rounded-full text-slate-400 hover:text-slate-600 transition-colors"
-        >
-          <X className="w-5 h-5" />
-        </button>
+        <div className="flex items-center gap-1">
+          <button
+            onClick={handleCopy}
+            className="p-2 hover:bg-slate-100 rounded-lg text-slate-400 hover:text-slate-600 transition-colors"
+            title="Copy data"
+          >
+            {copied ? <Check className="w-4 h-4 text-emerald-500" /> : <Copy className="w-4 h-4" />}
+          </button>
+          <button
+            onClick={onClose}
+            className="p-2 hover:bg-slate-100 rounded-lg text-slate-400 hover:text-slate-600 transition-colors"
+            title="Close"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
       </div>
 
-      {/* Scrollable Content */}
-      <div className="flex-1 overflow-y-auto p-6 md:p-8 bg-slate-50/30">
-         <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-1 min-h-[400px]">
+      {/* Content Area - Claude-style clean design */}
+      <div className="flex-1 overflow-y-auto bg-slate-50/50">
+        <div className="p-4 md:p-6">
+          <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
             {renderContent()}
-         </div>
-         
-         <div className="mt-6 text-center text-xs text-slate-400">
-            Generated by Medifly AI • Clinical Decision Support
-         </div>
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div className="px-6 pb-6">
+          <div className="flex items-center justify-center gap-2 text-[10px] text-slate-400">
+            <Sparkles className="w-3 h-3" />
+            <span>Generated by Dr. Aria • Deep Focus Analysis</span>
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -107,7 +143,7 @@ const ComparisonView = ({ data }: { data: any }) => {
 const ChartView = ({ data }: { data: any }) => {
     // data: { chartType: 'bar'|'line', labels: string[], datasets: { label: string, data: number[] }[] }
     // Transform to Recharts format: [{ name: 'Label', val1: 10, val2: 20 }]
-    
+
     const chartData = data.labels.map((label: string, idx: number) => {
         const entry: any = { name: label };
         data.datasets.forEach((ds: any) => {
@@ -116,48 +152,94 @@ const ChartView = ({ data }: { data: any }) => {
         return entry;
     });
 
-    const colors = ['#6366f1', '#10b981', '#f59e0b', '#ef4444'];
+    const colors = ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4'];
 
     return (
-        <div className="p-6 h-[400px] w-full">
+        <div className="p-6 h-[350px] w-full">
             <ResponsiveContainer width="100%" height="100%">
                 {data.chartType === 'line' ? (
-                    <LineChart data={chartData} margin={{ top: 20, right: 30, left: 0, bottom: 5 }}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-                        <XAxis dataKey="name" stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} />
-                        <YAxis stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} />
-                        <Tooltip 
-                            contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
-                            cursor={{ stroke: '#cbd5e1', strokeWidth: 1 }}
+                    <LineChart data={chartData} margin={{ top: 20, right: 20, left: 0, bottom: 20 }}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" vertical={false} />
+                        <XAxis
+                            dataKey="name"
+                            stroke="#64748b"
+                            fontSize={11}
+                            tickLine={false}
+                            axisLine={false}
+                            dy={10}
+                        />
+                        <YAxis
+                            stroke="#64748b"
+                            fontSize={11}
+                            tickLine={false}
+                            axisLine={false}
+                            dx={-10}
+                        />
+                        <Tooltip
+                            contentStyle={{
+                                borderRadius: '8px',
+                                border: '1px solid #e2e8f0',
+                                boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)',
+                                fontSize: '12px'
+                            }}
+                            cursor={{ stroke: '#cbd5e1', strokeWidth: 1, strokeDasharray: '4 4' }}
+                        />
+                        <Legend
+                            wrapperStyle={{ fontSize: '12px', paddingTop: '10px' }}
+                            iconType="circle"
+                            iconSize={8}
                         />
                         {data.datasets.map((ds: any, idx: number) => (
-                            <Line 
-                                key={idx} 
-                                type="monotone" 
-                                dataKey={ds.label} 
-                                stroke={colors[idx % colors.length]} 
-                                strokeWidth={3}
-                                dot={{ r: 4, fill: 'white', strokeWidth: 2 }}
-                                activeDot={{ r: 6 }}
+                            <Line
+                                key={idx}
+                                type="monotone"
+                                dataKey={ds.label}
+                                stroke={colors[idx % colors.length]}
+                                strokeWidth={2.5}
+                                dot={{ r: 4, fill: 'white', strokeWidth: 2, stroke: colors[idx % colors.length] }}
+                                activeDot={{ r: 6, strokeWidth: 0, fill: colors[idx % colors.length] }}
                             />
                         ))}
                     </LineChart>
                 ) : (
-                    <BarChart data={chartData} margin={{ top: 20, right: 30, left: 0, bottom: 5 }}>
-                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                        <XAxis dataKey="name" stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} />
-                        <YAxis stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} />
-                        <Tooltip 
-                            cursor={{ fill: '#f8fafc' }}
-                            contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
+                    <BarChart data={chartData} margin={{ top: 20, right: 20, left: 0, bottom: 20 }}>
+                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+                        <XAxis
+                            dataKey="name"
+                            stroke="#64748b"
+                            fontSize={11}
+                            tickLine={false}
+                            axisLine={false}
+                            dy={10}
+                        />
+                        <YAxis
+                            stroke="#64748b"
+                            fontSize={11}
+                            tickLine={false}
+                            axisLine={false}
+                            dx={-10}
+                        />
+                        <Tooltip
+                            cursor={{ fill: 'rgba(148, 163, 184, 0.1)' }}
+                            contentStyle={{
+                                borderRadius: '8px',
+                                border: '1px solid #e2e8f0',
+                                boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)',
+                                fontSize: '12px'
+                            }}
+                        />
+                        <Legend
+                            wrapperStyle={{ fontSize: '12px', paddingTop: '10px' }}
+                            iconType="circle"
+                            iconSize={8}
                         />
                         {data.datasets.map((ds: any, idx: number) => (
-                            <Bar 
-                                key={idx} 
-                                dataKey={ds.label} 
-                                fill={colors[idx % colors.length]} 
-                                radius={[6, 6, 0, 0]} 
-                                barSize={40}
+                            <Bar
+                                key={idx}
+                                dataKey={ds.label}
+                                fill={colors[idx % colors.length]}
+                                radius={[4, 4, 0, 0]}
+                                barSize={32}
                             />
                         ))}
                     </BarChart>

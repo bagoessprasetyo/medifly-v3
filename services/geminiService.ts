@@ -69,7 +69,7 @@ export const streamMessageToAria = async function* (
 ): AsyncGenerator<StreamChunk> {
   try {
     // gemini-2.0-flash is the stable V2 endpoint.
-    const model = 'gemini-2.0-flash';
+    const model = 'gemini-2.5-pro';
 
     // Construct the current message contents
     const currentMessageParts: { text?: string; inlineData?: { mimeType: string; data: string } }[] = [];
@@ -99,43 +99,80 @@ export const streamMessageToAria = async function* (
     if (isDeepFocus) {
         systemPrompt += `
 
-[DEEP FOCUS MODE ACTIVE - Enhanced Research Protocol]:
+[DEEP FOCUS MODE ACTIVE - Enhanced Research & Visualization Protocol]:
 
-You are now operating in Deep Focus / Research Mode. Your behavior changes significantly:
+You are operating in Deep Focus / Research Mode. Your behavior changes significantly:
 
 ## Primary Objective
-Provide comprehensive, research-backed medical analysis with proper citations.
+Provide comprehensive, research-backed medical analysis with proper citations and RICH VISUALIZATIONS.
 
 ## Research Requirements
-1. USE the googleSearch tool to find the latest medical research, clinical guidelines, treatment protocols, and peer-reviewed information.
-2. Search for multiple perspectives when topics are complex or controversial.
-3. Look for recent studies, meta-analyses, and authoritative medical sources (Mayo Clinic, NIH, WHO, medical journals).
+1. USE the googleSearch tool to find the latest medical research, clinical guidelines, and treatment protocols.
+2. Look for recent studies, meta-analyses, and authoritative medical sources.
 
-## Citation Format (MANDATORY)
-- When stating facts from your search, use inline citation markers: [1], [2], [3], etc.
-- Place the citation marker immediately after the relevant statement.
-- Example: "Recent studies show that minimally invasive surgery reduces recovery time by 40% [1]."
-- The sources will be automatically displayed to the user - you don't need to list them manually.
+## Visual Artifacts (MANDATORY for Complex Data)
+If you are comparing treatments, showing survival rates, pricing, or timelines, you MUST output an <artifact> block at the end of your response to create a rich visual Canvas.
+
+Supported Artifact Types:
+
+1. **Comparison** (Comparing 2-3 items):
+   <artifact>
+   {
+     "type": "comparison",
+     "title": "Treatment Options Comparison",
+     "data": {
+       "items": ["ACL Reconstruction", "Conservative Rehab"],
+       "metrics": [
+         { "label": "Recovery Time", "values": ["6-9 months", "3-6 months"] },
+         { "label": "Success Rate", "values": ["90-95%", "40-60%"] },
+         { "label": "Cost Estimate", "values": ["$12,000", "$2,000"] }
+       ]
+     }
+   }
+   </artifact>
+
+2. **Chart** (Bar/Line for stats):
+   <artifact>
+   {
+     "type": "chart",
+     "title": "5-Year Survival Rates by Stage",
+     "data": {
+       "chartType": "bar",
+       "labels": ["Stage I", "Stage II", "Stage III", "Stage IV"],
+       "datasets": [
+         { "label": "Survival Rate", "data": [98, 85, 60, 25] }
+       ]
+     }
+   }
+   </artifact>
+
+3. **Table** (Structured Data):
+   <artifact>
+   {
+     "type": "table",
+     "title": "Recommended Screening Schedule",
+     "data": {
+       "columns": ["Age Group", "Frequency", "Test Type"],
+       "rows": [
+         ["20-29", "Every 3 years", "Pap Smear"],
+         ["30-65", "Every 5 years", "HPV + Pap Co-test"]
+       ]
+     }
+   }
+   </artifact>
+
+## Citation Format
+- Use inline citation markers: [1], [2], etc.
+- These will be auto-linked to sources.
 
 ## Response Structure
-1. <thinking> - Deep clinical reasoning, differential considerations, what you're searching for and why
-2. Main response with inline citations [1], [2], etc.
-3. Clearly distinguish between established medical consensus vs. emerging research vs. your analytical synthesis
-4. Include limitations and when the user should consult specialists
-
-## Marketplace Integration
-- If the user explicitly asks to find, list, or recommend hospitals/doctors, you MUST output the <filters> JSON block at the end (same format as standard mode).
-- However, your text response should still focus on clinical/research analysis of *why* those options might be suitable (e.g. "Hospital X has published research on Y").
-
-## Quality Standards
-- Prioritize recency: prefer sources from the last 2-3 years when available
-- Prioritize authority: medical institutions, peer-reviewed journals, official guidelines
-- Be transparent about uncertainty or conflicting evidence
-- Never present searched information as your own knowledge - always cite
+1. <thinking> - Clinical reasoning & search strategy
+2. Main text response with citations.
+3. [Optional] <filters> JSON for marketplace.
+4. [Optional] <artifact> JSON for visual canvas (One artifact per message).
 
 ## What NOT to do
-- Do NOT rush to conclusions - thorough analysis is expected
-- Do NOT omit citations - every factual claim from search must be cited
+- Do NOT output the artifact JSON inside a markdown code block (\`\`\`json). Output it strictly between <artifact> tags.
 `;
     }
 
@@ -155,12 +192,11 @@ Provide comprehensive, research-backed medical analysis with proper citations.
         history: history
     });
 
-    // Signal that we're starting (and potentially searching in Deep Focus mode)
+    // Signal that we're starting
     if (isDeepFocus) {
         yield { text: '', isSearching: true };
     }
 
-    // FIXED: Use 'message' parameter
     const result = await chat.sendMessageStream({
         message: currentMessageParts
     });
@@ -172,7 +208,7 @@ Provide comprehensive, research-backed medical analysis with proper citations.
     for await (const chunk of result) {
         const text = chunk.text;
 
-        // Check for grounding metadata (may appear in any chunk, but typically later/final)
+        // Check for grounding metadata
         const groundingMetadata = (chunk as any).candidates?.[0]?.groundingMetadata as GroundingMetadata | undefined;
 
         if (groundingMetadata) {
@@ -208,7 +244,7 @@ Provide comprehensive, research-backed medical analysis with proper citations.
         }
     }
 
-    // Final yield with all accumulated metadata (ensures sources are captured even if they come at the end)
+    // Final yield with all accumulated metadata
     if (accumulatedSources.length > 0 || accumulatedSearchQueries.length > 0) {
         yield {
             text: '',

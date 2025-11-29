@@ -1,10 +1,11 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Send, Sparkles, User, Loader2, ArrowRight, LayoutGrid, MapPin, Star, PanelLeftClose, Paperclip, Bot, History, Plus, MessageSquare, Clock, Check, X, ChevronUp, ChevronDown, Search, Plane, FileText, Image as ImageIcon, MessageCircle, LogOut, Telescope, Globe, ExternalLink, RefreshCw } from 'lucide-react';
-import { Message, FilterState, Hospital, ChatSession, Attachment } from '../types';
+import { Send, Sparkles, User, Loader2, ArrowRight, LayoutGrid, MapPin, Star, PanelLeftClose, Paperclip, Bot, History, Plus, MessageSquare, Clock, Check, X, ChevronUp, ChevronDown, Search, Plane, FileText, Image as ImageIcon, MessageCircle, LogOut, Telescope, Globe, ExternalLink, RefreshCw, BarChart3, Table, GitCompare } from 'lucide-react';
+import { Message, FilterState, Hospital, ChatSession, Attachment, ArtifactData } from '../types';
 import { streamMessageToAria } from '../services/geminiService';
 import { ThinkingProcess } from './ThinkingProcess';
-import { HOSPITALS, calculateDistance, getCoordinatesForCity } from '../constants'; 
+import { ArtifactView } from './ArtifactView';
+import { HOSPITALS, calculateDistance, getCoordinatesForCity } from '../constants';
 import ReactMarkdown from 'react-markdown';
 // import { LanguageSelector } from './ui/LanguageSelector';
 import { InteractiveBody } from './InteractiveBody';
@@ -27,44 +28,51 @@ interface ChatInterfaceProps {
   onToggleDeepFocus?: () => void;
 }
 
+interface SuggestedAction {
+  label: string;
+  intent: string;
+  context?: string;
+}
+
 const parseStreamedContent = (text: string) => {
   let thinking: string[] | undefined = undefined;
   let message = text;
   let suggestedFilters: any = undefined;
   let showConsultationCTA = false;
+  let suggestedActions: SuggestedAction[] | undefined = undefined;
 
   const startTag = "<thinking>";
   const endTag = "</thinking>";
-  
+
   // Use indexOf instead of regex for reliable partial stream detection
   let startIndex = text.indexOf(startTag);
   const endIndex = text.indexOf(endTag);
-  
+
   if (startIndex !== -1) {
       // Thinking block has started
       let thinkContent = "";
-      
+
       if (endIndex !== -1) {
           // Block is complete
           thinkContent = text.substring(startIndex + startTag.length, endIndex);
-          
+
           // Remove the thinking block from the visible message
           const beforeTag = text.substring(0, startIndex);
           const afterTag = text.substring(endIndex + endTag.length);
-          
+
           // Clean up "Thinking Process:" prefix if it exists before the tag
           const cleanBeforeTag = beforeTag.replace(/(\*\*|#)?\s*(Thinking|Reasoning|Process).*:?\s*$/i, '').trim();
-          
+
           message = cleanBeforeTag + (cleanBeforeTag ? '\n\n' : '') + afterTag;
 
       } else {
           // Block is still streaming (open but not closed)
           thinkContent = text.substring(startIndex + startTag.length);
-          
+
           // Hide everything including the prefix "Thinking:" if present
           const beforeTag = text.substring(0, startIndex);
           const cleanBeforeTag = beforeTag.replace(/(\*\*|#)?\s*(Thinking|Reasoning|Process).*:?\s*$/i, '').trim();
-          
+
           message = cleanBeforeTag;
       }
 
@@ -73,47 +81,195 @@ const parseStreamedContent = (text: string) => {
       const steps = rawSteps
           .map(s => s.trim())
           .filter(s => s.length > 0);
-      
+
       thinking = steps;
   }
 
-  // Extract Filters Block
+  // Safety check: Ensure message is always a string, not an array
+  if (Array.isArray(message)) {
+      message = message.join('\n');
+  }
+  if (typeof message !== 'string') {
+      message = String(message || '');
+  }
+
+  // Helper function to parse actions JSON and extract suggestedActions
+  const parseActionsJson = (jsonStr: string): boolean => {
+      try {
+          const parsed = JSON.parse(jsonStr);
+          if (parsed.suggested_actions && Array.isArray(parsed.suggested_actions)) {
+              suggestedActions = parsed.suggested_actions.map((action: any) => ({
+                  label: action.label || '',
+                  intent: action.intent || '',
+                  context: action.context || action.description || ''
+              }));
+              // Check if any action has speak_to_team or book_consultation intent
+              if (parsed.suggested_actions.some((a: any) =>
+                  a.intent === 'speak_to_team' ||
+                  a.intent === 'book_consultation' ||
+                  a.intent === 'request_quote'
+              )) {
+                  showConsultationCTA = true;
+              }
+              return true;
+          }
+      } catch (e) {
+          // Ignore parse errors
+      }
+      return false;
+  };
+
+  // Helper function to parse filters JSON
+  const parseFiltersJson = (jsonStr: string): boolean => {
+      try {
+          const parsed = JSON.parse(jsonStr);
+          if (parsed.country !== undefined || parsed.specialty !== undefined || parsed.aiListName !== undefined) {
+              suggestedFilters = parsed;
+              return true;
+          }
+      } catch (e) {
+          // Ignore parse errors
+      }
+      return false;
+  };
+
+  // Extract Actions Block with <actions> tags
+  const actionsStart = message.indexOf('<actions>');
+  const actionsEnd = message.indexOf('</actions>');
+
+  if (actionsStart !== -1) {
+      if (actionsEnd !== -1) {
+          let actionsContent = message.substring(actionsStart + 9, actionsEnd);
+          actionsContent = actionsContent.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
+          parseActionsJson(actionsContent);
+          message = message.substring(0, actionsStart) + message.substring(actionsEnd + 10);
+      } else {
+          message = message.substring(0, actionsStart);
+      }
+  }
+
+  // Extract Filters Block with <filters> tags
   const filterStart = message.indexOf('<filters>');
   const filterEnd = message.indexOf('</filters>');
 
   if (filterStart !== -1) {
       if (filterEnd !== -1) {
           let filterContent = message.substring(filterStart + 9, filterEnd);
-          
-          // Sanitize: Remove markdown code blocks if AI puts them despite instructions
-          filterContent = filterContent.replace(/```json/g, '').replace(/```/g, '').trim();
-
-          try {
-              suggestedFilters = JSON.parse(filterContent);
-          } catch (e) { 
-              // Ignore incomplete JSON
-          }
-          // Hide the filter block from the user view
+          filterContent = filterContent.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
+          parseFiltersJson(filterContent);
           message = message.substring(0, filterStart) + message.substring(filterEnd + 10);
       } else {
-          // Incomplete filter block, hide it
           message = message.substring(0, filterStart);
       }
   }
 
-  // Extract CTA Tag
+  // Remove "Suggested Actions" header followed by JSON (with or without code blocks)
+  // Pattern: ### Suggested Actions or **Suggested Actions** or Suggested Actions followed by JSON
+  const suggestedActionsHeaderRegex = /(?:#{1,3}\s*)?(?:\*\*)?Suggested Actions(?:\*\*)?\s*\n+(?:```(?:json)?\s*)?\{\s*"suggested_actions"\s*:\s*\[[\s\S]*?\]\s*\}(?:\s*```)?/gi;
+  let headerMatch = message.match(suggestedActionsHeaderRegex);
+  if (headerMatch) {
+      headerMatch.forEach(match => {
+          const jsonMatch = match.match(/\{[\s\S]*\}/);
+          if (jsonMatch && !suggestedActions) {
+              parseActionsJson(jsonMatch[0]);
+          }
+          message = message.replace(match, '').trim();
+      });
+  }
+
+  // Remove "Filters" header followed by JSON
+  const filtersHeaderRegex = /(?:#{1,3}\s*)?(?:\*\*)?Filters(?:\*\*)?\s*\n+(?:```(?:json)?\s*)?\{\s*"(?:country|specialty|aiListName|procedure|languages|minRating|accreditation|sortBy)"[\s\S]*?\}(?:\s*```)?/gi;
+  let filtersHeaderMatch = message.match(filtersHeaderRegex);
+  if (filtersHeaderMatch) {
+      filtersHeaderMatch.forEach(match => {
+          const jsonMatch = match.match(/\{[\s\S]*\}/);
+          if (jsonMatch && !suggestedFilters) {
+              parseFiltersJson(jsonMatch[0]);
+          }
+          message = message.replace(match, '').trim();
+      });
+  }
+
+  // Remove markdown code blocks containing suggested_actions JSON
+  const codeBlockActionsRegex = /```(?:json)?\s*\{\s*"suggested_actions"\s*:\s*\[[\s\S]*?\]\s*\}\s*```/gi;
+  let codeBlockMatch = message.match(codeBlockActionsRegex);
+  if (codeBlockMatch) {
+      codeBlockMatch.forEach(match => {
+          const jsonStr = match.replace(/```(?:json)?\s*/gi, '').replace(/\s*```/g, '').trim();
+          if (!suggestedActions) {
+              parseActionsJson(jsonStr);
+          }
+          message = message.replace(match, '').trim();
+      });
+  }
+
+  // Remove markdown code blocks containing filters JSON
+  const codeBlockFiltersRegex = /```(?:json)?\s*\{\s*"(?:country|specialty|aiListName|procedure)"[\s\S]*?\}\s*```/gi;
+  let codeBlockFiltersMatch = message.match(codeBlockFiltersRegex);
+  if (codeBlockFiltersMatch) {
+      codeBlockFiltersMatch.forEach(match => {
+          const jsonStr = match.replace(/```(?:json)?\s*/gi, '').replace(/\s*```/g, '').trim();
+          if (!suggestedFilters) {
+              parseFiltersJson(jsonStr);
+          }
+          message = message.replace(match, '').trim();
+      });
+  }
+
+  // Catch raw JSON actions without code blocks or tags
+  const rawActionsJsonRegex = /\{\s*"suggested_actions"\s*:\s*\[[\s\S]*?\]\s*\}/g;
+  let rawActionsMatches = message.match(rawActionsJsonRegex);
+  if (rawActionsMatches) {
+      rawActionsMatches.forEach(match => {
+          if (!suggestedActions) {
+              parseActionsJson(match);
+          }
+          message = message.replace(match, '').trim();
+      });
+  }
+
+  // Catch raw filters JSON without code blocks or tags
+  const rawFiltersJsonRegex = /\{\s*"(?:country|specialty|aiListName)"\s*:\s*(?:"[^"]*"|null)[\s\S]*?\}/g;
+  let rawFiltersMatches = message.match(rawFiltersJsonRegex);
+  if (rawFiltersMatches) {
+      rawFiltersMatches.forEach(match => {
+          if (!suggestedFilters) {
+              parseFiltersJson(match);
+          }
+          message = message.replace(match, '').trim();
+      });
+  }
+
+  // Extract CTA Tag (legacy support)
   const ctaStart = message.indexOf('<cta>');
   const ctaEnd = message.indexOf('</cta>');
-  
+
   if (ctaStart !== -1 && ctaEnd !== -1) {
       showConsultationCTA = true;
       message = message.substring(0, ctaStart) + message.substring(ctaEnd + 6);
   } else if (ctaStart !== -1) {
-      // Incomplete CTA tag, hide it
       message = message.substring(0, ctaStart);
   }
 
-  return { thinking, message: message.trim(), suggestedFilters, showConsultationCTA };
+  // Final cleanup - remove any trailing whitespace, leftover tags, headers, and orphaned code block markers
+  message = message
+      .replace(/<\/actions>/g, '')
+      .replace(/<\/filters>/g, '')
+      .replace(/<\/cta>/g, '')
+      .replace(/<actions>/g, '')
+      .replace(/<filters>/g, '')
+      .replace(/<cta>/g, '')
+      .replace(/```json\s*```/g, '')
+      .replace(/```\s*```/g, '')
+      // Remove orphaned "Suggested Actions" or "Filters" headers
+      .replace(/(?:#{1,3}\s*)?(?:\*\*)?Suggested Actions(?:\*\*)?\s*$/gim, '')
+      .replace(/(?:#{1,3}\s*)?(?:\*\*)?Filters(?:\*\*)?\s*$/gim, '')
+      .trim();
+
+  // Remove any trailing empty lines or excessive whitespace
+  message = message.replace(/\n{3,}/g, '\n\n').trim();
+
+  return { thinking, message, suggestedFilters, showConsultationCTA, suggestedActions };
 };
 
 // Mock User Interface
@@ -143,10 +299,13 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
   const [isLoading, setIsLoading] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
   const [selectedFile, setSelectedFile] = useState<Attachment | null>(null);
-  
+
   // Deep Focus Intro State - Shows body map on entry
   const [showDeepFocusIntro, setShowDeepFocusIntro] = useState(false);
-  
+
+  // Artifact State - Claude-like side panel
+  const [activeArtifact, setActiveArtifact] = useState<ArtifactData | null>(null);
+
   // Auth State
   const [user, setUser] = useState<UserProfile | null>(null);
   const [isLoggingIn, setIsLoggingIn] = useState(false);
@@ -370,27 +529,43 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
             const parsed = parseStreamedContent(fullText);
 
             // Update the specific AI message in the current session
-            onUpdateSessionMessages(currentSession.id, messagesWithPlaceholder.map(m =>
-                m.id === aiMsgId
-                ? {
-                    ...m,
-                    content: parsed.message,
-                    thinking: parsed.thinking,
-                    showConsultationCTA: parsed.showConsultationCTA,
-                    sources: accumulatedSources.length > 0 ? accumulatedSources : undefined,
-                    searchQueries: accumulatedSearchQueries.length > 0 ? accumulatedSearchQueries : undefined,
-                    isSearching: currentIsSearching,
-                    suggestedFilters: parsed.suggestedFilters
-                        ? {
-                            searchQuery: '',
-                            country: parsed.suggestedFilters.country,
-                            specialty: parsed.suggestedFilters.specialty,
-                            aiListName: parsed.suggestedFilters.aiListName
-                        }
-                        : undefined
-                  }
-                : m
-            ));
+            onUpdateSessionMessages(currentSession.id, messagesWithPlaceholder.map(m => {
+                if (m.id === aiMsgId) {
+                    // Preserve thinking if it was already set (don't let it become undefined)
+                    const thinkingToUse = parsed.thinking && parsed.thinking.length > 0
+                        ? parsed.thinking
+                        : m.thinking; // Keep previous thinking if new one is empty/undefined
+
+                    // Preserve suggestedActions if already set
+                    const actionsToUse = parsed.suggestedActions && parsed.suggestedActions.length > 0
+                        ? parsed.suggestedActions
+                        : m.suggestedActions;
+
+                    return {
+                        ...m,
+                        content: parsed.message,
+                        thinking: thinkingToUse,
+                        showConsultationCTA: parsed.showConsultationCTA,
+                        suggestedActions: actionsToUse,
+                        sources: accumulatedSources.length > 0 ? accumulatedSources : undefined,
+                        searchQueries: accumulatedSearchQueries.length > 0 ? accumulatedSearchQueries : undefined,
+                        isSearching: currentIsSearching,
+                        suggestedFilters: parsed.suggestedFilters
+                            ? {
+                                searchQuery: '',
+                                country: parsed.suggestedFilters.country,
+                                specialty: parsed.suggestedFilters.specialty,
+                                aiListName: parsed.suggestedFilters.aiListName,
+                                languages: parsed.suggestedFilters.languages,
+                                minRating: parsed.suggestedFilters.minRating,
+                                accreditation: parsed.suggestedFilters.accreditation,
+                                sortBy: parsed.suggestedFilters.sortBy
+                            }
+                            : undefined
+                    };
+                }
+                return m;
+            }));
         }
     } catch (error) {
         console.error("Streaming error:", error);
@@ -440,7 +615,9 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
   const sortedSessions = [...sessions].sort((a, b) => b.updatedAt - a.updatedAt);
 
   return (
-    <div className="flex flex-col h-full bg-white z-20 relative overflow-hidden transition-all duration-700">
+    <div className="flex h-full bg-white z-20 relative overflow-hidden transition-all duration-700">
+      {/* Main Chat Area */}
+      <div className={`flex flex-col h-full flex-1 min-w-0 transition-all duration-500 ${activeArtifact ? 'md:w-1/2' : 'w-full'}`}>
       {/* Header */}
       <div className="flex-shrink-0 px-4 py-3 flex items-center justify-between bg-white z-50 border-b border-slate-50 shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
         <div className="flex items-center gap-2">
@@ -642,13 +819,35 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
                             </div>
                             
                             <div className="flex-1 space-y-2 min-w-0">
-                                {/* Thinking Process Accordion */}
-                                {msg.thinking !== undefined && (
-                                    <ThinkingProcess steps={msg.thinking} />
-                                )}
+                                {/* Thinking Process - Always show if thinking exists, or during loading for current message */}
+                                {(() => {
+                                    const hasThinking = msg.thinking && (
+                                        (Array.isArray(msg.thinking) && msg.thinking.length > 0) ||
+                                        (typeof msg.thinking === 'string' && msg.thinking.trim().length > 0)
+                                    );
+                                    const isCurrentStreamingMessage = isLoading && msg.id === currentSession.messages[currentSession.messages.length - 1]?.id;
+                                    const shouldShowThinking = hasThinking || isCurrentStreamingMessage;
+
+                                    if (!shouldShowThinking) return null;
+
+                                    // Normalize thinking to array format
+                                    let thinkingSteps: string[] = [];
+                                    if (Array.isArray(msg.thinking)) {
+                                        thinkingSteps = msg.thinking;
+                                    } else if (typeof msg.thinking === 'string' && msg.thinking.trim()) {
+                                        thinkingSteps = msg.thinking.split('\n').map(s => s.trim()).filter(s => s.length > 0);
+                                    }
+
+                                    return (
+                                        <ThinkingProcess
+                                            steps={thinkingSteps}
+                                            isStreaming={isCurrentStreamingMessage && !msg.content}
+                                        />
+                                    );
+                                })()}
                                 
                                 {/* Markdown Content - Wrapped in Soft Brown */}
-                                {msg.content && (
+                                {msg.content && typeof msg.content === 'string' && (
                                     <div className={`p-5 rounded-2xl rounded-tl-sm text-slate-900 shadow-sm border ${isDeepFocusMode ? 'bg-white border-indigo-50' : 'bg-[#F4F0EE] border-slate-100/50'}`}>
                                         <div className="prose prose-slate prose-sm max-w-none prose-p:leading-7 prose-li:marker:text-[#6495ED] prose-headings:text-slate-900 prose-headings:font-bold prose-strong:text-slate-900">
                                             <ReactMarkdown>{msg.content}</ReactMarkdown>
@@ -703,10 +902,39 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
                                     </div>
                                 )}
 
+                                {/* Artifact Button - Claude-style */}
+                                {msg.artifact && (
+                                    <button
+                                        onClick={() => setActiveArtifact(msg.artifact!)}
+                                        className={`mt-3 flex items-center gap-3 w-full p-4 rounded-xl border-2 transition-all group/artifact animate-in fade-in slide-in-from-top-2 duration-300
+                                            ${activeArtifact?.title === msg.artifact.title
+                                                ? 'border-indigo-300 bg-indigo-50 shadow-md'
+                                                : 'border-slate-200 bg-white hover:border-indigo-200 hover:bg-indigo-50/50 hover:shadow-md'
+                                            }
+                                        `}
+                                    >
+                                        <div className={`p-2.5 rounded-lg ${
+                                            msg.artifact.type === 'chart' ? 'bg-emerald-100 text-emerald-600' :
+                                            msg.artifact.type === 'comparison' ? 'bg-indigo-100 text-indigo-600' :
+                                            msg.artifact.type === 'table' ? 'bg-blue-100 text-blue-600' :
+                                            'bg-slate-100 text-slate-600'
+                                        }`}>
+                                            {msg.artifact.type === 'chart' && <BarChart3 className="w-5 h-5" />}
+                                            {msg.artifact.type === 'comparison' && <GitCompare className="w-5 h-5" />}
+                                            {msg.artifact.type === 'table' && <Table className="w-5 h-5" />}
+                                        </div>
+                                        <div className="flex-1 text-left">
+                                            <p className="font-semibold text-slate-900 text-sm">{msg.artifact.title}</p>
+                                            <p className="text-xs text-slate-500 capitalize">{msg.artifact.type} visualization</p>
+                                        </div>
+                                        <ArrowRight className="w-4 h-4 text-slate-400 group-hover/artifact:text-indigo-500 group-hover/artifact:translate-x-1 transition-all" />
+                                    </button>
+                                )}
+
                                 {/* WhatsApp CTA Button - Updated to Premium Dark Style */}
                                 {msg.showConsultationCTA && (
                                     <div className="mt-3 animate-in fade-in slide-in-from-top-2 duration-300">
-                                        <a 
+                                        <a
                                             href="https://wa.me/6281291690707?text=Hello%2C%20I%20was%20chatting%20with%20Aria%20about%20my%20medical%20needs%20and%20would%20like%20more%20insight."
                                             target="_blank"
                                             rel="noopener noreferrer"
@@ -716,6 +944,42 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
                                             <span>Connect with a Care Coordinator</span>
                                             <ArrowRight className="w-4 h-4 opacity-70 group-hover/wa:translate-x-1 transition-transform" />
                                         </a>
+                                    </div>
+                                )}
+
+                                {/* Suggested Actions - Clean GPT-like design */}
+                                {msg.suggestedActions && msg.suggestedActions.length > 0 && (
+                                    <div className="mt-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
+                                        <div className="flex flex-wrap gap-2">
+                                            {msg.suggestedActions.map((action, idx) => {
+                                                // Special handling for speak_to_team - open WhatsApp
+                                                if (action.intent === 'speak_to_team' || action.intent === 'book_consultation') {
+                                                    return (
+                                                        <a
+                                                            key={idx}
+                                                            href="https://wa.me/6281291690707?text=Hello%2C%20I%20was%20chatting%20with%20Aria%20about%20my%20medical%20needs%20and%20would%20like%20more%20insight."
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            className="group flex items-center gap-2 px-4 py-2.5 bg-emerald-50 border border-emerald-200 rounded-xl text-sm font-medium text-emerald-700 hover:bg-emerald-100 hover:border-emerald-300 transition-all shadow-sm"
+                                                        >
+                                                            <MessageCircle className="w-3.5 h-3.5" />
+                                                            <span>{action.label}</span>
+                                                            <ExternalLink className="w-3 h-3 text-emerald-500 group-hover:text-emerald-600" />
+                                                        </a>
+                                                    );
+                                                }
+                                                return (
+                                                    <button
+                                                        key={idx}
+                                                        onClick={() => handleSend(action.context || action.label)}
+                                                        className="group flex items-center gap-2 px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm font-medium text-slate-700 hover:bg-slate-50 hover:border-slate-300 hover:text-slate-900 transition-all shadow-sm"
+                                                    >
+                                                        <span>{action.label}</span>
+                                                        <ArrowRight className="w-3.5 h-3.5 text-slate-400 group-hover:text-slate-600 group-hover:translate-x-0.5 transition-all" />
+                                                    </button>
+                                                );
+                                            })}
+                                        </div>
                                     </div>
                                 )}
 
@@ -982,6 +1246,29 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
             </div>
         </div>
       </div>
+      </div>
+
+      {/* Claude-style Artifact Side Panel */}
+      {activeArtifact && (
+        <div className="hidden md:flex w-1/2 h-full border-l border-slate-200 animate-in slide-in-from-right duration-500">
+          <ArtifactView
+            artifact={activeArtifact}
+            onClose={() => setActiveArtifact(null)}
+          />
+        </div>
+      )}
+
+      {/* Mobile Artifact Modal */}
+      {activeArtifact && (
+        <div className="md:hidden fixed inset-0 z-50 bg-black/50 animate-in fade-in duration-300">
+          <div className="absolute inset-x-0 bottom-0 top-16 bg-white rounded-t-2xl animate-in slide-in-from-bottom duration-500">
+            <ArtifactView
+              artifact={activeArtifact}
+              onClose={() => setActiveArtifact(null)}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 };

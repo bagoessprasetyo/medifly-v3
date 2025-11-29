@@ -1,6 +1,5 @@
-
 import React, { useState } from 'react';
-import { Building2, Stethoscope, Package, Users, Menu, X, ArrowRight } from 'lucide-react';
+import { Menu, X, Plane, ArrowRight } from 'lucide-react';
 import { LanguageSelector } from './ui/Languageselector';
 // import { LanguageSelector } from './ui/LanguageSelector';
 
@@ -29,53 +28,57 @@ export const Navbar: React.FC<NavbarProps> = ({
   };
 
   return (
-    <nav className="sticky top-0 z-50 bg-white border-b border-slate-100 h-20 w-full">
-        <div className="max-w-[1760px] mx-auto px-6 md:px-12 h-full flex items-center justify-between">
-          {/* Logo */}
-          <div className="flex items-center gap-2 flex-1 lg:flex-none cursor-pointer z-50" onClick={onNavigateToHome}>
-             <div className="w-6 h-6 bg-black rounded-tr-lg rounded-bl-lg rounded-br-sm"></div>
-             <span className="font-bold text-xl text-slate-900 tracking-tight">Medifly</span>
+    <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-slate-100 h-20 w-full transition-all">
+        <div className="max-w-7xl mx-auto px-6 h-full flex items-center justify-between">
+          
+          {/* Logo Section */}
+          <div className="flex items-center gap-2 group cursor-pointer" onClick={onNavigateToHome}>
+            <div className="w-8 h-8 bg-teal-600 rounded-lg flex items-center justify-center text-white shadow-lg shadow-teal-600/20 group-hover:scale-105 transition-transform duration-300">
+                <Plane className="w-4 h-4 rotate-[-45deg]" strokeWidth={2.5} />
+            </div>
+            <span className="text-lg font-semibold tracking-tight text-slate-900">Medifly</span>
           </div>
 
           {/* Desktop Center Nav */}
-          <div className="hidden lg:flex items-center justify-center gap-8 text-sm font-medium text-gray-600 absolute left-1/2 -translate-x-1/2">
+          <div className="hidden md:flex items-center gap-8">
+             <button 
+                onClick={onNavigateToHome}
+                className="text-sm font-medium text-slate-500 hover:text-slate-900 transition-colors"
+             >
+                How it works
+             </button>
              <button 
                 onClick={onNavigateToMarketplace}
-                className="flex items-center gap-2 hover:text-black transition-colors"
+                className="text-sm font-medium text-slate-500 hover:text-slate-900 transition-colors"
              >
-                <Building2 className="w-4 h-4" /> Hospitals
+                Hospitals
              </button>
              <button 
                 onClick={onNavigateToDoctors}
-                className="flex items-center gap-2 hover:text-black transition-colors"
+                className="text-sm font-medium text-slate-500 hover:text-slate-900 transition-colors"
              >
-                <Stethoscope className="w-4 h-4" /> Doctors
+                Doctors
              </button>
              <button 
                 onClick={onNavigateToPackages}
-                className="flex items-center gap-2 hover:text-black transition-colors"
+                className="text-sm font-medium text-slate-500 hover:text-slate-900 transition-colors"
              >
-                <Package className="w-4 h-4" /> Packages
-             </button>
-             <button 
-                className="flex items-center gap-2 hover:text-black transition-colors"
-             >
-                <Users className="w-4 h-4" /> About Us
+                Packages
              </button>
           </div>
 
-          {/* Right Actions - User Pill (Desktop) */}
-          <div className="hidden lg:flex flex-1 justify-end gap-3">
-             <div className="hidden md:block">
+          {/* Right Actions */}
+          <div className="hidden md:flex items-center gap-4">
+             <div className="hidden lg:block">
                   <LanguageSelector selectedLanguage={selectedLanguage} onLanguageChange={onLanguageChange} />
              </div>
-             <button className="bg-[#111] text-white text-sm font-medium px-4 py-2 rounded-lg hover:bg-black/90 transition shadow-sm">
-                Get Started
+             <button className="text-sm font-medium bg-slate-900 text-white px-5 py-2.5 rounded-full hover:bg-slate-800 transition-colors shadow-sm hover:shadow-md">
+                Sign in
              </button>
           </div>
 
           {/* Mobile Menu Toggle */}
-          <div className="lg:hidden flex items-center gap-4">
+          <div className="md:hidden flex items-center gap-4">
              <button 
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                 className="p-2 -mr-2 text-slate-900 z-50 relative"
@@ -87,33 +90,27 @@ export const Navbar: React.FC<NavbarProps> = ({
 
         {/* Mobile Menu Overlay */}
         {isMobileMenuOpen && (
-            <div className="fixed inset-0 bg-white z-40 lg:hidden flex flex-col pt-24 px-6 animate-in slide-in-from-top-10 duration-200">
+            <div className="fixed inset-0 bg-white z-40 md:hidden flex flex-col pt-24 px-6 animate-in slide-in-from-top-10 duration-200">
                 <div className="space-y-6">
                     <button 
                         onClick={() => handleMobileNav(onNavigateToMarketplace)}
                         className="flex items-center justify-between w-full text-lg font-semibold text-slate-900 border-b border-slate-100 pb-4"
                     >
-                        <span className="flex items-center gap-3"><Building2 className="w-5 h-5 text-slate-500" /> Hospitals</span>
+                        <span>Hospitals</span>
                         <ArrowRight className="w-5 h-5 text-slate-300" />
                     </button>
                     <button 
                         onClick={() => handleMobileNav(onNavigateToDoctors)}
                         className="flex items-center justify-between w-full text-lg font-semibold text-slate-900 border-b border-slate-100 pb-4"
                     >
-                        <span className="flex items-center gap-3"><Stethoscope className="w-5 h-5 text-slate-500" /> Doctors</span>
+                        <span>Doctors</span>
                         <ArrowRight className="w-5 h-5 text-slate-300" />
                     </button>
                     <button 
                         onClick={() => handleMobileNav(onNavigateToPackages || (() => {}))}
                         className="flex items-center justify-between w-full text-lg font-semibold text-slate-900 border-b border-slate-100 pb-4"
                     >
-                        <span className="flex items-center gap-3"><Package className="w-5 h-5 text-slate-500" /> Packages</span>
-                        <ArrowRight className="w-5 h-5 text-slate-300" />
-                    </button>
-                    <button 
-                        className="flex items-center justify-between w-full text-lg font-semibold text-slate-900 border-b border-slate-100 pb-4"
-                    >
-                        <span className="flex items-center gap-3"><Users className="w-5 h-5 text-slate-500" /> About Us</span>
+                        <span>Packages</span>
                         <ArrowRight className="w-5 h-5 text-slate-300" />
                     </button>
                 </div>
@@ -123,8 +120,8 @@ export const Navbar: React.FC<NavbarProps> = ({
                         <span className="text-sm font-medium text-slate-500">Language</span>
                         <LanguageSelector selectedLanguage={selectedLanguage} onLanguageChange={onLanguageChange} />
                     </div>
-                    <button className="w-full bg-[#111] text-white text-base font-semibold py-4 rounded-xl hover:bg-black/90 transition shadow-sm mt-4">
-                        Get Started
+                    <button className="w-full bg-slate-900 text-white text-base font-semibold py-4 rounded-xl hover:bg-black transition shadow-sm mt-4">
+                        Sign in
                     </button>
                 </div>
             </div>

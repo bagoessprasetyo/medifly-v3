@@ -22,6 +22,8 @@ interface HospitalPageProps {
 
 export const HospitalPage: React.FC<HospitalPageProps> = ({ hospital, onBack, onNavigateToHospitals, onNavigateToDoctors, onViewGallery, onViewFacilities }) => {
   
+  const [activeTab, setActiveTab] = useState('overview');
+
   // Scroll to top on mount
   useEffect(() => {
     const scrollContainer = document.getElementById('main-content-area');
@@ -32,29 +34,93 @@ export const HospitalPage: React.FC<HospitalPageProps> = ({ hospital, onBack, on
     }
   }, [hospital.id]);
 
+  // Scroll Spy Logic to update active tab on scroll
+  useEffect(() => {
+    const handleScrollSpy = () => {
+        const mainContainer = document.getElementById('main-content-area');
+        if (!mainContainer) return;
+
+        // Offset for header (Navbar 80px + Sticky Header ~72px + spacing)
+        const headerOffset = 180; 
+        const scrollPosition = mainContainer.scrollTop + headerOffset;
+
+        const sections = ['overview', 'specialization', 'doctors', 'facilities', 'packages'];
+        
+        for (const sectionId of sections) {
+            const element = document.getElementById(sectionId);
+            if (element) {
+                // offsetTop is relative to the scroll container since it has position: relative
+                const { offsetTop, offsetHeight } = element;
+                
+                if (scrollPosition >= offsetTop && scrollPosition < offsetTop + offsetHeight) {
+                    setActiveTab(sectionId);
+                    break;
+                }
+            }
+        }
+    };
+
+    const mainContainer = document.getElementById('main-content-area');
+    if (mainContainer) {
+        mainContainer.addEventListener('scroll', handleScrollSpy);
+        // Initial check
+        handleScrollSpy();
+    }
+
+    return () => {
+        if (mainContainer) {
+            mainContainer.removeEventListener('scroll', handleScrollSpy);
+        }
+    };
+  }, []);
+
+  const scrollToSection = (id: string) => {
+    // Optimistic update
+    setActiveTab(id);
+    
+    const element = document.getElementById(id);
+    // Navbar (80px) + Sticky Header (72px) + visual breathing room (~30px)
+    const offset = 180; 
+    
+    if (element) {
+        const mainContainer = document.getElementById('main-content-area');
+        if (mainContainer) {
+             const elementTop = element.offsetTop;
+             mainContainer.scrollTo({
+                 top: elementTop - offset,
+                 behavior: 'smooth'
+             });
+        }
+    }
+  };
+
   const relatedHospitals = HOSPITALS.filter(h => h.id !== hospital.id && h.country === hospital.country).slice(0, 4);
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(2);
 
   // Helper to safely get images or fallback
   const getImages = (count: number) => {
-      // Default to empty array if undefined
       const sourceImages = hospital.images || [];
-      // Use array spread to copy, or fallback to main image if array is empty
       const imgs = sourceImages.length > 0 ? [...sourceImages] : [hospital.imageUrl];
-      
-      // Pad with main image if not enough to fill the grid (prevents layout break)
       while (imgs.length < count) {
           imgs.push(imgs[0] || hospital.imageUrl || 'https://via.placeholder.com/800x600');
       }
       return imgs.slice(0, count);
   };
 
-  const galleryImages = getImages(5); // 1 main + 4 side
+  const galleryImages = getImages(5);
+
+  const tabs = [
+      { id: 'overview', label: 'Overview' },
+      { id: 'specialization', label: 'Specialization' },
+      { id: 'doctors', label: 'Doctor List' },
+      { id: 'facilities', label: 'Facilities' },
+      { id: 'packages', label: 'Packages' }
+  ];
 
   return (
     <div className="bg-white text-[#1C1C1C] font-sans antialiased w-full min-h-full">
 
-      {/* Mobile Back Button (Desktop nav is handled by Layout) */}
+      {/* Mobile Back Button */}
       <div className="md:hidden sticky top-0 z-[50] bg-white/90 backdrop-blur-sm border-b border-[#FAF8F7] px-6 h-16 flex items-center">
           <button 
               onClick={onBack}
@@ -63,23 +129,6 @@ export const HospitalPage: React.FC<HospitalPageProps> = ({ hospital, onBack, on
               <ArrowLeft className="w-5 h-5 text-[#1C1C1C]" />
               <span className="font-semibold text-[#1C1C1C]">Back</span>
           </button>
-      </div>
-
-      {/* Sub Nav - Sticky below main Navbar (top-20 because main nav is h-20) */}
-      <div className="border-b border-[#FAF8F7] bg-white sticky top-20 z-40 hidden md:block">
-          <div className="max-w-7xl mx-auto px-6">
-              <div className="flex gap-8 text-sm overflow-x-auto no-scrollbar">
-                  <button onClick={onBack} className="py-4 text-zinc-500 hover:text-[#1C1C1C] transition-colors flex items-center gap-2">
-                     <ArrowLeft className="w-4 h-4" /> Back
-                  </button>
-                  <div className="w-px h-6 bg-zinc-200 my-auto"></div>
-                  <button className="py-4 text-[#1C1C1C] border-b-2 border-[#1C1C1C] font-medium">Overview</button>
-                  <button className="py-4 text-zinc-500 hover:text-[#1C1C1C] transition-colors">Specialization</button>
-                  <button className="py-4 text-zinc-500 hover:text-[#1C1C1C] transition-colors">Facilities</button>
-                  <button className="py-4 text-zinc-500 hover:text-[#1C1C1C] transition-colors">Treatment Package</button>
-                  <button className="py-4 text-zinc-500 hover:text-[#1C1C1C] transition-colors">List of Doctor</button>
-              </div>
-          </div>
       </div>
 
       {/* Hero Gallery */}
@@ -112,8 +161,46 @@ export const HospitalPage: React.FC<HospitalPageProps> = ({ hospital, onBack, on
           </div>
       </div>
 
-      {/* Main Content Split */}
-      <div className="max-w-7xl mx-auto px-4 md:px-6 py-8 grid grid-cols-1 lg:grid-cols-3 gap-12">
+      {/* Sticky Info Header - Correctly placed after Hero */}
+      <div className="sticky top-20 z-40 bg-white border-b border-gray-100 hidden md:block transition-shadow duration-300">
+          <div className="max-w-7xl mx-auto px-6 h-[72px] relative flex items-center justify-center">
+              {/* Left: Identity - Absolute Position */}
+              <div className="absolute left-6 flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-full overflow-hidden border border-gray-200 shadow-sm flex items-center justify-center bg-gray-50 text-lg">
+                      {hospital.country === 'Thailand' ? '🇹🇭' : 
+                       hospital.country === 'Singapore' ? '🇸🇬' : 
+                       hospital.country === 'Malaysia' ? '🇲🇾' : '🏳️'}
+                  </div>
+                  <span className="font-semibold text-slate-900">{hospital.name}</span>
+              </div>
+              
+              {/* Center: Tabs - Centered in Flex container */}
+              <div className="flex items-center gap-8 h-full">
+                  {tabs.map(tab => (
+                      <button 
+                        key={tab.id}
+                        onClick={() => scrollToSection(tab.id)}
+                        className={`
+                            h-full flex items-center text-sm font-medium border-b-[3px] transition-all px-1
+                            ${activeTab === tab.id ? 'border-[#1C1C1C] text-[#1C1C1C]' : 'border-transparent text-slate-500 hover:text-slate-800 hover:border-slate-200'}
+                        `}
+                      >
+                          {tab.label}
+                      </button>
+                  ))}
+              </div>
+
+              {/* Right: CTA - Absolute Position */}
+              <div className="absolute right-6">
+                  <button className="bg-[#1C1C1C] text-white px-5 py-2.5 rounded-lg text-sm font-semibold hover:bg-black transition-colors shadow-sm">
+                      Request Treatment Info
+                  </button>
+              </div>
+          </div>
+      </div>
+
+      {/* Main Content Split - ID: overview */}
+      <div id="overview" className="max-w-7xl mx-auto px-4 md:px-6 py-8 grid grid-cols-1 lg:grid-cols-3 gap-12 scroll-mt-20">
           
           {/* Left Column: Hospital Info */}
           <div className="lg:col-span-2 space-y-10">
@@ -133,7 +220,7 @@ export const HospitalPage: React.FC<HospitalPageProps> = ({ hospital, onBack, on
                               <span className="text-xs text-zinc-500 border border-zinc-200 px-2.5 py-1 rounded-md bg-[#FAF8F7]">English, Local, Mandarin</span>
                           </div>
                       </div>
-                      <button className="w-full md:w-auto bg-[#1C1C1C] hover:bg-zinc-800 text-white px-6 py-3 rounded-lg text-sm font-medium transition-all shadow-lg shadow-[#1C1C1C]/10 shrink-0">Request Info</button>
+                      <button className="w-full md:w-auto bg-[#1C1C1C] hover:bg-zinc-800 text-white px-6 py-3 rounded-lg text-sm font-medium transition-all shadow-lg shadow-[#1C1C1C]/10 shrink-0 md:hidden">Request Info</button>
                   </div>
 
                   {hospital.accreditation && hospital.accreditation.length > 0 && (
@@ -259,8 +346,8 @@ export const HospitalPage: React.FC<HospitalPageProps> = ({ hospital, onBack, on
 
       {/* --- Appended Details Sections --- */}
 
-      {/* 1. Top Expertise */}
-      <section className="max-w-7xl mx-auto px-6 py-16">
+      {/* 1. Top Expertise - ID: specialization */}
+      <section id="specialization" className="max-w-7xl mx-auto px-6 py-16 scroll-mt-40">
         <h2 className="text-3xl font-semibold text-center tracking-tight mb-12">Our Top Expertise</h2>
         
         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6">
@@ -311,15 +398,20 @@ export const HospitalPage: React.FC<HospitalPageProps> = ({ hospital, onBack, on
           <div className="absolute top-0 left-0 h-full w-32 bg-gradient-to-r from-purple-500 to-blue-500"></div>
       </div>
 
-      {/* 2. Explore Specialists */}
-      <section className="max-w-7xl mx-auto px-6 py-12">
+      {/* 2. Explore Specialists - ID: doctors */}
+      <section id="doctors" className="max-w-7xl mx-auto px-6 py-12 scroll-mt-40">
         <div className="flex flex-col md:flex-row md:items-center justify-between mb-8">
             <h2 className="text-2xl font-semibold tracking-tight text-gray-900">Explore Specialists</h2>
         </div>
 
         {/* Filter Tabs */}
         <div className="flex gap-3 overflow-x-auto no-scrollbar pb-6">
-            <button className="px-5 py-2.5 bg-gray-100 text-gray-900 text-sm font-medium rounded-lg border border-transparent whitespace-nowrap">All Doctors</button>
+            <button 
+                onClick={onNavigateToDoctors}
+                className="px-5 py-2.5 bg-gray-100 text-gray-900 text-sm font-medium rounded-lg border border-transparent whitespace-nowrap hover:bg-gray-200 transition-colors"
+            >
+                All Doctors
+            </button>
             {[
                 { icon: Heart, label: "Cardiologist" },
                 { icon: Bone, label: "Orthopedics" },
@@ -327,11 +419,11 @@ export const HospitalPage: React.FC<HospitalPageProps> = ({ hospital, onBack, on
                 { icon: Brain, label: "Neurology" },
                 { icon: Baby, label: "Fertility & IVF" },
             ].map((tab, i) => (
-                <button key={i} className="px-5 py-2.5 bg-white text-gray-600 text-sm font-medium rounded-lg border border-gray-200 hover:bg-gray-50 whitespace-nowrap flex items-center">
+                <button key={i} onClick={onNavigateToDoctors} className="px-5 py-2.5 bg-white text-gray-600 text-sm font-medium rounded-lg border border-gray-200 hover:bg-gray-50 whitespace-nowrap flex items-center">
                     <tab.icon className="w-4 h-4 mr-2 text-gray-400" />{tab.label}
                 </button>
             ))}
-             <button className="px-5 py-2.5 bg-white text-gray-600 text-sm font-medium rounded-lg border border-gray-200 hover:bg-gray-50 whitespace-nowrap flex items-center">
+             <button onClick={onNavigateToDoctors} className="px-5 py-2.5 bg-white text-gray-600 text-sm font-medium rounded-lg border border-gray-200 hover:bg-gray-50 whitespace-nowrap flex items-center">
                 <Filter className="w-4 h-4 mr-2" /> +10 More
             </button>
         </div>
@@ -376,8 +468,8 @@ export const HospitalPage: React.FC<HospitalPageProps> = ({ hospital, onBack, on
         </div>
       </section>
 
-      {/* 3. Facilities */}
-      <section className="max-w-7xl mx-auto px-6 py-16 bg-white">
+      {/* 3. Facilities - ID: facilities */}
+      <section id="facilities" className="max-w-7xl mx-auto px-6 py-16 bg-white scroll-mt-40">
         <h2 className="text-2xl font-semibold text-center tracking-tight mb-12">Facilities</h2>
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
@@ -415,8 +507,8 @@ export const HospitalPage: React.FC<HospitalPageProps> = ({ hospital, onBack, on
         </div>
       </section>
 
-      {/* 4. Treatment Package */}
-      <section className="max-w-7xl mx-auto px-6 py-16 bg-gray-50/50">
+      {/* 4. Treatment Package - ID: packages */}
+      <section id="packages" className="max-w-7xl mx-auto px-6 py-16 bg-gray-50/50 scroll-mt-40">
         <div className="text-center max-w-2xl mx-auto mb-12">
              <h2 className="text-2xl font-semibold tracking-tight text-gray-900 mb-3">Treatment Package</h2>
              <p className="text-sm text-gray-500">Discover our curated medical packages with world-class supervision, advanced technology, and personalized treatments.</p>

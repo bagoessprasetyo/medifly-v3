@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { MedicalPackage, Hospital } from '../types';
 import { HOSPITALS } from '../constants';
-import { ArrowLeft, ChevronRight, ChevronDown, ChevronUp, MapPin, Building2, Calendar, Info, FileText, Check, Smile, HelpCircle, ClipboardList, Clock } from 'lucide-react';
+import { ArrowLeft, ChevronRight, ChevronDown, ChevronUp, MapPin, Building2, Calendar, Info, FileText, Check, Smile, HelpCircle, ClipboardList } from 'lucide-react';
 
 interface PackageDetailsPageProps {
   medicalPackage: MedicalPackage;
@@ -13,8 +13,11 @@ interface PackageDetailsPageProps {
 export const PackageDetailsPage: React.FC<PackageDetailsPageProps> = ({ medicalPackage, onBack, onNavigateToHospital }) => {
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(0);
 
-  // Find associated hospital
-  const hospital = HOSPITALS.find(h => h.name === medicalPackage.hospitalName) || HOSPITALS[0];
+  // Find associated hospital with case-insensitive robust matching
+  const hospital = HOSPITALS.find(h => 
+    h.name.toLowerCase() === medicalPackage.hospitalName.toLowerCase() ||
+    medicalPackage.hospitalName.toLowerCase().includes(h.name.toLowerCase())
+  ) || HOSPITALS[0];
 
   // Mock detailed content generator
   const content = {
@@ -98,11 +101,11 @@ export const PackageDetailsPage: React.FC<PackageDetailsPageProps> = ({ medicalP
 
                 <div className="flex items-center gap-2 text-sm text-slate-500 mb-6">
                     <span className="text-lg mr-1">
-                        {hospital.country === 'Thailand' ? '🇹🇭' : 
-                         hospital.country === 'Singapore' ? '🇸🇬' : 
-                         hospital.country === 'Malaysia' ? '🇲🇾' : '🏳️'}
+                        {hospital?.country === 'Thailand' ? '🇹🇭' : 
+                         hospital?.country === 'Singapore' ? '🇸🇬' : 
+                         hospital?.country === 'Malaysia' ? '🇲🇾' : '🏳️'}
                     </span>
-                    <span>{hospital.name}, {hospital.location}, {hospital.country}</span>
+                    <span>{hospital?.name}, {hospital?.location}, {hospital?.country}</span>
                 </div>
 
                 {/* Pricing Block */}
@@ -241,24 +244,26 @@ export const PackageDetailsPage: React.FC<PackageDetailsPageProps> = ({ medicalP
                     </div>
 
                     <div className="rounded-xl overflow-hidden mb-4 relative h-32 bg-slate-100">
-                        <img src={hospital.imageUrl} alt={hospital.name} className="w-full h-full object-cover" />
+                        {hospital?.imageUrl && (
+                            <img src={hospital.imageUrl} alt={hospital.name} className="w-full h-full object-cover" />
+                        )}
                     </div>
 
                     <div className="flex items-start gap-3 mb-4">
                         <div className="w-10 h-10 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center shrink-0">
-                            <span className="text-[10px] font-bold text-slate-600">{hospital.name.substring(0,2).toUpperCase()}</span>
+                            <span className="text-[10px] font-bold text-slate-600">{hospital?.name.substring(0,2).toUpperCase()}</span>
                         </div>
                         <div>
-                            <h4 className="font-semibold text-slate-900 text-sm leading-tight mb-1">{hospital.name}</h4>
+                            <h4 className="font-semibold text-slate-900 text-sm leading-tight mb-1">{hospital?.name}</h4>
                             <div className="flex items-center gap-1.5 text-xs text-slate-500">
-                                <span className="text-base">{hospital.country === 'Thailand' ? '🇹🇭' : hospital.country === 'Malaysia' ? '🇲🇾' : '🏳️'}</span>
-                                <span className="truncate max-w-[150px]">{hospital.location}, {hospital.country}</span>
+                                <span className="text-base">{hospital?.country === 'Thailand' ? '🇹🇭' : hospital?.country === 'Malaysia' ? '🇲🇾' : '🏳️'}</span>
+                                <span className="truncate max-w-[150px]">{hospital?.location}, {hospital?.country}</span>
                             </div>
                         </div>
                     </div>
 
                     <p className="text-xs text-slate-500 leading-relaxed mb-6 border-b border-slate-100 pb-6">
-                        Committed to patient-centered care, {hospital.name} ensures high-quality treatments tailored to individual needs.
+                        Committed to patient-centered care, {hospital?.name} ensures high-quality treatments tailored to individual needs.
                     </p>
 
                     <button 

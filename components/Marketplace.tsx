@@ -1,26 +1,53 @@
 
-import React, { useState, useMemo, useEffect } from 'react';
-import { X, Search, Map, List, BriefcaseMedical, MapPin, Star, MessageSquare, Check, ChevronDown } from 'lucide-react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
+import { X, Search, Map, List, BriefcaseMedical, MapPin, Star, MessageSquare, Check, ChevronDown, Globe, ArrowUpDown, Compass, Plane } from 'lucide-react';
 import { FilterState, Hospital, TravelEstimate } from '../types';
-import { HOSPITALS, getCoordinatesForCity } from '../constants';
+import { HOSPITALS, getCoordinatesForCity, calculateDistance } from '../constants';
 import { HospitalCard } from './HospitalCard';
 import { MapboxMap } from './MapboxMap';
 import { Sheet } from './ui/Sheet';
 import { HospitalDetails } from './HospitalDetails';
 import { getTravelEstimates } from '../services/mapService';
 
+// Specialization options with descriptions
+const SPECIALIZATIONS = [
+  { name: 'Cardiology', description: 'Heart checkup, angioplasty, heart valve surgery, etc.' },
+  { name: 'Orthopedics', description: 'Knee replacement, spine surgery, sports injury care, etc.' },
+  { name: 'Neurology', description: 'Stroke care, brain scan, nerve disorder treatment, etc.' },
+  { name: 'Oncology', description: 'Cancer screening, chemo programs, tumor surgery, etc.' },
+  { name: 'Gastroenterology', description: 'Endoscopy, liver care, digestive disorder treatment, etc.' },
+  { name: 'Urology', description: 'Kidney stone removal, prostate care, bladder issues, etc.' },
+  { name: 'Dermatology', description: 'Skin conditions, laser therapy, cosmetic dermatology, etc.' },
+  { name: 'Fertility', description: 'IVF, egg freezing, fertility assessment, etc.' },
+  { name: 'Dental', description: 'Dental implants, cosmetic dentistry, oral surgery, etc.' },
+  { name: 'Cosmetic Surgery', description: 'Rhinoplasty, liposuction, facelifts, etc.' },
+];
+
+// Country options with descriptions
+const COUNTRIES = [
+  { name: 'Thailand', icon: '🏥', description: 'World-class hospitals, affordable prices, recovery-friendly destination' },
+  { name: 'Malaysia', icon: '🏥', description: 'Affordable, high-quality care with strong specialties in cardiology & oncology' },
+  { name: 'Singapore', icon: '🏥', description: 'Premium healthcare hub, cutting-edge technology, English-speaking' },
+  { name: 'South Korea', icon: '🏥', description: 'Advanced cosmetic surgery, dermatology, and cancer treatment' },
+  { name: 'Indonesia', icon: '🏥', description: 'Growing medical tourism, competitive prices, tropical recovery' },
+  { name: 'Turkey', icon: '🏥', description: 'Leading in hair transplants, dental care, and cosmetic procedures' },
+  { name: 'India', icon: '🏥', description: 'Highly skilled doctors, affordable complex surgeries, JCI-accredited' },
+];
+
 interface MarketplaceProps {
   filters: FilterState;
   onClearFilters: () => void;
   onViewHospitalPage: (hospital: Hospital) => void;
   onUpdateFilters?: (filters: FilterState) => void;
+  isChatOpen?: boolean;
 }
 
-export const Marketplace: React.FC<MarketplaceProps> = ({ 
-  filters, 
-  onClearFilters, 
-  onViewHospitalPage, 
+export const Marketplace: React.FC<MarketplaceProps> = ({
+  filters,
+  onClearFilters,
+  onViewHospitalPage,
   onUpdateFilters,
+  isChatOpen = false,
 }) => {
   const [viewMode, setViewMode] = useState<'grid' | 'map'>('grid');
   const [sheetHospital, setSheetHospital] = useState<Hospital | null>(null);
@@ -29,16 +56,36 @@ export const Marketplace: React.FC<MarketplaceProps> = ({
   const [specialtyInput, setSpecialtyInput] = useState(filters.specialty || '');
   const [locationInput, setLocationInput] = useState(filters.userOrigin || filters.country || '');
 
+  // Dropdown States
+  const [isSpecialtyOpen, setIsSpecialtyOpen] = useState(false);
+  const [isLocationOpen, setIsLocationOpen] = useState(false);
+  const [selectedSpecialties, setSelectedSpecialties] = useState<string[]>(filters.specialty ? [filters.specialty] : []);
+  const [selectedCountries, setSelectedCountries] = useState<string[]>(filters.country ? [filters.country] : []);
+
+  // Flight Origin State
+  const [flightOrigin, setFlightOrigin] = useState<string>(filters.userOrigin || 'Jakarta');
+  const [isEditingOrigin, setIsEditingOrigin] = useState(false);
+  const [originInput, setOriginInput] = useState(flightOrigin);
+
+  // Refs for click outside
+  const specialtyRef = useRef<HTMLDivElement>(null);
+  const locationRef = useRef<HTMLDivElement>(null);
+
   // Advanced Filters State
   const [activePrice, setActivePrice] = useState<string[]>(filters.priceRange || []);
   const [activeAccreditation, setActiveAccreditation] = useState<string[]>(filters.accreditation || []);
+  const [activeLanguages, setActiveLanguages] = useState<string[]>(filters.languages || []);
   const [minRating, setMinRating] = useState<number | null>(filters.minRating || null);
-  
+  const [sortBy, setSortBy] = useState<'nearest' | 'rating' | 'price_low' | 'price_high' | null>(filters.sortBy || null);
+
   // Travel Estimates
   const [travelEstimates, setTravelEstimates] = useState<Record<string, TravelEstimate>>({});
 
   // Pagination State
   const [visibleCount, setVisibleCount] = useState(6);
+
+  // Available languages from all hospitals
+  const availableLanguages = ['English', 'Mandarin', 'Thai', 'Japanese', 'Arabic', 'Korean', 'Bahasa Melayu'];
 
   // Sync props to state
   useEffect(() => {
@@ -46,8 +93,47 @@ export const Marketplace: React.FC<MarketplaceProps> = ({
     setLocationInput(filters.userOrigin || filters.country || '');
     setActivePrice(filters.priceRange || []);
     setActiveAccreditation(filters.accreditation || []);
+    setActiveLanguages(filters.languages || []);
     setMinRating(filters.minRating || null);
+    setSortBy(filters.sortBy || null);
+    setSelectedSpecialties(filters.specialty ? [filters.specialty] : []);
+    setSelectedCountries(filters.country ? [filters.country] : []);
   }, [filters]);
+
+  // Click outside handler for dropdowns
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (specialtyRef.current && !specialtyRef.current.contains(event.target as Node)) {
+        setIsSpecialtyOpen(false);
+      }
+      if (locationRef.current && !locationRef.current.contains(event.target as Node)) {
+        setIsLocationOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  // Toggle specialty selection
+  const toggleSpecialty = (name: string) => {
+    setSelectedSpecialties(prev => {
+      if (prev.includes(name)) {
+        return prev.filter(s => s !== name);
+      }
+      return [...prev, name];
+    });
+  };
+
+  // Toggle country selection
+  const toggleCountry = (name: string) => {
+    setSelectedCountries(prev => {
+      if (prev.includes(name)) {
+        return prev.filter(c => c !== name);
+      }
+      return [...prev, name];
+    });
+  };
 
   // Travel Estimates Effect
   useEffect(() => {
@@ -69,23 +155,66 @@ export const Marketplace: React.FC<MarketplaceProps> = ({
 
   // Filtering Logic
   const filteredHospitals = useMemo(() => {
-    return HOSPITALS.filter(hospital => {
-      // Input-based filtering (case insensitive partial match)
-      const matchesSpecialty = !specialtyInput || hospital.specialties.some(s => s.toLowerCase().includes(specialtyInput.toLowerCase()));
-      
-      // Location logic: match country OR city
-      const loc = locationInput.toLowerCase();
-      const matchesLocation = !locationInput || 
-          hospital.country.toLowerCase().includes(loc) || 
-          hospital.location.toLowerCase().includes(loc);
-      
+    let results = HOSPITALS.filter(hospital => {
+      // Specialty filtering - use selected specialties or fall back to input
+      const matchesSpecialty = selectedSpecialties.length === 0 && !specialtyInput
+        ? true
+        : selectedSpecialties.length > 0
+          ? selectedSpecialties.some(spec => hospital.specialties.some(s => s.toLowerCase().includes(spec.toLowerCase())))
+          : hospital.specialties.some(s => s.toLowerCase().includes(specialtyInput.toLowerCase()));
+
+      // Location filtering - use selected countries or fall back to input
+      const matchesLocation = selectedCountries.length === 0 && !locationInput
+        ? true
+        : selectedCountries.length > 0
+          ? selectedCountries.some(country => hospital.country.toLowerCase() === country.toLowerCase())
+          : hospital.country.toLowerCase().includes(locationInput.toLowerCase()) ||
+            hospital.location.toLowerCase().includes(locationInput.toLowerCase());
+
       const matchesPrice = activePrice.length === 0 || activePrice.includes(hospital.priceRange);
       const matchesAccreditation = activeAccreditation.length === 0 || activeAccreditation.some(acc => hospital.accreditation.includes(acc));
       const matchesRating = !minRating || hospital.rating >= minRating;
+      const matchesLanguage = activeLanguages.length === 0 || activeLanguages.some(lang => hospital.languages?.includes(lang));
 
-      return matchesSpecialty && matchesLocation && matchesPrice && matchesAccreditation && matchesRating;
+      return matchesSpecialty && matchesLocation && matchesPrice && matchesAccreditation && matchesRating && matchesLanguage;
     });
-  }, [specialtyInput, locationInput, activePrice, activeAccreditation, minRating]);
+
+    // Sorting logic
+    if (sortBy) {
+      results = [...results].sort((a, b) => {
+        switch (sortBy) {
+          case 'rating':
+            return b.rating - a.rating;
+          case 'price_low':
+            // $ < $$ < $$$
+            const priceOrder: Record<string, number> = { '$': 1, '$$': 2, '$$$': 3 };
+            return (priceOrder[a.priceRange] || 2) - (priceOrder[b.priceRange] || 2);
+          case 'price_high':
+            const priceOrderHigh: Record<string, number> = { '$': 1, '$$': 2, '$$$': 3 };
+            return (priceOrderHigh[b.priceRange] || 2) - (priceOrderHigh[a.priceRange] || 2);
+          case 'nearest':
+            // Sort by distance if user location is available
+            if (filters.userLocation) {
+              const distA = calculateDistance(filters.userLocation.lat, filters.userLocation.lng, a.coordinates.lat, a.coordinates.lng);
+              const distB = calculateDistance(filters.userLocation.lat, filters.userLocation.lng, b.coordinates.lat, b.coordinates.lng);
+              return distA - distB;
+            } else if (filters.userOrigin) {
+              const originCoords = getCoordinatesForCity(filters.userOrigin);
+              if (originCoords) {
+                const distA = calculateDistance(originCoords.lat, originCoords.lng, a.coordinates.lat, a.coordinates.lng);
+                const distB = calculateDistance(originCoords.lat, originCoords.lng, b.coordinates.lat, b.coordinates.lng);
+                return distA - distB;
+              }
+            }
+            return 0;
+          default:
+            return 0;
+        }
+      });
+    }
+
+    return results;
+  }, [specialtyInput, locationInput, selectedSpecialties, selectedCountries, activePrice, activeAccreditation, activeLanguages, minRating, sortBy, filters.userLocation, filters.userOrigin]);
 
   // Visible Items
   const displayedHospitals = filteredHospitals.slice(0, visibleCount);
@@ -108,14 +237,32 @@ export const Marketplace: React.FC<MarketplaceProps> = ({
       onUpdateFilters?.({ ...filters, accreditation: newAcc });
   };
 
+  const toggleLanguage = (lang: string) => {
+      const newLangs = activeLanguages.includes(lang) ? activeLanguages.filter(l => l !== lang) : [...activeLanguages, lang];
+      setActiveLanguages(newLangs);
+      onUpdateFilters?.({ ...filters, languages: newLangs });
+  };
+
+  const handleSortChange = (newSort: 'nearest' | 'rating' | 'price_low' | 'price_high' | null) => {
+      setSortBy(newSort);
+      onUpdateFilters?.({ ...filters, sortBy: newSort || undefined });
+  };
+
   const handleSearchSubmit = () => {
+      // Use first selected specialty if available, otherwise fall back to input
+      const specialty = selectedSpecialties.length > 0 ? selectedSpecialties[0] : specialtyInput || undefined;
+      const country = selectedCountries.length > 0 ? selectedCountries[0] : undefined;
+
       onUpdateFilters?.({
           ...filters,
-          specialty: specialtyInput,
-          // If the input matches a country name strictly, set country filter, otherwise treat as general search or origin
-          country: HOSPITALS.some(h => h.country.toLowerCase() === locationInput.toLowerCase()) ? locationInput : undefined,
-          userOrigin: !HOSPITALS.some(h => h.country.toLowerCase() === locationInput.toLowerCase()) ? locationInput : undefined
+          specialty,
+          country,
+          userOrigin: !country && locationInput ? locationInput : undefined
       });
+
+      // Close dropdowns after search
+      setIsSpecialtyOpen(false);
+      setIsLocationOpen(false);
   };
 
   const loadMore = () => {
@@ -125,201 +272,428 @@ export const Marketplace: React.FC<MarketplaceProps> = ({
   return (
     <div className="bg-white text-gray-900 font-sans min-h-screen flex flex-col">
         {/* Main Layout Container */}
-        <div className="max-w-[1600px] mx-auto w-full px-4 md:px-6 pt-6 md:pt-8 pb-20 flex flex-col lg:flex-row gap-8 lg:gap-12 flex-1 relative">
-            
-            {/* Sidebar Filters (Desktop) - Added Sticky */}
-            <aside className="w-full lg:w-64 flex-shrink-0 space-y-8 hidden lg:block sticky top-24 h-fit">
-                <div>
-                    <h2 className="text-lg font-semibold tracking-tight mb-6 text-gray-900">Filters</h2>
-                    
-                    {/* Language Section */}
-                    <div className="space-y-4 mb-8">
-                        <h3 className="text-sm font-medium text-gray-900">Language Support</h3>
-                        <div className="space-y-3">
-                            {['English', 'Melayu', 'Mandarin', 'Hokkien', 'Cantonese'].map(lang => (
-                                <label key={lang} className="flex items-center gap-3 cursor-pointer group">
-                                    <div className="relative flex items-center">
-                                        <input 
-                                            type="checkbox" 
-                                            defaultChecked={lang === 'English'}
-                                            className="peer appearance-none w-5 h-5 border border-gray-300 rounded bg-white checked:bg-[#3395FF] checked:border-[#3395FF] transition-all"
-                                        />
-                                        <Check className="w-3.5 h-3.5 text-white absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 opacity-0 peer-checked:opacity-100" />
-                                    </div>
-                                    <span className="text-sm text-gray-600 font-medium group-hover:text-gray-900 transition-colors">{lang}</span>
-                                </label>
-                            ))}
-                        </div>
-                    </div>
+        <div className={`max-w-[1600px] mx-auto w-full px-4 md:px-6 pt-6 md:pt-8 pb-20 flex flex-col lg:flex-row gap-8 lg:gap-12 flex-1 relative ${isChatOpen ? 'lg:flex-col' : ''}`}>
 
-                    <div className="h-px bg-gray-100 w-full mb-8"></div>
+            {/* Sidebar Filters (Desktop) - Hidden when chat is open - DoctorsPage style */}
+            <aside className={`w-64 flex-shrink-0 hidden lg:block pt-2 sticky top-24 h-[calc(100vh-8rem)] overflow-y-auto custom-scrollbar pr-2 transition-all duration-300 ${isChatOpen ? '!hidden' : ''}`}>
+                <h2 className="text-lg font-semibold mb-8 tracking-tight">Filter</h2>
 
-                    {/* Cost Range */}
-                    <div className="space-y-4 mb-8">
-                        <h3 className="text-sm font-medium text-gray-900">Cost Range</h3>
-                        <div className="space-y-3">
-                            {['$', '$$', '$$$'].map(price => (
-                                <label key={price} className="flex items-center gap-3 cursor-pointer group">
-                                    <div className="relative flex items-center">
-                                        <input 
-                                            type="checkbox" 
-                                            checked={activePrice.includes(price)}
-                                            onChange={() => togglePrice(price)}
-                                            className="peer appearance-none w-5 h-5 border border-gray-300 rounded bg-white checked:bg-[#3395FF] checked:border-[#3395FF] transition-all"
-                                        />
-                                        <Check className="w-3.5 h-3.5 text-white absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 opacity-0 peer-checked:opacity-100" />
-                                    </div>
-                                    <span className="text-sm text-gray-700 font-medium flex gap-1 group-hover:text-gray-900">
-                                        <span className="font-medium text-black">{price}</span>
-                                        <span className="text-gray-300">{price === '$' ? '$$' : price === '$$' ? '$' : ''}</span>
-                                    </span>
-                                </label>
-                            ))}
-                        </div>
-                    </div>
-
-                    <div className="h-px bg-gray-100 w-full mb-8"></div>
-
-                    {/* Rating */}
-                    <div className="space-y-4 mb-8">
-                        <h3 className="text-sm font-medium text-gray-900">Rating</h3>
-                        <div className="space-y-3">
-                            <label className="flex items-center gap-3 cursor-pointer group">
-                                <div className="relative flex items-center">
-                                    <input 
-                                        type="checkbox" 
-                                        checked={minRating === 4}
-                                        onChange={toggleRating}
-                                        className="peer appearance-none w-5 h-5 border border-gray-300 rounded bg-white checked:bg-[#3395FF] checked:border-[#3395FF] transition-all"
-                                    />
-                                    <Check className="w-3.5 h-3.5 text-white absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 opacity-0 peer-checked:opacity-100" />
-                                </div>
-                                <div className="flex items-center gap-1.5">
-                                    <Star className="w-3.5 h-3.5 fill-[#FFB800] text-[#FFB800]" />
-                                    <span className="text-sm text-gray-700 font-medium group-hover:text-gray-900">4+ Star Rating</span>
-                                </div>
-                            </label>
-                        </div>
-                    </div>
-
-                    <div className="h-px bg-gray-100 w-full mb-8"></div>
-
-                    {/* Accreditation */}
-                    <div className="space-y-4 mb-8">
-                        <h3 className="text-sm font-medium text-gray-900">Accreditation</h3>
-                        <div 
-                            onClick={() => toggleAccreditation('JCI')}
-                            className={`flex items-start gap-3 p-3 rounded-lg transition cursor-pointer border ${activeAccreditation.includes('JCI') ? 'bg-blue-50 border-blue-100' : 'hover:bg-gray-50 border-transparent'}`}
-                        >
-                            <div className="relative flex items-center mt-1">
-                                <input 
-                                    type="checkbox" 
-                                    checked={activeAccreditation.includes('JCI')}
-                                    readOnly
+                {/* Language Filter */}
+                <div className="mb-8 border-b border-gray-100 pb-8">
+                    <h3 className="text-base font-medium mb-4 text-gray-900">Language Support</h3>
+                    <div className="space-y-3">
+                        <label className="flex items-center gap-3 cursor-pointer group">
+                            <div className="relative flex items-center">
+                                <input
+                                    type="checkbox"
+                                    checked={activeLanguages.length === 0}
+                                    onChange={() => setActiveLanguages([])}
                                     className="peer appearance-none w-5 h-5 border border-gray-300 rounded bg-white checked:bg-[#3395FF] checked:border-[#3395FF] transition-all"
                                 />
                                 <Check className="w-3.5 h-3.5 text-white absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 opacity-0 peer-checked:opacity-100" />
                             </div>
-                            <div className="flex items-start gap-3">
-                                <div className="w-10 h-10 rounded-full bg-yellow-100 flex items-center justify-center border border-yellow-200 shrink-0">
-                                    <div className="w-6 h-6 rounded-full border-2 border-[#D4AF37] bg-gradient-to-br from-[#FFD700] to-[#B8860B]"></div>
+                            <span className={`text-sm font-medium group-hover:text-gray-900 ${activeLanguages.length === 0 ? 'text-gray-900' : 'text-gray-600'}`}>All</span>
+                        </label>
+                        {availableLanguages.map(lang => (
+                            <label key={lang} className="flex items-center gap-3 cursor-pointer group">
+                                <div className="relative flex items-center">
+                                    <input
+                                        type="checkbox"
+                                        checked={activeLanguages.includes(lang)}
+                                        onChange={() => toggleLanguage(lang)}
+                                        className="peer appearance-none w-5 h-5 border border-gray-300 rounded bg-white checked:bg-[#3395FF] checked:border-[#3395FF] transition-all"
+                                    />
+                                    <Check className="w-3.5 h-3.5 text-white absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 opacity-0 peer-checked:opacity-100" />
                                 </div>
-                                <div>
-                                    <p className="text-sm font-medium text-gray-900 leading-none mb-1">JCI Accredited Only</p>
-                                    <p className="text-xs text-gray-500 leading-snug">International healthcare standards</p>
-                                </div>
-                            </div>
-                        </div>
+                                <span className={`text-sm font-medium group-hover:text-gray-900 ${activeLanguages.includes(lang) ? 'text-gray-900' : 'text-gray-600'}`}>{lang}</span>
+                            </label>
+                        ))}
                     </div>
+                </div>
 
-                    {/* Help Card */}
-                    <div className="bg-[#FAF8F7] rounded-xl p-5 mt-4">
-                        <div className="flex items-center gap-3 mb-3">
-                            <div className="w-10 h-10 rounded-full bg-slate-200 overflow-hidden border border-white">
-                                <img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=100&q=80" alt="Support" className="w-full h-full object-cover" />
-                            </div>
-                            <p className="text-sm font-medium text-gray-900 leading-tight">Hi! Need a bit of guidance?</p>
-                        </div>
-                        <p className="text-xs text-gray-600 mb-4 leading-relaxed">Tell us what you're looking for we'll help you get there.</p>
-                        <button className="w-full bg-[#111] text-white text-xs font-medium py-2.5 rounded-lg flex items-center justify-center gap-2 hover:bg-black/90 transition-transform active:scale-95">
-                            <MessageSquare className="w-3.5 h-3.5" /> Start Chat
-                        </button>
+                {/* Cost Range Filter */}
+                <div className="mb-8 border-b border-gray-100 pb-8">
+                    <h3 className="text-base font-medium mb-4 text-gray-900">Cost Range</h3>
+                    <div className="space-y-3">
+                        {['$', '$$', '$$$'].map(price => (
+                            <label key={price} className="flex items-center gap-3 cursor-pointer group">
+                                <div className="relative flex items-center">
+                                    <input
+                                        type="checkbox"
+                                        checked={activePrice.includes(price)}
+                                        onChange={() => togglePrice(price)}
+                                        className="peer appearance-none w-5 h-5 border border-gray-300 rounded bg-white checked:bg-[#3395FF] checked:border-[#3395FF] transition-all"
+                                    />
+                                    <Check className="w-3.5 h-3.5 text-white absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 opacity-0 peer-checked:opacity-100" />
+                                </div>
+                                <span className={`text-sm font-medium group-hover:text-gray-900 ${activePrice.includes(price) ? 'text-gray-900' : 'text-gray-600'}`}>
+                                    {price === '$' ? 'Budget ($)' : price === '$$' ? 'Mid-range ($$)' : 'Premium ($$$)'}
+                                </span>
+                            </label>
+                        ))}
                     </div>
+                </div>
+
+                {/* Rating Filter */}
+                <div className="mb-8 border-b border-gray-100 pb-8">
+                    <h3 className="text-base font-medium mb-4 text-gray-900">Rating</h3>
+                    <div className="space-y-3">
+                        <label className="flex items-center gap-3 cursor-pointer group">
+                            <div className="relative flex items-center">
+                                <input
+                                    type="checkbox"
+                                    checked={minRating === 4}
+                                    onChange={toggleRating}
+                                    className="peer appearance-none w-5 h-5 border border-gray-300 rounded bg-white checked:bg-[#3395FF] checked:border-[#3395FF] transition-all"
+                                />
+                                <Check className="w-3.5 h-3.5 text-white absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 opacity-0 peer-checked:opacity-100" />
+                            </div>
+                            <div className="flex items-center gap-1.5">
+                                <Star className="w-3.5 h-3.5 fill-[#FFB800] text-[#FFB800]" />
+                                <span className={`text-sm font-medium group-hover:text-gray-900 ${minRating === 4 ? 'text-gray-900' : 'text-gray-600'}`}>4+ Star Rating</span>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                {/* Accreditation Filter */}
+                <div className="mb-8 border-b border-gray-100 pb-8">
+                    <h3 className="text-base font-medium mb-4 text-gray-900">Accreditation</h3>
+                    <div
+                        onClick={() => toggleAccreditation('JCI')}
+                        className={`flex items-start gap-3 p-3 rounded-lg transition cursor-pointer border ${activeAccreditation.includes('JCI') ? 'bg-blue-50 border-blue-200' : 'hover:bg-gray-50 border-transparent'}`}
+                    >
+                        <div className="relative flex items-center mt-0.5">
+                            <input
+                                type="checkbox"
+                                checked={activeAccreditation.includes('JCI')}
+                                readOnly
+                                className="peer appearance-none w-5 h-5 border border-gray-300 rounded bg-white checked:bg-[#3395FF] checked:border-[#3395FF] transition-all"
+                            />
+                            <Check className="w-3.5 h-3.5 text-white absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 opacity-0 peer-checked:opacity-100" />
+                        </div>
+                        <div>
+                            <p className="text-sm font-medium text-gray-900 leading-tight">JCI Accredited</p>
+                            <p className="text-xs text-gray-500 mt-0.5">International healthcare gold standard</p>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Chat Widget */}
+                <div className="bg-[#FAF8F7] rounded-xl p-5 mt-4">
+                    <div className="flex items-start gap-3 mb-3">
+                        <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=100&h=100&q=80" alt="Support" className="w-10 h-10 rounded-full object-cover" />
+                        <div>
+                            <p className="text-sm font-semibold text-gray-900">Need help choosing?</p>
+                            <p className="text-xs text-gray-500 mt-1 leading-relaxed">Tell us what you're looking for.</p>
+                        </div>
+                    </div>
+                    <button className="w-full bg-[#1C1C1E] text-white text-sm font-medium py-2.5 rounded-lg flex items-center justify-center gap-2 hover:bg-black transition-colors">
+                        <MessageSquare className="w-4 h-4" />
+                        Start Chat
+                    </button>
                 </div>
             </aside>
 
             {/* Main Content */}
             <main className="flex-1 flex flex-col min-w-0">
-                
-                {/* Search Bar */}
-                <div className="flex flex-col md:flex-row gap-4 mb-8">
-                    <div className="flex-1 flex border border-gray-200 rounded-lg overflow-hidden h-14 shadow-sm bg-white">
-                        {/* Specialization Input */}
-                        <div className="flex-1 flex flex-col justify-center px-4 border-r border-gray-100 hover:bg-gray-50 cursor-text group relative transition-colors">
-                            <label className="text-[10px] text-gray-500 font-medium absolute top-2.5">Which specializations are you looking for?</label>
-                            <div className="flex items-center gap-2 mt-3">
-                                <BriefcaseMedical className="w-4 h-4 text-gray-400" />
-                                <input 
-                                    type="text" 
-                                    value={specialtyInput}
-                                    onChange={(e) => setSpecialtyInput(e.target.value)}
-                                    onKeyDown={(e) => e.key === 'Enter' && handleSearchSubmit()}
-                                    className="w-full text-sm font-medium text-gray-900 outline-none bg-transparent placeholder-gray-400"
-                                    placeholder="e.g. Cardiology"
-                                />
+
+                {/* Search Bar - New Design with Dropdowns */}
+                <div className={`flex flex-col md:flex-row gap-3 mb-8 transition-all duration-300 relative z-20 ${isChatOpen ? 'hidden' : ''}`}>
+
+                    {/* Specialization Dropdown */}
+                    <div ref={specialtyRef} className="relative flex-grow w-full md:w-[45%]">
+                        <button
+                            onClick={() => {
+                                setIsSpecialtyOpen(!isSpecialtyOpen);
+                                setIsLocationOpen(false);
+                            }}
+                            className={`min-h-[76px] flex hover:border-slate-300 transition-all duration-200 focus:outline-none text-left bg-white w-full h-auto border rounded-2xl pt-3 pr-5 pb-3 pl-5 shadow-[0_1px_2px_rgba(0,0,0,0.02)] gap-x-4 gap-y-4 items-center ${
+                                isSpecialtyOpen ? 'border-slate-400 ring-2 ring-slate-50' : 'border-slate-200'
+                            }`}
+                        >
+                            <div className="flex-shrink-0 text-slate-400">
+                                <BriefcaseMedical className="w-7 h-7" strokeWidth={1.5} />
                             </div>
-                        </div>
-                        {/* Location Input */}
-                        <div className="w-full md:w-[35%] flex flex-col justify-center px-4 hover:bg-gray-50 cursor-text group relative transition-colors">
-                            <label className="text-[10px] text-gray-500 font-medium absolute top-2.5">Where to?</label>
-                            <div className="flex items-center gap-2 mt-3">
-                                <MapPin className="w-4 h-4 text-gray-400" />
-                                <input 
-                                    type="text" 
-                                    value={locationInput}
-                                    onChange={(e) => setLocationInput(e.target.value)}
-                                    onKeyDown={(e) => e.key === 'Enter' && handleSearchSubmit()}
-                                    className="w-full text-sm font-medium text-gray-900 outline-none bg-transparent placeholder-gray-400"
-                                    placeholder="e.g. Malaysia"
-                                />
+                            <div className="flex flex-col justify-center w-full overflow-hidden">
+                                <span className="text-sm font-medium text-slate-500 mb-1 leading-tight truncate">Which specializations are you looking for?</span>
+                                <span className={`text-lg font-normal leading-tight truncate ${selectedSpecialties.length > 0 ? 'text-slate-900' : 'text-slate-400'}`}>
+                                    {selectedSpecialties.length > 0 ? selectedSpecialties.join(', ') : 'Select specialization'}
+                                </span>
                             </div>
-                        </div>
+                        </button>
+
+                        {/* Specialization Dropdown Menu */}
+                        {isSpecialtyOpen && (
+                            <div className="absolute top-full left-0 w-full mt-2 bg-white rounded-xl border border-slate-200 shadow-[0_10px_40px_-10px_rgba(0,0,0,0.08)] overflow-hidden z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+                                <div className="pt-5 px-4 pb-2">
+                                    <h3 className="text-sm font-medium text-slate-400 pl-1">Core Treatment</h3>
+                                </div>
+                                <div className="max-h-[420px] overflow-y-auto p-3 pt-0 flex flex-col gap-2 custom-scrollbar">
+                                    {SPECIALIZATIONS.map(spec => {
+                                        const isSelected = selectedSpecialties.includes(spec.name);
+                                        return (
+                                            <button
+                                                key={spec.name}
+                                                onClick={() => toggleSpecialty(spec.name)}
+                                                className={`group relative w-full text-left rounded-xl p-4 transition-all duration-200 focus:outline-none border ${
+                                                    isSelected
+                                                        ? 'border-slate-900 bg-slate-50'
+                                                        : 'border-slate-200 bg-white hover:border-slate-300'
+                                                }`}
+                                            >
+                                                <div className="flex flex-col gap-1">
+                                                    <span className="text-base font-semibold text-slate-900 group-hover:text-black">{spec.name}</span>
+                                                    <span className="text-sm text-slate-500 font-normal leading-snug">{spec.description}</span>
+                                                </div>
+                                                {isSelected && (
+                                                    <div className="absolute top-3 right-3">
+                                                        <Check className="w-5 h-5 text-slate-900" />
+                                                    </div>
+                                                )}
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                        )}
                     </div>
-                    <button 
+
+                    {/* Location Dropdown */}
+                    <div ref={locationRef} className="relative flex-grow w-full md:w-[45%]">
+                        <button
+                            onClick={() => {
+                                setIsLocationOpen(!isLocationOpen);
+                                setIsSpecialtyOpen(false);
+                            }}
+                            className={`min-h-[76px] flex hover:border-slate-300 transition-all duration-200 focus:outline-none text-left bg-white w-full h-auto border rounded-2xl pt-3 pr-5 pb-3 pl-5 shadow-[0_1px_2px_rgba(0,0,0,0.02)] gap-x-4 gap-y-4 items-center ${
+                                isLocationOpen ? 'border-slate-400 ring-2 ring-slate-50' : 'border-slate-200'
+                            }`}
+                        >
+                            <div className="flex-shrink-0 text-slate-400">
+                                <MapPin className="w-7 h-7" strokeWidth={1.5} />
+                            </div>
+                            <div className="flex flex-col justify-center w-full overflow-hidden">
+                                <span className="text-sm font-medium text-slate-500 mb-1 leading-tight">Where to?</span>
+                                <span className={`text-lg font-normal leading-tight truncate ${selectedCountries.length > 0 ? 'text-slate-900' : 'text-slate-400'}`}>
+                                    {selectedCountries.length > 0 ? selectedCountries.join(', ') : 'Select countries'}
+                                </span>
+                            </div>
+                        </button>
+
+                        {/* Location Dropdown Menu */}
+                        {isLocationOpen && (
+                            <div className="absolute top-full left-0 w-full mt-2 bg-white rounded-xl border border-slate-200 shadow-[0_10px_40px_-10px_rgba(0,0,0,0.08)] overflow-hidden z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+
+                                {/* Discover Nearby Section */}
+                                <div className="p-4 border-b border-slate-100">
+                                    <h3 className="text-sm font-medium text-slate-400 mb-3">Discover Nearby</h3>
+                                    <button
+                                        onClick={() => {
+                                            // Request user location and find nearby hospitals
+                                            if (navigator.geolocation) {
+                                                navigator.geolocation.getCurrentPosition(
+                                                    (position) => {
+                                                        onUpdateFilters?.({
+                                                            ...filters,
+                                                            userLocation: {
+                                                                lat: position.coords.latitude,
+                                                                lng: position.coords.longitude
+                                                            },
+                                                            sortBy: 'nearest'
+                                                        });
+                                                        setIsLocationOpen(false);
+                                                    },
+                                                    () => {
+                                                        console.log('Location access denied');
+                                                    }
+                                                );
+                                            }
+                                        }}
+                                        className="w-full flex items-center gap-4 p-4 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 hover:border-slate-300 transition-all duration-200"
+                                    >
+                                        <div className="w-12 h-12 rounded-xl bg-white border border-slate-200 flex items-center justify-center flex-shrink-0">
+                                            <Compass className="w-6 h-6 text-slate-600" />
+                                        </div>
+                                        <div className="text-left">
+                                            <span className="text-base font-semibold text-slate-900 block">Find Nearby Hospitals</span>
+                                            <span className="text-sm text-slate-500">Use your current location</span>
+                                        </div>
+                                    </button>
+                                </div>
+
+                                {/* Flight Origin Card */}
+                                <div className="p-4 border-b border-slate-100">
+                                    <div className="rounded-xl bg-gradient-to-r from-lime-100 to-yellow-100 p-4">
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-10 h-10 rounded-lg bg-white/80 flex items-center justify-center">
+                                                    <Plane className="w-5 h-5 text-slate-700" />
+                                                </div>
+                                                <div>
+                                                    <span className="text-xs font-medium text-slate-500 block">Flying from</span>
+                                                    {isEditingOrigin ? (
+                                                        <input
+                                                            type="text"
+                                                            value={originInput}
+                                                            onChange={(e) => setOriginInput(e.target.value)}
+                                                            onKeyDown={(e) => {
+                                                                if (e.key === 'Enter') {
+                                                                    setFlightOrigin(originInput);
+                                                                    setIsEditingOrigin(false);
+                                                                    onUpdateFilters?.({ ...filters, userOrigin: originInput });
+                                                                }
+                                                                if (e.key === 'Escape') {
+                                                                    setOriginInput(flightOrigin);
+                                                                    setIsEditingOrigin(false);
+                                                                }
+                                                            }}
+                                                            onBlur={() => {
+                                                                setFlightOrigin(originInput);
+                                                                setIsEditingOrigin(false);
+                                                                onUpdateFilters?.({ ...filters, userOrigin: originInput });
+                                                            }}
+                                                            autoFocus
+                                                            className="text-lg font-semibold text-slate-900 bg-white/60 border border-slate-300 rounded-lg px-2 py-0.5 w-32 focus:outline-none focus:ring-2 focus:ring-slate-400"
+                                                        />
+                                                    ) : (
+                                                        <span className="text-lg font-semibold text-slate-900">{flightOrigin}</span>
+                                                    )}
+                                                </div>
+                                            </div>
+                                            {!isEditingOrigin && (
+                                                <button
+                                                    onClick={() => {
+                                                        setOriginInput(flightOrigin);
+                                                        setIsEditingOrigin(true);
+                                                    }}
+                                                    className="text-sm font-medium text-slate-600 hover:text-slate-900 underline underline-offset-2 transition-colors"
+                                                >
+                                                    change
+                                                </button>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Country List */}
+                                <div className="pt-4 px-4 pb-2">
+                                    <h3 className="text-sm font-medium text-slate-400 pl-1">Popular Destinations</h3>
+                                </div>
+                                <div className="max-h-[280px] overflow-y-auto p-3 pt-0 flex flex-col gap-2 custom-scrollbar">
+                                    {COUNTRIES.map(country => {
+                                        const isSelected = selectedCountries.includes(country.name);
+                                        return (
+                                            <button
+                                                key={country.name}
+                                                onClick={() => toggleCountry(country.name)}
+                                                className={`group relative w-full text-left rounded-xl p-4 transition-all duration-200 focus:outline-none border ${
+                                                    isSelected
+                                                        ? 'border-slate-900 bg-slate-50'
+                                                        : 'border-slate-200 bg-white hover:border-slate-300'
+                                                }`}
+                                            >
+                                                <div className="flex items-start gap-3">
+                                                    <div className="w-10 h-10 rounded-lg bg-slate-100 flex items-center justify-center flex-shrink-0 text-lg">
+                                                        {country.icon}
+                                                    </div>
+                                                    <div className="flex-1 min-w-0">
+                                                        <span className="text-base font-semibold text-slate-900 group-hover:text-black block">{country.name}</span>
+                                                        <span className="text-sm text-slate-500 line-clamp-2">{country.description}</span>
+                                                    </div>
+                                                </div>
+                                                {isSelected && (
+                                                    <div className="absolute top-3 right-3">
+                                                        <Check className="w-5 h-5 text-slate-900" />
+                                                    </div>
+                                                )}
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Search Button */}
+                    <button
                         onClick={handleSearchSubmit}
-                        className="w-14 h-14 bg-[#111] rounded-lg flex items-center justify-center text-white shrink-0 hover:bg-black/90 transition-transform active:scale-95 shadow-md"
+                        className="h-[76px] w-full md:w-[76px] bg-slate-900 rounded-2xl flex items-center justify-center hover:bg-black transition-colors duration-200 shadow-md flex-shrink-0"
                     >
-                        <Search className="w-5 h-5" />
+                        <Search className="w-7 h-7 text-white" />
                     </button>
                 </div>
 
-                {/* Filters Header */}
+                {/* Results Header - DoctorsPage style */}
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-                    <h1 className="text-sm font-medium text-gray-900">{filteredHospitals.length} hospitals found</h1>
-                    <div className="flex flex-wrap items-center gap-2">
-                        {activeAccreditation.map(acc => (
-                            <div key={acc} className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-gray-200 rounded-full text-xs font-medium text-gray-700 shadow-sm animate-in fade-in zoom-in-95">
-                                {acc} Accredited
-                                <button onClick={() => toggleAccreditation(acc)} className="text-gray-400 hover:text-gray-600"><X className="w-3 h-3" /></button>
-                            </div>
-                        ))}
-                        {minRating && (
-                            <div className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-gray-200 rounded-full text-xs font-medium text-gray-700 shadow-sm animate-in fade-in zoom-in-95">
-                                {minRating}+ Star Rating
-                                <button onClick={() => setMinRating(null)} className="text-gray-400 hover:text-gray-600"><X className="w-3 h-3" /></button>
+                    <div className="flex items-center gap-3">
+                        {/* AI List Name Badge - Show prominently when chat is open */}
+                        {isChatOpen && filters.aiListName && (
+                            <div className="flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-indigo-50 to-blue-50 border border-indigo-200 rounded-full animate-in fade-in slide-in-from-left-2 duration-300">
+                                <div className="w-1.5 h-1.5 bg-indigo-500 rounded-full animate-pulse" />
+                                <span className="text-sm font-semibold text-indigo-700">{filters.aiListName}</span>
                             </div>
                         )}
-                        {activePrice.map(price => (
-                            <div key={price} className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-gray-200 rounded-full text-xs font-medium text-gray-700 shadow-sm animate-in fade-in zoom-in-95">
-                                {price}
-                                <button onClick={() => togglePrice(price)} className="text-gray-400 hover:text-gray-600"><X className="w-3 h-3" /></button>
-                            </div>
-                        ))}
-                        
-                        {(activePrice.length > 0 || activeAccreditation.length > 0 || minRating) && (
+                        <h3 className="text-base font-medium text-gray-900">{filteredHospitals.length} hospitals found</h3>
+                    </div>
+
+                    <div className="flex flex-wrap items-center gap-3">
+                        <div className="flex flex-wrap items-center gap-2">
+                            {/* Sorting Pill */}
+                            {sortBy && (
+                                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-indigo-200 bg-indigo-50 text-xs font-medium text-indigo-700 animate-in fade-in zoom-in-95">
+                                    <ArrowUpDown className="w-3 h-3" />
+                                    {sortBy === 'nearest' ? 'Nearest' : sortBy === 'rating' ? 'Top Rated' : sortBy === 'price_low' ? 'Price: Low to High' : 'Price: High to Low'}
+                                    <button onClick={() => handleSortChange(null)} className="text-indigo-400 hover:text-indigo-600"><X className="w-3 h-3" /></button>
+                                </span>
+                            )}
+                            {/* AI-applied filters as pills when chat is open */}
+                            {isChatOpen && filters.country && (
+                                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-blue-200 bg-blue-50 text-xs font-medium text-blue-700 animate-in fade-in zoom-in-95">
+                                    <MapPin className="w-3 h-3" />
+                                    {filters.country}
+                                    <button onClick={() => onUpdateFilters?.({ ...filters, country: undefined })} className="text-blue-400 hover:text-blue-600"><X className="w-3 h-3" /></button>
+                                </span>
+                            )}
+                            {isChatOpen && filters.specialty && (
+                                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-emerald-200 bg-emerald-50 text-xs font-medium text-emerald-700 animate-in fade-in zoom-in-95">
+                                    <BriefcaseMedical className="w-3 h-3" />
+                                    {filters.specialty}
+                                    <button onClick={() => onUpdateFilters?.({ ...filters, specialty: undefined })} className="text-emerald-400 hover:text-emerald-600"><X className="w-3 h-3" /></button>
+                                </span>
+                            )}
+                            {/* Language pills */}
+                            {activeLanguages.map(lang => (
+                                <span key={lang} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-purple-200 bg-purple-50 text-xs font-medium text-purple-700 animate-in fade-in zoom-in-95">
+                                    <Globe className="w-3 h-3" />
+                                    {lang}
+                                    <button onClick={() => toggleLanguage(lang)} className="text-purple-400 hover:text-purple-600"><X className="w-3 h-3" /></button>
+                                </span>
+                            ))}
+                            {activeAccreditation.map(acc => (
+                                <span key={acc} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-gray-200 bg-white text-xs font-medium text-gray-700 animate-in fade-in zoom-in-95">
+                                    {acc} Accredited
+                                    <button onClick={() => toggleAccreditation(acc)} className="text-gray-400 hover:text-gray-600"><X className="w-3 h-3" /></button>
+                                </span>
+                            ))}
+                            {minRating && (
+                                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-amber-200 bg-amber-50 text-xs font-medium text-amber-700 animate-in fade-in zoom-in-95">
+                                    <Star className="w-3 h-3 fill-current" />
+                                    {minRating}+ Rating
+                                    <button onClick={() => setMinRating(null)} className="text-amber-400 hover:text-amber-600"><X className="w-3 h-3" /></button>
+                                </span>
+                            )}
+                            {activePrice.map(price => (
+                                <span key={price} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-gray-200 bg-white text-xs font-medium text-gray-700 animate-in fade-in zoom-in-95">
+                                    {price}
+                                    <button onClick={() => togglePrice(price)} className="text-gray-400 hover:text-gray-600"><X className="w-3 h-3" /></button>
+                                </span>
+                            ))}
+                        </div>
+                        {(activePrice.length > 0 || activeAccreditation.length > 0 || activeLanguages.length > 0 || minRating || sortBy || (isChatOpen && (filters.country || filters.specialty))) && (
                             <>
-                                <div className="h-4 w-px bg-gray-200 mx-1"></div>
-                                <button onClick={onClearFilters} className="text-xs font-medium text-gray-500 hover:text-gray-900">Reset Filter</button>
+                                <div className="hidden sm:block w-px h-6 bg-gray-200 mx-2"></div>
+                                <button onClick={onClearFilters} className="text-xs font-medium text-gray-600 hover:text-gray-900 underline decoration-gray-300 underline-offset-4">Reset Filter</button>
                             </>
                         )}
                     </div>

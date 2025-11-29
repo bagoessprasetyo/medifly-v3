@@ -485,11 +485,12 @@ const App: React.FC = () => {
             )}
 
             {page === 'marketplace' && (
-                <Marketplace 
-                    filters={filters} 
+                <Marketplace
+                    filters={filters}
                     onClearFilters={handleClearFilters}
                     onViewHospitalPage={handleNavigateToHospital}
                     onUpdateFilters={handleApplyFilters}
+                    isChatOpen={isChatOpen}
                 />
             )}
 
