@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Menu, X, Plane, ArrowRight } from 'lucide-react';
-import { LanguageSelector } from './ui/Languageselector';
+// import { LanguageSelector } from './ui/Languageselector';
 // import { LanguageSelector } from './ui/LanguageSelector';
 
 interface NavbarProps {
@@ -69,9 +69,9 @@ export const Navbar: React.FC<NavbarProps> = ({
 
           {/* Right Actions */}
           <div className="hidden md:flex items-center gap-4">
-             <div className="hidden lg:block">
+             {/* <div className="hidden lg:block">
                   <LanguageSelector selectedLanguage={selectedLanguage} onLanguageChange={onLanguageChange} />
-             </div>
+             </div> */}
              <button className="text-sm font-medium bg-slate-900 text-white px-5 py-2.5 rounded-full hover:bg-slate-800 transition-colors shadow-sm hover:shadow-md">
                 Sign in
              </button>
@@ -116,10 +116,10 @@ export const Navbar: React.FC<NavbarProps> = ({
                 </div>
 
                 <div className="mt-8 space-y-4">
-                    <div className="flex items-center justify-between">
+                    {/* <div className="flex items-center justify-between">
                         <span className="text-sm font-medium text-slate-500">Language</span>
                         <LanguageSelector selectedLanguage={selectedLanguage} onLanguageChange={onLanguageChange} />
-                    </div>
+                    </div> */}
                     <button className="w-full bg-slate-900 text-white text-base font-semibold py-4 rounded-xl hover:bg-black transition shadow-sm mt-4">
                         Sign in
                     </button>

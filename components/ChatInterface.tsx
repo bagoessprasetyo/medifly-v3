@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Send, Sparkles, User, Loader2, ArrowRight, LayoutGrid, MapPin, Star, PanelLeftClose, Paperclip, Bot, History, Plus, MessageSquare, Clock, Check, X, ChevronUp, ChevronDown, Search, Plane, FileText, Image as ImageIcon, MessageCircle, LogOut, Telescope, Globe, ExternalLink, RefreshCw, BarChart3, Table, GitCompare } from 'lucide-react';
-import { Message, FilterState, Hospital, ChatSession, Attachment, ArtifactData } from '../types';
+import { Send, Sparkles, User, Loader2, ArrowRight, LayoutGrid, MapPin, Star, PanelLeftClose, Paperclip, Bot, History, Plus, MessageSquare, Clock, Check, X, ChevronUp, ChevronDown, Search, Plane, FileText, Image as ImageIcon, MessageCircle, LogOut, Telescope, Globe, ExternalLink, RefreshCw, BarChart3, Table, GitCompare, HelpCircle } from 'lucide-react';
+import { Message, FilterState, Hospital, ChatSession, Attachment, ArtifactData, FollowUpQuestion } from '../types';
 import { streamMessageToAria } from '../services/geminiService';
 import { ThinkingProcess } from './ThinkingProcess';
 import { ArtifactView } from './ArtifactView';
@@ -40,6 +40,7 @@ const parseStreamedContent = (text: string) => {
   let suggestedFilters: any = undefined;
   let showConsultationCTA = false;
   let suggestedActions: SuggestedAction[] | undefined = undefined;
+  let followUpQuestions: FollowUpQuestion[] | undefined = undefined;
 
   const startTag = "<thinking>";
   const endTag = "</thinking>";
@@ -103,14 +104,8 @@ const parseStreamedContent = (text: string) => {
                   intent: action.intent || '',
                   context: action.context || action.description || ''
               }));
-              // Check if any action has speak_to_team or book_consultation intent
-              if (parsed.suggested_actions.some((a: any) =>
-                  a.intent === 'speak_to_team' ||
-                  a.intent === 'book_consultation' ||
-                  a.intent === 'request_quote'
-              )) {
-                  showConsultationCTA = true;
-              }
+              // CTA is now only shown when AI explicitly uses <cta> tag
+              // This prevents pushy CTA appearing on every message
               return true;
           }
       } catch (e) {
@@ -125,6 +120,23 @@ const parseStreamedContent = (text: string) => {
           const parsed = JSON.parse(jsonStr);
           if (parsed.country !== undefined || parsed.specialty !== undefined || parsed.aiListName !== undefined) {
               suggestedFilters = parsed;
+              return true;
+          }
+      } catch (e) {
+          // Ignore parse errors
+      }
+      return false;
+  };
+
+  // Helper function to parse follow-up questions JSON
+  const parseFollowUpsJson = (jsonStr: string): boolean => {
+      try {
+          const parsed = JSON.parse(jsonStr);
+          if (parsed.questions && Array.isArray(parsed.questions)) {
+              followUpQuestions = parsed.questions.map((q: any) => ({
+                  question: q.question || '',
+                  context: q.context || ''
+              })).filter((q: FollowUpQuestion) => q.question.trim().length > 0);
               return true;
           }
       } catch (e) {
@@ -160,6 +172,21 @@ const parseStreamedContent = (text: string) => {
           message = message.substring(0, filterStart) + message.substring(filterEnd + 10);
       } else {
           message = message.substring(0, filterStart);
+      }
+  }
+
+  // Extract Follow-up Questions Block with <followups> tags
+  const followupsStart = message.indexOf('<followups>');
+  const followupsEnd = message.indexOf('</followups>');
+
+  if (followupsStart !== -1) {
+      if (followupsEnd !== -1) {
+          let followupsContent = message.substring(followupsStart + 11, followupsEnd);
+          followupsContent = followupsContent.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
+          parseFollowUpsJson(followupsContent);
+          message = message.substring(0, followupsStart) + message.substring(followupsEnd + 12);
+      } else {
+          message = message.substring(0, followupsStart);
       }
   }
 
@@ -255,21 +282,24 @@ const parseStreamedContent = (text: string) => {
   message = message
       .replace(/<\/actions>/g, '')
       .replace(/<\/filters>/g, '')
+      .replace(/<\/followups>/g, '')
       .replace(/<\/cta>/g, '')
       .replace(/<actions>/g, '')
       .replace(/<filters>/g, '')
+      .replace(/<followups>/g, '')
       .replace(/<cta>/g, '')
       .replace(/```json\s*```/g, '')
       .replace(/```\s*```/g, '')
-      // Remove orphaned "Suggested Actions" or "Filters" headers
+      // Remove orphaned "Suggested Actions", "Filters", or "Follow-Up Questions" headers
       .replace(/(?:#{1,3}\s*)?(?:\*\*)?Suggested Actions(?:\*\*)?\s*$/gim, '')
       .replace(/(?:#{1,3}\s*)?(?:\*\*)?Filters(?:\*\*)?\s*$/gim, '')
+      .replace(/(?:#{1,3}\s*)?(?:\*\*)?Follow-?Up Questions?(?:\*\*)?\s*$/gim, '')
       .trim();
 
   // Remove any trailing empty lines or excessive whitespace
   message = message.replace(/\n{3,}/g, '\n\n').trim();
 
-  return { thinking, message, suggestedFilters, showConsultationCTA, suggestedActions };
+  return { thinking, message, suggestedFilters, showConsultationCTA, suggestedActions, followUpQuestions };
 };
 
 // Mock User Interface
@@ -541,12 +571,18 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
                         ? parsed.suggestedActions
                         : m.suggestedActions;
 
+                    // Preserve followUpQuestions if already set
+                    const followUpsToUse = parsed.followUpQuestions && parsed.followUpQuestions.length > 0
+                        ? parsed.followUpQuestions
+                        : m.followUpQuestions;
+
                     return {
                         ...m,
                         content: parsed.message,
                         thinking: thinkingToUse,
                         showConsultationCTA: parsed.showConsultationCTA,
                         suggestedActions: actionsToUse,
+                        followUpQuestions: followUpsToUse,
                         sources: accumulatedSources.length > 0 ? accumulatedSources : undefined,
                         searchQueries: accumulatedSearchQueries.length > 0 ? accumulatedSearchQueries : undefined,
                         isSearching: currentIsSearching,
@@ -931,96 +967,99 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
                                     </button>
                                 )}
 
-                                {/* WhatsApp CTA Button - Updated to Premium Dark Style */}
-                                {msg.showConsultationCTA && (
-                                    <div className="mt-3 animate-in fade-in slide-in-from-top-2 duration-300">
-                                        <a
-                                            href="https://wa.me/6281291690707?text=Hello%2C%20I%20was%20chatting%20with%20Aria%20about%20my%20medical%20needs%20and%20would%20like%20more%20insight."
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="inline-flex items-center justify-center gap-2.5 bg-[#1C1C1C] text-white hover:bg-zinc-800 px-6 py-3 rounded-xl font-semibold shadow-md transition-all active:scale-95 group/wa w-full sm:w-auto"
-                                        >
-                                            <MessageCircle className="w-4 h-4 fill-white/20" />
-                                            <span>Connect with a Care Coordinator</span>
-                                            <ArrowRight className="w-4 h-4 opacity-70 group-hover/wa:translate-x-1 transition-transform" />
-                                        </a>
-                                    </div>
-                                )}
+                                {/* Interactive Action Bar - Groups CTA, Follow-ups, and Filters */}
+                                {(msg.showConsultationCTA ||
+                                  (msg.followUpQuestions && msg.followUpQuestions.length > 0) ||
+                                  (msg.suggestedFilters && (
+                                    msg.suggestedFilters.country ||
+                                    msg.suggestedFilters.specialty ||
+                                    (msg.suggestedFilters.aiListName && msg.suggestedFilters.aiListName.toLowerCase().includes('hospital'))
+                                  ))
+                                ) && (
+                                    <div className="mt-4 pt-4 border-t border-slate-100 space-y-3 animate-in fade-in slide-in-from-bottom-2 duration-300">
 
-                                {/* Suggested Actions - Clean GPT-like design */}
-                                {msg.suggestedActions && msg.suggestedActions.length > 0 && (
-                                    <div className="mt-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
-                                        <div className="flex flex-wrap gap-2">
-                                            {msg.suggestedActions.map((action, idx) => {
-                                                // Special handling for speak_to_team - open WhatsApp
-                                                if (action.intent === 'speak_to_team' || action.intent === 'book_consultation') {
-                                                    return (
-                                                        <a
+                                        {/* Follow-Up Questions */}
+                                        {msg.followUpQuestions && msg.followUpQuestions.length > 0 && (
+                                            <div>
+                                                <div className="flex items-center gap-1.5 mb-2">
+                                                    <HelpCircle className="w-3 h-3 text-slate-400" />
+                                                    <span className="text-[10px] font-medium text-slate-400 uppercase tracking-wider">You might also want to ask</span>
+                                                </div>
+                                                <div className="flex flex-col gap-1.5">
+                                                    {msg.followUpQuestions.map((followUp, idx) => (
+                                                        <button
                                                             key={idx}
-                                                            href="https://wa.me/6281291690707?text=Hello%2C%20I%20was%20chatting%20with%20Aria%20about%20my%20medical%20needs%20and%20would%20like%20more%20insight."
-                                                            target="_blank"
-                                                            rel="noopener noreferrer"
-                                                            className="group flex items-center gap-2 px-4 py-2.5 bg-emerald-50 border border-emerald-200 rounded-xl text-sm font-medium text-emerald-700 hover:bg-emerald-100 hover:border-emerald-300 transition-all shadow-sm"
+                                                            onClick={() => handleSend(followUp.question)}
+                                                            className="group flex items-center gap-2 px-3 py-2 bg-slate-50/80 border border-slate-200/80 rounded-lg text-left hover:border-slate-300 hover:bg-slate-100/80 transition-all"
                                                         >
-                                                            <MessageCircle className="w-3.5 h-3.5" />
-                                                            <span>{action.label}</span>
-                                                            <ExternalLink className="w-3 h-3 text-emerald-500 group-hover:text-emerald-600" />
-                                                        </a>
-                                                    );
-                                                }
-                                                return (
-                                                    <button
-                                                        key={idx}
-                                                        onClick={() => handleSend(action.context || action.label)}
-                                                        className="group flex items-center gap-2 px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm font-medium text-slate-700 hover:bg-slate-50 hover:border-slate-300 hover:text-slate-900 transition-all shadow-sm"
-                                                    >
-                                                        <span>{action.label}</span>
-                                                        <ArrowRight className="w-3.5 h-3.5 text-slate-400 group-hover:text-slate-600 group-hover:translate-x-0.5 transition-all" />
-                                                    </button>
-                                                );
-                                            })}
-                                        </div>
-                                    </div>
-                                )}
+                                                            <span className="text-xs text-slate-600 group-hover:text-slate-800">{followUp.question}</span>
+                                                            <ArrowRight className="w-3 h-3 text-slate-300 group-hover:text-slate-500 flex-shrink-0 group-hover:translate-x-0.5 transition-all" />
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        )}
 
-                                {/* Interactive Suggestions Pills (Synced with Global State) */}
-                                {msg.suggestedFilters && (
-                                    <div className="mt-2 flex flex-wrap gap-2 animate-in fade-in slide-in-from-top-2 duration-300 pl-1">
-                                        {/* Primary "Show List" Pill */}
-                                        {(() => {
-                                            const isActive = activeFilters?.aiListName === msg.suggestedFilters?.aiListName;
-                                            return (
-                                                <button
-                                                    onClick={() => handleUpdateMarketplace(msg.id, msg.suggestedFilters!)}
-                                                    className={`
-                                                        flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all shadow-sm border
-                                                        ${isActive 
-                                                            ? 'bg-[#B2D7FF] border-[#B2D7FF] text-slate-900 ring-1 ring-[#B2D7FF]' 
-                                                            : 'bg-white border-slate-200 hover:border-[#B2D7FF] hover:bg-[#F4F0EE] text-slate-700'}
-                                                    `}
+                                                {/* Hospital Filters & CTA Row */}
+                                        <div className="flex flex-wrap items-center gap-2">
+                                            {/* CTA Button */}
+                                            {msg.showConsultationCTA && (
+                                                <a
+                                                    href="https://wa.me/6281291690707?text=Hello%2C%20I%20was%20chatting%20with%20Aria%20about%20my%20medical%20needs%20and%20would%20like%20more%20insight."
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="inline-flex items-center gap-2 px-3 py-2 bg-slate-800 text-white hover:bg-slate-700 rounded-lg text-xs font-medium transition-all"
                                                 >
-                                                    {isActive ? <Check className="w-4 h-4" /> : <LayoutGrid className="w-4 h-4" />}
-                                                    {isActive ? 'Viewing: ' : 'Show: '} 
-                                                    <span className="font-bold">
-                                                        {msg.suggestedFilters.aiListName || 'Hospitals in Marketplace'}
-                                                    </span>
-                                                </button>
-                                            );
-                                        })()}
-                                        
-                                        {/* Secondary "Show Here" Pill (Toggle) */}
-                                        <button
-                                            onClick={() => handleToggleInlineResults(msg.id, msg.suggestedFilters!, msg.inlineResults)}
-                                            className={`
-                                                flex items-center gap-2 px-4 py-2.5 border rounded-xl text-sm font-medium transition-all shadow-sm
-                                                ${msg.inlineResults 
-                                                    ? 'bg-slate-100 border-slate-300 text-slate-900' 
-                                                    : 'bg-white border-slate-200 hover:border-slate-300 text-slate-600 hover:text-slate-900'}
-                                            `}
-                                        >
-                                            {msg.inlineResults ? <ChevronUp className="w-4 h-4" /> : <Bot className="w-4 h-4" />}
-                                            {msg.inlineResults ? 'Hide details' : 'Show here'}
-                                        </button>
+                                                    <MessageCircle className="w-3.5 h-3.5" />
+                                                    <span>Talk to Care Team</span>
+                                                    <ExternalLink className="w-3 h-3 opacity-60" />
+                                                </a>
+                                            )}
+
+                                            {/* Filter Buttons - Only if filters exist */}
+                                            {msg.suggestedFilters && (
+                                                msg.suggestedFilters.country ||
+                                                msg.suggestedFilters.specialty ||
+                                                (msg.suggestedFilters.aiListName && msg.suggestedFilters.aiListName.toLowerCase().includes('hospital'))
+                                            ) && (
+                                                <>
+                                                    {/* Primary "Browse" Pill */}
+                                                    {(() => {
+                                                        const isActive = activeFilters?.aiListName === msg.suggestedFilters?.aiListName;
+                                                        return (
+                                                            <button
+                                                                onClick={() => handleUpdateMarketplace(msg.id, msg.suggestedFilters!)}
+                                                                className={`
+                                                                    flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium transition-all border
+                                                                    ${isActive
+                                                                        ? 'bg-slate-100 border-slate-300 text-slate-800'
+                                                                        : 'bg-white border-slate-200 hover:border-slate-300 hover:bg-slate-50 text-slate-600'}
+                                                                `}
+                                                            >
+                                                                {isActive ? <Check className="w-3.5 h-3.5" /> : <LayoutGrid className="w-3.5 h-3.5" />}
+                                                                <span>
+                                                                    {isActive ? 'Viewing in Marketplace' : `Browse ${msg.suggestedFilters.aiListName || 'Hospitals'}`}
+                                                                </span>
+                                                            </button>
+                                                        );
+                                                    })()}
+
+                                                    {/* Secondary "Preview here" Pill */}
+                                                    <button
+                                                        onClick={() => handleToggleInlineResults(msg.id, msg.suggestedFilters!, msg.inlineResults)}
+                                                        className={`
+                                                            flex items-center gap-2 px-3 py-2 border rounded-lg text-xs font-medium transition-all
+                                                            ${msg.inlineResults
+                                                                ? 'bg-slate-100 border-slate-300 text-slate-800'
+                                                                : 'bg-white border-slate-200 hover:border-slate-300 text-slate-600'}
+                                                        `}
+                                                    >
+                                                        {msg.inlineResults ? <ChevronUp className="w-3.5 h-3.5" /> : <Bot className="w-3.5 h-3.5" />}
+                                                        {msg.inlineResults ? 'Hide' : 'Preview here'}
+                                                    </button>
+                                                </>
+                                            )}
+                                        </div>
                                     </div>
                                 )}
 
@@ -1189,7 +1228,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
                                  <span className="text-xs font-semibold text-slate-800 max-w-[200px] truncate">{selectedFile.name}</span>
                                  <span className="text-[10px] text-slate-400 uppercase">Ready to analyze</span>
                              </div>
-                             <button 
+                             <button
                                 onClick={() => setSelectedFile(null)}
                                 className="p-1 hover:bg-slate-100 rounded-full text-slate-400 hover:text-red-500 transition-colors ml-2"
                              >

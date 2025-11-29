@@ -109,6 +109,11 @@ export interface SuggestedAction {
   description?: string;
 }
 
+export interface FollowUpQuestion {
+  question: string;
+  context?: string;  // Brief explanation of why this question matters
+}
+
 export interface Message {
   id: string;
   role: 'user' | 'ai';
@@ -121,6 +126,7 @@ export interface Message {
   inlineResultTotalCount?: number; // New: Total count of matches found, used to show "View X more"
   showConsultationCTA?: boolean; // New: Trigger for WhatsApp button
   suggestedActions?: SuggestedAction[]; // New: Guided action pills
+  followUpQuestions?: FollowUpQuestion[]; // New: AI-suggested follow-up questions
   sources?: Source[]; // For Deep Research citations
   searchQueries?: string[]; // For Deep Focus: what queries were searched
   isSearching?: boolean; // For Deep Focus: indicates active web search

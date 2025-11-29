@@ -408,16 +408,16 @@ export const Marketplace: React.FC<MarketplaceProps> = ({
                                 setIsSpecialtyOpen(!isSpecialtyOpen);
                                 setIsLocationOpen(false);
                             }}
-                            className={`min-h-[76px] flex hover:border-slate-300 transition-all duration-200 focus:outline-none text-left bg-white w-full h-auto border rounded-2xl pt-3 pr-5 pb-3 pl-5 shadow-[0_1px_2px_rgba(0,0,0,0.02)] gap-x-4 gap-y-4 items-center ${
+                            className={`min-h-[56px] flex hover:border-slate-300 transition-all duration-200 focus:outline-none text-left bg-white w-full h-auto border rounded-xl py-2.5 px-4 shadow-[0_1px_2px_rgba(0,0,0,0.02)] gap-x-3 items-center ${
                                 isSpecialtyOpen ? 'border-slate-400 ring-2 ring-slate-50' : 'border-slate-200'
                             }`}
                         >
                             <div className="flex-shrink-0 text-slate-400">
-                                <BriefcaseMedical className="w-7 h-7" strokeWidth={1.5} />
+                                <BriefcaseMedical className="w-5 h-5" strokeWidth={1.5} />
                             </div>
                             <div className="flex flex-col justify-center w-full overflow-hidden">
-                                <span className="text-sm font-medium text-slate-500 mb-1 leading-tight truncate">Which specializations are you looking for?</span>
-                                <span className={`text-lg font-normal leading-tight truncate ${selectedSpecialties.length > 0 ? 'text-slate-900' : 'text-slate-400'}`}>
+                                <span className="text-xs font-medium text-slate-500 mb-0.5 leading-tight truncate">Specialization</span>
+                                <span className={`text-sm font-medium leading-tight truncate ${selectedSpecialties.length > 0 ? 'text-slate-900' : 'text-slate-400'}`}>
                                     {selectedSpecialties.length > 0 ? selectedSpecialties.join(', ') : 'Select specialization'}
                                 </span>
                             </div>
@@ -425,30 +425,30 @@ export const Marketplace: React.FC<MarketplaceProps> = ({
 
                         {/* Specialization Dropdown Menu */}
                         {isSpecialtyOpen && (
-                            <div className="absolute top-full left-0 w-full mt-2 bg-white rounded-xl border border-slate-200 shadow-[0_10px_40px_-10px_rgba(0,0,0,0.08)] overflow-hidden z-50 animate-in fade-in slide-in-from-top-2 duration-200">
-                                <div className="pt-5 px-4 pb-2">
-                                    <h3 className="text-sm font-medium text-slate-400 pl-1">Core Treatment</h3>
+                            <div className="absolute top-full left-0 w-full mt-1.5 bg-white rounded-lg border border-slate-200 shadow-lg overflow-hidden z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+                                <div className="pt-3 px-3 pb-1.5">
+                                    <h3 className="text-xs font-medium text-slate-400 pl-1">Core Treatment</h3>
                                 </div>
-                                <div className="max-h-[420px] overflow-y-auto p-3 pt-0 flex flex-col gap-2 custom-scrollbar">
+                                <div className="max-h-[320px] overflow-y-auto p-2 pt-0 flex flex-col gap-1.5 custom-scrollbar">
                                     {SPECIALIZATIONS.map(spec => {
                                         const isSelected = selectedSpecialties.includes(spec.name);
                                         return (
                                             <button
                                                 key={spec.name}
                                                 onClick={() => toggleSpecialty(spec.name)}
-                                                className={`group relative w-full text-left rounded-xl p-4 transition-all duration-200 focus:outline-none border ${
+                                                className={`group relative w-full text-left rounded-lg px-3 py-2.5 transition-all duration-200 focus:outline-none border ${
                                                     isSelected
                                                         ? 'border-slate-900 bg-slate-50'
-                                                        : 'border-slate-200 bg-white hover:border-slate-300'
+                                                        : 'border-slate-100 bg-white hover:border-slate-200 hover:bg-slate-50'
                                                 }`}
                                             >
-                                                <div className="flex flex-col gap-1">
-                                                    <span className="text-base font-semibold text-slate-900 group-hover:text-black">{spec.name}</span>
-                                                    <span className="text-sm text-slate-500 font-normal leading-snug">{spec.description}</span>
+                                                <div className="flex flex-col gap-0.5">
+                                                    <span className="text-sm font-medium text-slate-900 group-hover:text-black">{spec.name}</span>
+                                                    <span className="text-xs text-slate-500 font-normal leading-snug">{spec.description}</span>
                                                 </div>
                                                 {isSelected && (
-                                                    <div className="absolute top-3 right-3">
-                                                        <Check className="w-5 h-5 text-slate-900" />
+                                                    <div className="absolute top-2.5 right-2.5">
+                                                        <Check className="w-4 h-4 text-slate-900" />
                                                     </div>
                                                 )}
                                             </button>
@@ -466,16 +466,16 @@ export const Marketplace: React.FC<MarketplaceProps> = ({
                                 setIsLocationOpen(!isLocationOpen);
                                 setIsSpecialtyOpen(false);
                             }}
-                            className={`min-h-[76px] flex hover:border-slate-300 transition-all duration-200 focus:outline-none text-left bg-white w-full h-auto border rounded-2xl pt-3 pr-5 pb-3 pl-5 shadow-[0_1px_2px_rgba(0,0,0,0.02)] gap-x-4 gap-y-4 items-center ${
+                            className={`min-h-[56px] flex hover:border-slate-300 transition-all duration-200 focus:outline-none text-left bg-white w-full h-auto border rounded-xl py-2.5 px-4 shadow-[0_1px_2px_rgba(0,0,0,0.02)] gap-x-3 items-center ${
                                 isLocationOpen ? 'border-slate-400 ring-2 ring-slate-50' : 'border-slate-200'
                             }`}
                         >
                             <div className="flex-shrink-0 text-slate-400">
-                                <MapPin className="w-7 h-7" strokeWidth={1.5} />
+                                <MapPin className="w-5 h-5" strokeWidth={1.5} />
                             </div>
                             <div className="flex flex-col justify-center w-full overflow-hidden">
-                                <span className="text-sm font-medium text-slate-500 mb-1 leading-tight">Where to?</span>
-                                <span className={`text-lg font-normal leading-tight truncate ${selectedCountries.length > 0 ? 'text-slate-900' : 'text-slate-400'}`}>
+                                <span className="text-xs font-medium text-slate-500 mb-0.5 leading-tight">Location</span>
+                                <span className={`text-sm font-medium leading-tight truncate ${selectedCountries.length > 0 ? 'text-slate-900' : 'text-slate-400'}`}>
                                     {selectedCountries.length > 0 ? selectedCountries.join(', ') : 'Select countries'}
                                 </span>
                             </div>
@@ -483,11 +483,11 @@ export const Marketplace: React.FC<MarketplaceProps> = ({
 
                         {/* Location Dropdown Menu */}
                         {isLocationOpen && (
-                            <div className="absolute top-full left-0 w-full mt-2 bg-white rounded-xl border border-slate-200 shadow-[0_10px_40px_-10px_rgba(0,0,0,0.08)] overflow-hidden z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+                            <div className="absolute top-full left-0 w-full mt-1.5 bg-white rounded-lg border border-slate-200 shadow-lg overflow-hidden z-50 animate-in fade-in slide-in-from-top-2 duration-200">
 
                                 {/* Discover Nearby Section */}
-                                <div className="p-4 border-b border-slate-100">
-                                    <h3 className="text-sm font-medium text-slate-400 mb-3">Discover Nearby</h3>
+                                <div className="p-3 border-b border-slate-100">
+                                    <h3 className="text-xs font-medium text-slate-400 mb-2">Discover Nearby</h3>
                                     <button
                                         onClick={() => {
                                             // Request user location and find nearby hospitals
@@ -510,28 +510,28 @@ export const Marketplace: React.FC<MarketplaceProps> = ({
                                                 );
                                             }
                                         }}
-                                        className="w-full flex items-center gap-4 p-4 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 hover:border-slate-300 transition-all duration-200"
+                                        className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100 hover:border-slate-300 transition-all duration-200"
                                     >
-                                        <div className="w-12 h-12 rounded-xl bg-white border border-slate-200 flex items-center justify-center flex-shrink-0">
-                                            <Compass className="w-6 h-6 text-slate-600" />
+                                        <div className="w-9 h-9 rounded-lg bg-white border border-slate-200 flex items-center justify-center flex-shrink-0">
+                                            <Compass className="w-4 h-4 text-slate-600" />
                                         </div>
                                         <div className="text-left">
-                                            <span className="text-base font-semibold text-slate-900 block">Find Nearby Hospitals</span>
-                                            <span className="text-sm text-slate-500">Use your current location</span>
+                                            <span className="text-sm font-medium text-slate-900 block">Find Nearby Hospitals</span>
+                                            <span className="text-xs text-slate-500">Use your current location</span>
                                         </div>
                                     </button>
                                 </div>
 
                                 {/* Flight Origin Card */}
-                                <div className="p-4 border-b border-slate-100">
-                                    <div className="rounded-xl bg-gradient-to-r from-lime-100 to-yellow-100 p-4">
+                                <div className="p-3 border-b border-slate-100">
+                                    <div className="rounded-lg bg-gradient-to-r from-lime-100 to-yellow-100 px-3 py-2.5">
                                         <div className="flex items-center justify-between">
-                                            <div className="flex items-center gap-3">
-                                                <div className="w-10 h-10 rounded-lg bg-white/80 flex items-center justify-center">
-                                                    <Plane className="w-5 h-5 text-slate-700" />
+                                            <div className="flex items-center gap-2.5">
+                                                <div className="w-8 h-8 rounded-md bg-white/80 flex items-center justify-center">
+                                                    <Plane className="w-4 h-4 text-slate-700" />
                                                 </div>
                                                 <div>
-                                                    <span className="text-xs font-medium text-slate-500 block">Flying from</span>
+                                                    <span className="text-[10px] font-medium text-slate-500 block">Flying from</span>
                                                     {isEditingOrigin ? (
                                                         <input
                                                             type="text"
@@ -554,10 +554,10 @@ export const Marketplace: React.FC<MarketplaceProps> = ({
                                                                 onUpdateFilters?.({ ...filters, userOrigin: originInput });
                                                             }}
                                                             autoFocus
-                                                            className="text-lg font-semibold text-slate-900 bg-white/60 border border-slate-300 rounded-lg px-2 py-0.5 w-32 focus:outline-none focus:ring-2 focus:ring-slate-400"
+                                                            className="text-sm font-semibold text-slate-900 bg-white/60 border border-slate-300 rounded px-1.5 py-0.5 w-28 focus:outline-none focus:ring-2 focus:ring-slate-400"
                                                         />
                                                     ) : (
-                                                        <span className="text-lg font-semibold text-slate-900">{flightOrigin}</span>
+                                                        <span className="text-sm font-semibold text-slate-900">{flightOrigin}</span>
                                                     )}
                                                 </div>
                                             </div>
@@ -567,7 +567,7 @@ export const Marketplace: React.FC<MarketplaceProps> = ({
                                                         setOriginInput(flightOrigin);
                                                         setIsEditingOrigin(true);
                                                     }}
-                                                    className="text-sm font-medium text-slate-600 hover:text-slate-900 underline underline-offset-2 transition-colors"
+                                                    className="text-xs font-medium text-slate-600 hover:text-slate-900 underline underline-offset-2 transition-colors"
                                                 >
                                                     change
                                                 </button>
@@ -577,34 +577,34 @@ export const Marketplace: React.FC<MarketplaceProps> = ({
                                 </div>
 
                                 {/* Country List */}
-                                <div className="pt-4 px-4 pb-2">
-                                    <h3 className="text-sm font-medium text-slate-400 pl-1">Popular Destinations</h3>
+                                <div className="pt-3 px-3 pb-1.5">
+                                    <h3 className="text-xs font-medium text-slate-400 pl-1">Popular Destinations</h3>
                                 </div>
-                                <div className="max-h-[280px] overflow-y-auto p-3 pt-0 flex flex-col gap-2 custom-scrollbar">
+                                <div className="max-h-[240px] overflow-y-auto p-2 pt-0 flex flex-col gap-1.5 custom-scrollbar">
                                     {COUNTRIES.map(country => {
                                         const isSelected = selectedCountries.includes(country.name);
                                         return (
                                             <button
                                                 key={country.name}
                                                 onClick={() => toggleCountry(country.name)}
-                                                className={`group relative w-full text-left rounded-xl p-4 transition-all duration-200 focus:outline-none border ${
+                                                className={`group relative w-full text-left rounded-lg px-3 py-2.5 transition-all duration-200 focus:outline-none border ${
                                                     isSelected
                                                         ? 'border-slate-900 bg-slate-50'
-                                                        : 'border-slate-200 bg-white hover:border-slate-300'
+                                                        : 'border-slate-100 bg-white hover:border-slate-200 hover:bg-slate-50'
                                                 }`}
                                             >
-                                                <div className="flex items-start gap-3">
-                                                    <div className="w-10 h-10 rounded-lg bg-slate-100 flex items-center justify-center flex-shrink-0 text-lg">
+                                                <div className="flex items-start gap-2.5">
+                                                    <div className="w-8 h-8 rounded-md bg-slate-100 flex items-center justify-center flex-shrink-0 text-base">
                                                         {country.icon}
                                                     </div>
                                                     <div className="flex-1 min-w-0">
-                                                        <span className="text-base font-semibold text-slate-900 group-hover:text-black block">{country.name}</span>
-                                                        <span className="text-sm text-slate-500 line-clamp-2">{country.description}</span>
+                                                        <span className="text-sm font-medium text-slate-900 group-hover:text-black block">{country.name}</span>
+                                                        <span className="text-xs text-slate-500 line-clamp-1">{country.description}</span>
                                                     </div>
                                                 </div>
                                                 {isSelected && (
-                                                    <div className="absolute top-3 right-3">
-                                                        <Check className="w-5 h-5 text-slate-900" />
+                                                    <div className="absolute top-2.5 right-2.5">
+                                                        <Check className="w-4 h-4 text-slate-900" />
                                                     </div>
                                                 )}
                                             </button>
@@ -618,9 +618,9 @@ export const Marketplace: React.FC<MarketplaceProps> = ({
                     {/* Search Button */}
                     <button
                         onClick={handleSearchSubmit}
-                        className="h-[76px] w-full md:w-[76px] bg-slate-900 rounded-2xl flex items-center justify-center hover:bg-black transition-colors duration-200 shadow-md flex-shrink-0"
+                        className="h-[56px] w-full md:w-[56px] bg-slate-900 rounded-xl flex items-center justify-center hover:bg-black transition-colors duration-200 shadow-md flex-shrink-0"
                     >
-                        <Search className="w-7 h-7 text-white" />
+                        <Search className="w-5 h-5 text-white" />
                     </button>
                 </div>
 
