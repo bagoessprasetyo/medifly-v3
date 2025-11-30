@@ -131,6 +131,19 @@ export const HospitalPage: React.FC<HospitalPageProps> = ({ hospital, onBack, on
           </button>
       </div>
 
+      {/* Desktop Breadcrumb */}
+      <div className="max-w-7xl mx-auto px-6 pt-6 hidden md:block">
+          <div className="flex items-center gap-2 text-sm text-slate-500">
+              <button onClick={onBack} className="hover:text-slate-900 transition-colors flex items-center gap-1">
+                  <ArrowLeft className="w-4 h-4" /> Back
+              </button>
+              <span className="text-slate-300">|</span>
+              <span className="cursor-pointer hover:text-slate-900 transition-colors" onClick={onNavigateToHospitals}>Hospitals</span>
+              <ChevronRight className="w-4 h-4 text-slate-300" />
+              <span className="font-semibold text-slate-900">{hospital.name}</span>
+          </div>
+      </div>
+
       {/* Hero Gallery */}
       <div className="max-w-7xl mx-auto px-4 md:px-6 py-8">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 h-[400px] md:h-[500px]">

@@ -11,6 +11,7 @@ interface LayoutProps {
   onNavigateToPackages?: () => void;
   selectedLanguage: string;
   onLanguageChange: (lang: string) => void;
+  onStartTour?: () => void;
 }
 
 export const Layout: React.FC<LayoutProps> = ({ 
@@ -20,7 +21,8 @@ export const Layout: React.FC<LayoutProps> = ({
   onNavigateToDoctors,
   onNavigateToPackages,
   selectedLanguage,
-  onLanguageChange
+  onLanguageChange,
+  onStartTour
 }) => {
   return (
     <div className="min-h-full flex flex-col bg-white font-sans text-slate-900">
@@ -31,6 +33,7 @@ export const Layout: React.FC<LayoutProps> = ({
         onNavigateToPackages={onNavigateToPackages}
         selectedLanguage={selectedLanguage}
         onLanguageChange={onLanguageChange}
+        onStartTour={onStartTour}
       />
       <main className="flex-1 w-full">
         {children}

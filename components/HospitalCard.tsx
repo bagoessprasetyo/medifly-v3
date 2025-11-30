@@ -1,19 +1,34 @@
 
 import React from 'react';
-import { Star, Plane, MapPin, Languages, Stethoscope, BriefcaseMedical } from 'lucide-react';
+import { Star, Plane, MapPin, Languages, Stethoscope, BriefcaseMedical, GitCompare, Check } from 'lucide-react';
 import { Hospital, TravelEstimate } from '../types';
 
 interface HospitalCardProps {
   hospital: Hospital;
   onViewDetails: (hospital: Hospital) => void;
   travelEstimate?: TravelEstimate;
+  isComparing?: boolean;
+  onToggleCompare?: (hospital: Hospital) => void;
+  compareBtnId?: string;
 }
 
-export const HospitalCard: React.FC<HospitalCardProps> = ({ hospital, onViewDetails, travelEstimate }) => {
+export const HospitalCard: React.FC<HospitalCardProps> = ({ 
+  hospital, 
+  onViewDetails, 
+  travelEstimate,
+  isComparing = false,
+  onToggleCompare,
+  compareBtnId
+}) => {
   
+  const handleCompareClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onToggleCompare?.(hospital);
+  };
+
   return (
     <div 
-        className="bg-white rounded-xl overflow-hidden group flex flex-col cursor-pointer hover:shadow-lg transition-all duration-300 border border-transparent hover:border-slate-100"
+        className={`bg-white rounded-xl overflow-hidden group flex flex-col cursor-pointer hover:shadow-lg transition-all duration-300 border ${isComparing ? 'border-indigo-500 ring-1 ring-indigo-500' : 'border-transparent hover:border-slate-100'}`}
         onClick={() => onViewDetails(hospital)}
     >
         {/* Image Container */}
@@ -23,6 +38,25 @@ export const HospitalCard: React.FC<HospitalCardProps> = ({ hospital, onViewDeta
                 alt={hospital.name} 
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
             />
+            
+            {/* Compare Toggle Button */}
+            {onToggleCompare && (
+                <button 
+                    id={compareBtnId}
+                    onClick={handleCompareClick}
+                    className={`absolute top-2 right-2 p-2 rounded-lg backdrop-blur-md border shadow-sm transition-all z-10 flex items-center gap-1.5
+                        ${isComparing 
+                            ? 'bg-indigo-600 border-indigo-500 text-white' 
+                            : 'bg-white/90 border-white/20 text-slate-600 hover:bg-white'
+                        }`}
+                >
+                    {isComparing ? <Check className="w-3.5 h-3.5" /> : <GitCompare className="w-3.5 h-3.5" />}
+                    <span className="text-[10px] font-bold uppercase tracking-wide">
+                        {isComparing ? 'Added' : 'Compare'}
+                    </span>
+                </button>
+            )}
+
             {/* Google Rating Badge */}
             <div className="absolute bottom-2 left-2 bg-[#222222]/90 backdrop-blur-md rounded-md px-2 py-1 flex items-center gap-2 shadow-lg border border-white/10">
                 <div className="w-4 h-4 bg-white rounded-full flex items-center justify-center p-0.5">

@@ -1,15 +1,18 @@
 
+// ... (imports remain the same)
 import React, { useState, useMemo, useEffect, useRef } from 'react';
-import { X, Search, Map, List, BriefcaseMedical, MapPin, Star, MessageSquare, Check, ChevronDown, Globe, ArrowUpDown, Compass, Plane } from 'lucide-react';
+import { X, Search, Map, List, BriefcaseMedical, MapPin, Star, MessageSquare, Check, ChevronDown, Globe, ArrowUpDown, Compass, Plane, GitCompare, Trash2 } from 'lucide-react';
 import { FilterState, Hospital, TravelEstimate } from '../types';
 import { HOSPITALS, getCoordinatesForCity, calculateDistance } from '../constants';
-import { HospitalCard } from './HospitalCard';
+// import { HospitalCard } from './HospitalCard';
 import { MapboxMap } from './MapboxMap';
 import { Sheet } from './ui/Sheet';
 import { HospitalDetails } from './HospitalDetails';
+import { ComparisonView } from './ComparisonView';
 import { getTravelEstimates } from '../services/mapService';
+import { HospitalCard } from './HospitalCard';
 
-// Specialization options with descriptions
+// ... (constants remain the same)
 const SPECIALIZATIONS = [
   { name: 'Cardiology', description: 'Heart checkup, angioplasty, heart valve surgery, etc.' },
   { name: 'Orthopedics', description: 'Knee replacement, spine surgery, sports injury care, etc.' },
@@ -23,7 +26,6 @@ const SPECIALIZATIONS = [
   { name: 'Cosmetic Surgery', description: 'Rhinoplasty, liposuction, facelifts, etc.' },
 ];
 
-// Country options with descriptions
 const COUNTRIES = [
   { name: 'Thailand', icon: '🏥', description: 'World-class hospitals, affordable prices, recovery-friendly destination' },
   { name: 'Malaysia', icon: '🏥', description: 'Affordable, high-quality care with strong specialties in cardiology & oncology' },
@@ -49,8 +51,13 @@ export const Marketplace: React.FC<MarketplaceProps> = ({
   onUpdateFilters,
   isChatOpen = false,
 }) => {
+  // ... (state and effects remain the same, just showing the render part for update)
   const [viewMode, setViewMode] = useState<'grid' | 'map'>('grid');
   const [sheetHospital, setSheetHospital] = useState<Hospital | null>(null);
+  
+  // Comparison State
+  const [compareList, setCompareList] = useState<Hospital[]>([]);
+  const [isComparisonOpen, setIsComparisonOpen] = useState(false);
 
   // Search Bar Local State
   const [specialtyInput, setSpecialtyInput] = useState(filters.specialty || '');
@@ -133,6 +140,21 @@ export const Marketplace: React.FC<MarketplaceProps> = ({
       }
       return [...prev, name];
     });
+  };
+
+  // Toggle comparison selection
+  const toggleCompare = (hospital: Hospital) => {
+      setCompareList(prev => {
+          const exists = prev.find(h => h.id === hospital.id);
+          if (exists) {
+              return prev.filter(h => h.id !== hospital.id);
+          }
+          if (prev.length >= 3) {
+              alert("You can compare up to 3 hospitals at a time.");
+              return prev;
+          }
+          return [...prev, hospital];
+      });
   };
 
   // Travel Estimates Effect
@@ -275,7 +297,7 @@ export const Marketplace: React.FC<MarketplaceProps> = ({
         <div className={`max-w-[1600px] mx-auto w-full px-4 md:px-6 pt-6 md:pt-8 pb-20 flex flex-col lg:flex-row gap-8 lg:gap-12 flex-1 relative ${isChatOpen ? 'lg:flex-col' : ''}`}>
 
             {/* Sidebar Filters (Desktop) - Hidden when chat is open - DoctorsPage style */}
-            <aside className={`w-64 flex-shrink-0 hidden lg:block pt-2 sticky top-24 h-[calc(100vh-8rem)] overflow-y-auto custom-scrollbar pr-2 transition-all duration-300 ${isChatOpen ? '!hidden' : ''}`}>
+            <aside id="sidebar-filters" className={`w-64 flex-shrink-0 hidden lg:block pt-2 sticky top-24 h-[calc(100vh-8rem)] overflow-y-auto custom-scrollbar pr-2 transition-all duration-300 ${isChatOpen ? '!hidden' : ''}`}>
                 <h2 className="text-lg font-semibold mb-8 tracking-tight">Filter</h2>
 
                 {/* Language Filter */}
@@ -399,7 +421,7 @@ export const Marketplace: React.FC<MarketplaceProps> = ({
             <main className="flex-1 flex flex-col min-w-0">
 
                 {/* Search Bar - New Design with Dropdowns */}
-                <div className={`flex flex-col md:flex-row gap-3 mb-8 transition-all duration-300 relative z-20 ${isChatOpen ? 'hidden' : ''}`}>
+                <div id="marketplace-search" className={`flex flex-col md:flex-row gap-3 mb-8 transition-all duration-300 relative z-20 ${isChatOpen ? 'hidden' : ''}`}>
 
                     {/* Specialization Dropdown */}
                     <div ref={specialtyRef} className="relative flex-grow w-full md:w-[45%]">
@@ -703,13 +725,16 @@ export const Marketplace: React.FC<MarketplaceProps> = ({
                 <div className="flex-1 relative">
                     {viewMode === 'grid' ? (
                         <>
-                            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 pb-8">
-                                {displayedHospitals.map(hospital => (
+                            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 pb-28">
+                                {displayedHospitals.map((hospital, index) => (
                                     <HospitalCard 
                                         key={hospital.id} 
                                         hospital={hospital} 
                                         onViewDetails={(h) => setSheetHospital(h)}
                                         travelEstimate={travelEstimates[hospital.id]}
+                                        isComparing={compareList.some(h => h.id === hospital.id)}
+                                        onToggleCompare={toggleCompare}
+                                        compareBtnId={index === 0 ? "tour-compare-button" : undefined}
                                     />
                                 ))}
                                 {filteredHospitals.length === 0 && (
@@ -740,8 +765,50 @@ export const Marketplace: React.FC<MarketplaceProps> = ({
                         </div>
                     )}
 
-                    {/* Floating Map/List Toggle */}
-                    <div className="fixed bottom-8 left-1/2 transform -translate-x-1/2 z-30">
+                    {/* Floating Comparison Bar */}
+                    {compareList.length > 0 && (
+                        <div className="fixed bottom-24 md:bottom-8 left-1/2 transform -translate-x-1/2 z-40 animate-in slide-in-from-bottom-10 fade-in duration-300">
+                            <div className="bg-white rounded-2xl shadow-2xl border border-slate-200 p-2 pl-4 flex items-center gap-4">
+                                <div className="flex -space-x-3">
+                                    {compareList.map(h => (
+                                        <div key={h.id} className="w-10 h-10 rounded-full border-2 border-white overflow-hidden bg-slate-100 relative group">
+                                            <img src={h.imageUrl} alt={h.name} className="w-full h-full object-cover" />
+                                            <button 
+                                                onClick={() => toggleCompare(h)}
+                                                className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                                            >
+                                                <X className="w-4 h-4 text-white" />
+                                            </button>
+                                        </div>
+                                    ))}
+                                    {compareList.length < 3 && (
+                                        <div className="w-10 h-10 rounded-full border-2 border-dashed border-slate-200 bg-slate-50 flex items-center justify-center">
+                                            <span className="text-xs text-slate-400 font-medium">Add</span>
+                                        </div>
+                                    )}
+                                </div>
+                                <div className="h-8 w-px bg-slate-100 mx-2"></div>
+                                <div className="flex gap-2">
+                                    <button 
+                                        onClick={() => setCompareList([])}
+                                        className="px-3 py-2 text-sm font-medium text-slate-500 hover:text-slate-800 transition-colors"
+                                    >
+                                        Clear
+                                    </button>
+                                    <button 
+                                        onClick={() => setIsComparisonOpen(true)}
+                                        className="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl font-semibold text-sm shadow-lg shadow-indigo-600/20 flex items-center gap-2 transition-all active:scale-95"
+                                    >
+                                        <GitCompare className="w-4 h-4" />
+                                        Compare ({compareList.length})
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Floating Map/List Toggle (Hide when comparison bar is active on small screens to avoid clutter) */}
+                    <div className={`fixed bottom-8 left-1/2 transform -translate-x-1/2 z-30 transition-all duration-300 ${compareList.length > 0 ? 'translate-y-20 opacity-0 pointer-events-none' : ''}`}>
                         <button 
                             onClick={() => setViewMode(prev => prev === 'grid' ? 'map' : 'grid')}
                             className="bg-[#111] hover:scale-105 hover:bg-black text-white px-5 py-3.5 rounded-full font-medium text-sm shadow-xl flex items-center gap-2 transition-all active:scale-95"
@@ -772,6 +839,23 @@ export const Marketplace: React.FC<MarketplaceProps> = ({
                 onViewFullProfile={(h) => onViewHospitalPage(h)} 
                 />
             )}
+        </Sheet>
+
+        {/* Comparison Sheet */}
+        <Sheet 
+            isOpen={isComparisonOpen} 
+            onClose={() => setIsComparisonOpen(false)}
+            className="sm:w-[900px] w-full"
+        >
+            <ComparisonView 
+                hospitals={compareList}
+                onRemove={(id) => setCompareList(prev => prev.filter(h => h.id !== id))}
+                onClose={() => setIsComparisonOpen(false)}
+                onViewDetails={(h) => {
+                    setIsComparisonOpen(false);
+                    onViewHospitalPage(h);
+                }}
+            />
         </Sheet>
     </div>
   );

@@ -1,6 +1,6 @@
+
 import React, { useState } from 'react';
-import { Menu, X, Plane, ArrowRight } from 'lucide-react';
-// import { LanguageSelector } from './ui/Languageselector';
+import { Menu, X, Plane, ArrowRight, Compass } from 'lucide-react';
 // import { LanguageSelector } from './ui/LanguageSelector';
 
 interface NavbarProps {
@@ -10,6 +10,7 @@ interface NavbarProps {
   onNavigateToPackages?: () => void;
   selectedLanguage: string;
   onLanguageChange: (lang: string) => void;
+  onStartTour?: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({ 
@@ -18,7 +19,8 @@ export const Navbar: React.FC<NavbarProps> = ({
   onNavigateToDoctors,
   onNavigateToPackages,
   selectedLanguage,
-  onLanguageChange
+  onLanguageChange,
+  onStartTour
 }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -69,6 +71,14 @@ export const Navbar: React.FC<NavbarProps> = ({
 
           {/* Right Actions */}
           <div className="hidden md:flex items-center gap-4">
+             {onStartTour && (
+                 <button 
+                    onClick={onStartTour}
+                    className="text-sm font-medium text-indigo-600 hover:bg-indigo-50 px-3 py-2 rounded-lg transition-colors flex items-center gap-1.5"
+                 >
+                    <Compass className="w-4 h-4" /> Tour
+                 </button>
+             )}
              {/* <div className="hidden lg:block">
                   <LanguageSelector selectedLanguage={selectedLanguage} onLanguageChange={onLanguageChange} />
              </div> */}
@@ -113,6 +123,15 @@ export const Navbar: React.FC<NavbarProps> = ({
                         <span>Packages</span>
                         <ArrowRight className="w-5 h-5 text-slate-300" />
                     </button>
+                    {onStartTour && (
+                        <button 
+                            onClick={() => handleMobileNav(onStartTour)}
+                            className="flex items-center justify-between w-full text-lg font-semibold text-indigo-600 border-b border-indigo-100 pb-4"
+                        >
+                            <span className="flex items-center gap-2"><Compass className="w-5 h-5" /> Take Tour</span>
+                            <ArrowRight className="w-5 h-5 text-indigo-300" />
+                        </button>
+                    )}
                 </div>
 
                 <div className="mt-8 space-y-4">

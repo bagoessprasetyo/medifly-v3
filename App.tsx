@@ -16,6 +16,7 @@ import { FilterState, Hospital, ChatSession, Message, Doctor, MedicalPackage } f
 import { ArrowLeft, MessageSquare } from 'lucide-react';
 import { HOSPITALS, DOCTORS, PACKAGES, createSlug } from './constants';
 import { PackagesPage } from './components/PackagesPage';
+import { ProductTour, TourStep } from './components/ProductTour';
 
 const App: React.FC = () => {
   const [page, setPage] = useState<'home' | 'marketplace' | 'hospital-page' | 'doctors' | 'doctor-details' | 'gallery' | 'facilities' | 'facility-details' | 'packages' | 'package-details'>('home');
@@ -39,6 +40,77 @@ const App: React.FC = () => {
   const [viewedFacilityName, setViewedFacilityName] = useState<string | null>(null);
   const [viewedDoctor, setViewedDoctor] = useState<Doctor | null>(null);
   const [viewedPackage, setViewedPackage] = useState<MedicalPackage | null>(null);
+
+  // Tour State
+  const [isTourOpen, setIsTourOpen] = useState(false);
+
+  useEffect(() => {
+    // Check if tour has been seen
+    const hasSeenTour = localStorage.getItem('medifly_tour_seen');
+    if (!hasSeenTour) {
+      // If user hasn't seen tour, we want to guide them to the marketplace
+      // Wait a bit for initial render/hydration
+      setTimeout(() => {
+          // Force navigation to marketplace for the tour context
+          if (page !== 'marketplace') {
+              setPage('marketplace');
+          }
+          // Open tour after page transition
+          setTimeout(() => setIsTourOpen(true), 800);
+      }, 1500);
+    }
+  }, []);
+
+  const handleStartTour = () => {
+      // If we are not on the marketplace, go there first
+      if (page !== 'marketplace') {
+          setPage('marketplace');
+          setIsChatOpen(false);
+          // Wait for transition before starting tour
+          setTimeout(() => setIsTourOpen(true), 600);
+      } else {
+          setIsChatOpen(false);
+          setIsTourOpen(true);
+      }
+  };
+
+  const handleTourComplete = () => {
+      setIsTourOpen(false);
+      localStorage.setItem('medifly_tour_seen', 'true');
+  };
+
+  const tourSteps: TourStep[] = [
+      {
+          targetId: null,
+          title: "Welcome to Medifly AI",
+          content: "Your personal medical concierge for global healthcare. Let us show you how to find the best care.",
+          position: "center"
+      },
+      {
+          targetId: "marketplace-search",
+          title: "Smart Search",
+          content: "Find hospitals and specialists by treatment, country, or specific needs using our intelligent filters.",
+          position: "bottom"
+      },
+      {
+          targetId: "sidebar-filters",
+          title: "Advanced Filters",
+          content: "Narrow down your options by price, accreditation, language, and more to find the perfect match.",
+          position: "right"
+      },
+      {
+          targetId: "tour-compare-button",
+          title: "Compare Hospitals",
+          content: "Select up to 3 hospitals to view a detailed side-by-side comparison of features and costs.",
+          position: "top"
+      },
+      {
+          targetId: "ask-aria-button",
+          title: "Ask Aria",
+          content: "Chat with our AI assistant for personalized recommendations, cost estimates, and document analysis.",
+          position: "top"
+      }
+  ];
 
   // Load Sessions from LocalStorage on Mount
   useEffect(() => {
@@ -391,15 +463,24 @@ const App: React.FC = () => {
     onNavigateToDoctors: navigateToDoctors,
     onNavigateToPackages: navigateToPackages,
     selectedLanguage,
-    onLanguageChange: setSelectedLanguage
+    onLanguageChange: setSelectedLanguage,
+    onStartTour: handleStartTour
   };
 
   return (
     <div className="h-[100dvh] w-screen overflow-hidden flex bg-white relative">
       
+      {/* Product Tour Overlay */}
+      <ProductTour 
+        steps={tourSteps}
+        isOpen={isTourOpen}
+        onClose={() => setIsTourOpen(false)}
+        onComplete={handleTourComplete}
+      />
+
       {/* Chat Open Toggle (Floating Button) - Only render when chat is closed */}
       {!isChatOpen && (
-      <div className="absolute bottom-6 left-6 z-40 animate-in fade-in slide-in-from-bottom-4 duration-500">
+      <div id="ask-aria-button" className="absolute bottom-6 left-6 z-40 animate-in fade-in slide-in-from-bottom-4 duration-500">
          <button 
             onClick={() => setIsChatOpen(true)}
             className="flex items-center gap-2 pl-4 pr-5 py-3 bg-slate-900 text-white rounded-full shadow-2xl hover:scale-105 hover:bg-black transition-all group"

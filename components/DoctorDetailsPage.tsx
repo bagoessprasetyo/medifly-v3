@@ -1,8 +1,7 @@
 
-
 import React, { useState, useEffect } from 'react';
 import { Doctor } from '../types';
-import { User, Stethoscope, GraduationCap, Calendar, Building2, MapPin, ChevronDown, ChevronUp, Languages, MessageSquare, Info, Check } from 'lucide-react';
+import { User, Stethoscope, GraduationCap, Calendar, Building2, MapPin, ChevronDown, ChevronUp, Languages, MessageSquare, Info, Check, ArrowLeft, ChevronRight } from 'lucide-react';
 import { DoctorCard } from './DoctorCard';
 import { DOCTORS, HOSPITALS } from '../constants';
 
@@ -109,6 +108,26 @@ He also received advanced specialization training in modern technologies. He is 
         <div className="h-8"></div>
 
         <div className="max-w-[1400px] mx-auto px-6 py-8">
+            
+            {/* Breadcrumb - Added for Navigation */}
+            <div className="mb-8 hidden md:block">
+                <div className="flex items-center gap-2 text-sm text-slate-500">
+                    <button onClick={onBack} className="hover:text-slate-900 transition-colors flex items-center gap-1">
+                        <ArrowLeft className="w-4 h-4" /> Back
+                    </button>
+                    <span className="text-slate-300">|</span>
+                    <span className="cursor-pointer hover:text-slate-900 transition-colors" onClick={onBack}>Doctors</span>
+                    <ChevronRight className="w-4 h-4 text-slate-300" />
+                    <span className="font-semibold text-slate-900">{doctor.name}</span>
+                </div>
+            </div>
+
+            {/* Mobile Back Button */}
+            <div className="md:hidden mb-6">
+                 <button onClick={onBack} className="flex items-center gap-2 text-slate-900 font-semibold p-2 -ml-2 rounded-full hover:bg-slate-50">
+                    <ArrowLeft className="w-5 h-5" /> Back
+                 </button>
+            </div>
             
             {/* Header Profile */}
             <div className="flex flex-col md:flex-row gap-8 mb-12">
