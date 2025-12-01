@@ -71,14 +71,14 @@ export const Navbar: React.FC<NavbarProps> = ({
 
           {/* Right Actions */}
           <div className="hidden md:flex items-center gap-4">
-             {onStartTour && (
+             {/* {onStartTour && (
                  <button 
                     onClick={onStartTour}
                     className="text-sm font-medium text-indigo-600 hover:bg-indigo-50 px-3 py-2 rounded-lg transition-colors flex items-center gap-1.5"
                  >
                     <Compass className="w-4 h-4" /> Tour
                  </button>
-             )}
+             )} */}
              {/* <div className="hidden lg:block">
                   <LanguageSelector selectedLanguage={selectedLanguage} onLanguageChange={onLanguageChange} />
              </div> */}

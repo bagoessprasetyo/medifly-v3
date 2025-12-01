@@ -1,21 +1,131 @@
-import React, { useState } from 'react';
-import { Search, MapPin, Globe, Sparkles, ArrowRight, X, Navigation } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { 
+  Search, MapPin, Globe, Sparkles, ArrowRight, X, Navigation, 
+  Package, BadgeCheck, ShieldCheck, Smartphone, MessageSquare, 
+  FileText, Plus, Video, Paperclip, Database, Activity, Stethoscope, Loader2
+} from 'lucide-react';
 
 interface HeroProps {
   onQuickSearch: (query: string, origin?: string, location?: { lat: number; lng: number }) => void;
   onNavigateToMarketplace?: () => void;
 }
 
-export const Hero: React.FC<HeroProps> = ({ onQuickSearch, onNavigateToMarketplace }) => {
+export const Hero: React.FC<HeroProps> = ({ onQuickSearch }) => {
   // Desktop State
   const [treatment, setTreatment] = useState('');
   const [origin, setOrigin] = useState('Jakarta');
   const [destination, setDestination] = useState('Anywhere');
+  const [isSearching, setIsSearching] = useState(false);
+  
+  // Animation State
+  const [stats, setStats] = useState({ hospitals: 0, doctors: 0, countries: 0 });
+  const [loadingPhase, setLoadingPhase] = useState(0); // 0: Start, 1: Scanning, 2: Found
+  
+  // Scroll Container Ref
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
   
   // Mobile Modal State
-  const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
   const [isLoadingLocation, setIsLoadingLocation] = useState(false);
   const [userCoords, setUserCoords] = useState<{ lat: number; lng: number } | undefined>(undefined);
+
+  // Auto-scroll logic
+  useEffect(() => {
+    const scrollContainer = scrollContainerRef.current;
+    if (!scrollContainer) return;
+
+    let intervalId: ReturnType<typeof setInterval>;
+    let isPaused = false;
+
+    const startAutoScroll = () => {
+      intervalId = setInterval(() => {
+        if (isPaused) return;
+        
+        // Calculate dynamic width based on first child + gap
+        const firstCard = scrollContainer.firstElementChild as HTMLElement;
+        if (!firstCard) return;
+        
+        // gap-4 is 16px
+        const scrollAmount = firstCard.offsetWidth + 16; 
+        const maxScroll = scrollContainer.scrollWidth - scrollContainer.clientWidth;
+
+        if (scrollContainer.scrollLeft >= maxScroll - 10) {
+           // Reset to start
+           scrollContainer.scrollTo({ left: 0, behavior: 'smooth' });
+        } else {
+           scrollContainer.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+        }
+      }, 3000); // Scroll every 3 seconds
+    };
+
+    const stopAutoScroll = () => {
+        isPaused = true;
+    };
+
+    const resumeAutoScroll = () => {
+        isPaused = false;
+    };
+
+    startAutoScroll();
+
+    // Pause on interaction
+    scrollContainer.addEventListener('mouseenter', stopAutoScroll);
+    scrollContainer.addEventListener('mouseleave', resumeAutoScroll);
+    scrollContainer.addEventListener('touchstart', stopAutoScroll);
+    
+    // Cleanup
+    return () => {
+      clearInterval(intervalId);
+      if (scrollContainer) {
+        scrollContainer.removeEventListener('mouseenter', stopAutoScroll);
+        scrollContainer.removeEventListener('mouseleave', resumeAutoScroll);
+        scrollContainer.removeEventListener('touchstart', stopAutoScroll);
+      }
+    };
+  }, []);
+
+  // Database Scan Animation Effect
+  useEffect(() => {
+    if (!isSearching) {
+        setStats({ hospitals: 0, doctors: 0, countries: 0 });
+        setLoadingPhase(0);
+        return;
+    }
+
+    // Phase 1: Rapid Counting
+    const duration = 2000;
+    const frameRate = 1000 / 60;
+    const totalFrames = duration / frameRate;
+    
+    const targetHospitals = 3500;
+    const targetDoctors = 24000;
+    const targetCountries = 115;
+
+    let frame = 0;
+    const counterInterval = setInterval(() => {
+        frame++;
+        const progress = Math.min(frame / totalFrames, 1);
+        // Ease out quart
+        const ease = 1 - Math.pow(1 - progress, 4);
+
+        setStats({
+            hospitals: Math.floor(targetHospitals * ease),
+            doctors: Math.floor(targetDoctors * ease),
+            countries: Math.floor(targetCountries * ease)
+        });
+
+        if (frame >= totalFrames) clearInterval(counterInterval);
+    }, frameRate);
+
+    // Phase Transitions
+    const phase1Timer = setTimeout(() => setLoadingPhase(1), 500);
+    const phase2Timer = setTimeout(() => setLoadingPhase(2), 2000);
+
+    return () => {
+        clearInterval(counterInterval);
+        clearTimeout(phase1Timer);
+        clearTimeout(phase2Timer);
+    };
+  }, [isSearching]);
 
   const handleUseLocation = () => {
     if (!navigator.geolocation) {
@@ -44,245 +154,391 @@ export const Hero: React.FC<HeroProps> = ({ onQuickSearch, onNavigateToMarketpla
 
   const handleSubmit = () => {
     if (treatment.trim()) {
-        const parts = [];
-        parts.push(`I am looking for ${treatment}`);
-        if (destination && destination !== 'Anywhere') parts.push(`in ${destination}`);
-        if (origin && origin !== 'Anywhere') parts.push(`traveling from ${origin}`);
+        setIsSearching(true);
         
-        onQuickSearch(parts.join(' '), origin, userCoords);
-        setIsSearchModalOpen(false);
+        // Wait for animation to play out (2.5 seconds)
+        setTimeout(() => {
+            const parts = [];
+            parts.push(`I am looking for ${treatment}`);
+            if (destination && destination !== 'Anywhere') parts.push(`in ${destination}`);
+            if (origin && origin !== 'Anywhere') parts.push(`traveling from ${origin}`);
+            
+            onQuickSearch(parts.join(' '), origin, userCoords);
+            // We don't reset isSearching here because the component will likely unmount or navigation will happen
+            // But if we stayed on page, we would: setIsSearching(false);
+        }, 2500);
     }
   };
 
   return (
-    <div className="relative overflow-hidden bg-slate-50 min-h-[85vh] selection:bg-teal-100 selection:text-teal-900">
-        
-        {/* Background Decoration */}
-        <div className="absolute inset-0 z-0 pointer-events-none">
-            <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-teal-50/80 via-white to-white"></div>
-            <div className="absolute top-[-20%] right-[-10%] w-[50%] h-[50%] bg-teal-200/20 blur-[120px] rounded-full"></div>
-            <div className="absolute bottom-[-10%] left-[-10%] w-[40%] h-[40%] bg-blue-100/30 blur-[100px] rounded-full"></div>
-        </div>
+    <div className="relative bg-[#FCFCFA] min-h-[85vh] overflow-x-hidden selection:bg-lime-100 font-sans text-slate-900 flex flex-col">
 
-        {/* Main Content */}
-        <div className="relative z-10 max-w-7xl mx-auto px-6 py-12 lg:py-24 flex flex-col lg:flex-row lg:items-center gap-12 lg:gap-24">
-            
-            {/* Left Column: Text & Search */}
-            <div className="w-full lg:w-[45%] flex flex-col items-start space-y-10">
-                <div className="space-y-6">
-                    <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold text-slate-900 tracking-tight leading-[1.05]">
-                        Find world-class care, anywhere
-                    </h1>
-                    <p className="text-xl text-slate-500 font-medium leading-relaxed max-w-lg">
-                        Compare costs, consult specialists, and book treatments across 1,000s of hospitals in 10+ countries, with AI guidance.
+        {/* Global Search Animation Overlay */}
+        {isSearching && (
+            <div className="fixed inset-0 z-[100] bg-white/95 backdrop-blur-xl flex flex-col items-center justify-center animate-in fade-in duration-300">
+                <div className="relative w-full max-w-lg p-8 flex flex-col items-center">
+                    
+                    {/* Animated Icons / Graphics */}
+                    <div className="relative mb-8">
+                        <div className="w-24 h-24 rounded-full border-4 border-slate-100 flex items-center justify-center relative">
+                            <div className="absolute inset-0 border-4 border-indigo-500 rounded-full border-t-transparent animate-spin"></div>
+                            <Globe className="w-10 h-10 text-indigo-600" strokeWidth={1.5} />
+                        </div>
+                        {/* Orbiting Icons */}
+                        <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-full animate-bounce delay-100">
+                            <div className="bg-white p-2 rounded-lg shadow-lg border border-slate-100 mb-2">
+                                <Database className="w-5 h-5 text-emerald-500" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <h2 className="text-2xl font-bold text-slate-900 mb-2 text-center tracking-tight">
+                        {loadingPhase === 0 && "Accessing Global Database..."}
+                        {loadingPhase === 1 && "Analyzing Medical Network..."}
+                        {loadingPhase === 2 && "Matches Found"}
+                    </h2>
+                    <p className="text-slate-500 text-sm mb-10 text-center animate-pulse">
+                        Scanning verified JCI-accredited facilities tailored to "{treatment}"
                     </p>
-                </div>
 
-                {/* Interactive Search Card (Desktop) */}
-                <div className="w-full relative group hidden md:block">
-                    <div className="absolute -inset-1 bg-gradient-to-r from-teal-400/20 to-lime-400/20 rounded-[2rem] blur-xl opacity-0 group-hover:opacity-100 transition duration-700"></div>
-                    <div className="relative w-full bg-white rounded-[1.75rem] border border-slate-200 shadow-[0_8px_40px_-12px_rgba(0,0,0,0.08)] overflow-hidden">
-                        
-                        {/* Text Input */}
-                        <div className="p-5 border-b border-slate-100 flex items-start gap-3">
-                            <Search className="w-5 h-5 text-teal-500 mt-1" />
-                            <div className="w-full">
-                                <textarea 
-                                    rows={1}
-                                    value={treatment}
-                                    onChange={(e) => setTreatment(e.target.value)}
-                                    onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && (e.preventDefault(), handleSubmit())}
-                                    className="w-full text-lg font-medium text-slate-900 placeholder:text-slate-300 bg-transparent border-none focus:ring-0 resize-none p-0 leading-relaxed outline-none"
-                                    placeholder="Describe your health issue..."
-                                />
-                                <p className="text-xs text-slate-400 mt-1">E.g. <span className="text-slate-500">Cheapest Medical Checkups in Malaysia</span></p>
-                            </div>
+                    {/* Counters Grid */}
+                    <div className="grid grid-cols-3 gap-4 w-full mb-8">
+                        <div className="flex flex-col items-center p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                            <BuildingIcon className="w-6 h-6 text-slate-400 mb-2" />
+                            <span className="text-xl font-bold text-slate-900 tabular-nums">{stats.hospitals.toLocaleString()}</span>
+                            <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Hospitals</span>
                         </div>
-
-                        {/* Filters */}
-                        <div className="px-5 py-4 bg-slate-50/50 flex flex-wrap gap-3">
-                            <button 
-                                className="flex items-center gap-2 px-3 py-1.5 bg-white hover:bg-slate-50 rounded-lg text-sm font-semibold text-slate-700 transition-all border border-slate-200 shadow-sm group/btn"
-                                onClick={() => { if(origin === 'Jakarta') setOrigin(''); else handleUseLocation(); }}
-                            >
-                                <MapPin className="w-3.5 h-3.5 text-slate-400 group-hover/btn:text-teal-500" />
-                                <span className="text-slate-400 font-normal">From:</span> 
-                                <input 
-                                    value={origin} 
-                                    onChange={(e) => setOrigin(e.target.value)}
-                                    className="bg-transparent border-none p-0 w-24 text-sm font-semibold text-slate-700 focus:ring-0"
-                                    placeholder="City"
-                                />
-                            </button>
-                            <button className="flex items-center gap-2 px-3 py-1.5 bg-white hover:bg-slate-50 rounded-lg text-sm font-semibold text-slate-700 transition-all border border-slate-200 shadow-sm group/btn">
-                                <Globe className="w-3.5 h-3.5 text-slate-400 group-hover/btn:text-teal-500" />
-                                <span className="text-slate-400 font-normal">To:</span> 
-                                <input 
-                                    value={destination} 
-                                    onChange={(e) => setDestination(e.target.value)}
-                                    className="bg-transparent border-none p-0 w-24 text-sm font-semibold text-slate-700 focus:ring-0"
-                                    placeholder="Anywhere"
-                                />
-                            </button>
+                        <div className="flex flex-col items-center p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                            <Stethoscope className="w-6 h-6 text-slate-400 mb-2" />
+                            <span className="text-xl font-bold text-slate-900 tabular-nums">{stats.doctors.toLocaleString()}+</span>
+                            <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Specialists</span>
+                        </div>
+                        <div className="flex flex-col items-center p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                            <MapPin className="w-6 h-6 text-slate-400 mb-2" />
+                            <span className="text-xl font-bold text-slate-900 tabular-nums">{stats.countries}</span>
+                            <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Countries</span>
                         </div>
                     </div>
-                </div>
 
-                {/* Mobile Search Trigger */}
-                <button 
-                    onClick={() => setIsSearchModalOpen(true)}
-                    className="md:hidden w-full bg-white rounded-full shadow-[0_4px_12px_rgba(0,0,0,0.08)] border border-slate-200 py-3 px-5 flex items-center gap-4 transition-transform active:scale-95 text-left"
-                >
-                    <div className="w-10 h-10 rounded-full bg-teal-50 flex items-center justify-center text-teal-600 shrink-0">
-                        <Search className="w-5 h-5" />
+                    {/* Progress Bar */}
+                    <div className="w-64 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                        <div className="h-full bg-indigo-600 rounded-full animate-[loading_2s_ease-in-out_forwards] w-full origin-left"></div>
                     </div>
-                    <div className="flex-1 min-w-0">
-                        <div className="font-bold text-slate-900 text-sm truncate">Describe issue...</div>
-                        <div className="text-xs text-slate-500 truncate flex items-center gap-1">
-                            <span>{origin || 'Anywhere'}</span>
-                            <span className="text-[8px]">•</span>
-                            <span>{destination || 'Anywhere'}</span>
-                        </div>
-                    </div>
-                </button>
-
-                {/* Main CTA */}
-                <button 
-                    onClick={handleSubmit}
-                    className="group w-full relative overflow-hidden bg-lime-300 hover:bg-lime-400 text-teal-950 font-bold text-lg rounded-2xl p-4 transition-all duration-300 shadow-[0_4px_0_0_#bef264] hover:shadow-[0_2px_0_0_#bef264] hover:translate-y-[2px] active:translate-y-[4px] active:shadow-none flex items-center justify-center gap-3 hidden md:flex"
-                >
-                    <span className="relative z-10">Generate from 10,000+ Specialists</span>
-                    <Sparkles className="w-5 h-5 text-teal-800 relative z-10" />
-                    <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform relative z-10" />
-                </button>
-            </div>
-
-            {/* Right Column: Visual Grid (Desktop Only or hidden on small mobile if needed) */}
-            <div className="hidden lg:block w-full lg:w-[55%] h-[750px] relative">
-                {/* Fade Masks */}
-                <div className="absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-slate-50 via-slate-50/80 to-transparent z-10 pointer-events-none"></div>
-                <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-slate-50 via-slate-50/80 to-transparent z-10 pointer-events-none"></div>
-
-                <div className="grid grid-cols-2 gap-5 overflow-hidden h-full pr-4 pl-4">
-                    {/* Column 1 - Slower */}
-                    <div className="animate-scroll-vertical flex flex-col gap-5" style={{ animationDuration: '45s' }}>
-                        <Card image="https://images.unsplash.com/photo-1551601651-2a8555f1a136?auto=format&fit=crop&q=80&w=800" badge="Specialists" title="Find Specialists Abroad" subtitle="Top orthopaedic surgeons for ACL reconstruction in Thailand." badgeColor="blue" />
-                        <Card image="https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&q=80&w=800" badge="Wellness" title="Wellness Retreat in Bali" subtitle="Book a full‑body check‑up and weight reset program in Ubud." badgeColor="emerald" />
-                        <Card image="https://images.unsplash.com/photo-1579684385127-1ef15d508118?auto=format&fit=crop&q=80&w=800" badge="Second Opinion" title="Get a Second Opinion" subtitle="Ask a neurologist in Singapore to review your MRI." badgeColor="violet" />
-                        {/* Duplicates for Loop */}
-                        <Card image="https://images.unsplash.com/photo-1551601651-2a8555f1a136?auto=format&fit=crop&q=80&w=800" badge="Specialists" title="Find Specialists Abroad" subtitle="Top orthopaedic surgeons for ACL reconstruction in Thailand." badgeColor="blue" />
-                        <Card image="https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&q=80&w=800" badge="Wellness" title="Wellness Retreat in Bali" subtitle="Book a full‑body check‑up and weight reset program in Ubud." badgeColor="emerald" />
-                    </div>
-
-                    {/* Column 2 - Faster & Offset */}
-                    <div className="animate-scroll-vertical flex flex-col gap-5 pt-20" style={{ animationDuration: '35s' }}>
-                        <Card image="https://images.unsplash.com/photo-1530497610245-94d3c16cda28?auto=format&fit=crop&q=80&w=800" badge="Compare Care" title="Compare Care Worldwide" subtitle="Heart bypass costs: Malaysia vs India." badgeColor="amber" />
-                        <Card image="https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&q=80&w=800" badge="Personalised" title="Personalised Care Path" subtitle="Type 2 diabetes options in Bangkok or Kuala Lumpur." badgeColor="rose" />
-                        <Card image="https://images.unsplash.com/photo-1666214280557-f1b5022eb634?auto=format&fit=crop&q=80&w=800" badge="Specialists" title="Find Specialists Abroad" subtitle="Top orthopaedic surgeons for ACL reconstruction in Thailand." badgeColor="blue" />
-                        {/* Duplicates for Loop */}
-                        <Card image="https://images.unsplash.com/photo-1530497610245-94d3c16cda28?auto=format&fit=crop&q=80&w=800" badge="Compare Care" title="Compare Care Worldwide" subtitle="Heart bypass costs: Malaysia vs India." badgeColor="amber" />
-                        <Card image="https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&q=80&w=800" badge="Personalised" title="Personalised Care Path" subtitle="Type 2 diabetes options in Bangkok or Kuala Lumpur." badgeColor="rose" />
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        {/* Mobile Search Modal */}
-        {isSearchModalOpen && (
-            <div className="fixed inset-0 z-[60] bg-slate-50 md:hidden flex flex-col animate-in slide-in-from-bottom-5 duration-300">
-                <div className="bg-white px-4 py-4 flex items-center gap-4 shadow-sm relative z-10">
-                    <button onClick={() => setIsSearchModalOpen(false)} className="p-2 rounded-full border border-slate-200 hover:bg-slate-50 transition-colors">
-                        <X className="w-5 h-5 text-slate-700" />
-                    </button>
-                    <h2 className="text-lg font-bold text-slate-900 flex-1 text-center pr-10">Find Care</h2>
-                </div>
-                
-                <div className="flex-1 p-4 overflow-y-auto">
-                    <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 space-y-4">
-                        {/* Inputs */}
-                        <div className="p-3 bg-slate-50 rounded-xl border border-slate-100 focus-within:border-teal-200 focus-within:ring-2 focus-within:ring-teal-100 transition-all">
-                            <label className="text-xs font-bold text-slate-500 uppercase tracking-wide block mb-1">Treatment</label>
-                            <input 
-                                type="text" 
-                                placeholder="Describe issue..." 
-                                value={treatment}
-                                onChange={(e) => setTreatment(e.target.value)}
-                                className="w-full bg-transparent border-none p-0 text-lg font-semibold text-slate-900 placeholder:text-slate-300 focus:ring-0 outline-none"
-                                autoFocus
-                            />
-                        </div>
-                        <div className="p-3 bg-slate-50 rounded-xl border border-slate-100 focus-within:border-teal-200 focus-within:ring-2 focus-within:ring-teal-100 transition-all">
-                            <div className="flex justify-between items-center mb-1">
-                                <label className="text-xs font-bold text-slate-500 uppercase tracking-wide">Fly From</label>
-                                <button onClick={handleUseLocation} className="text-[10px] text-teal-600 font-semibold flex items-center gap-1">
-                                    {isLoadingLocation ? 'Locating...' : 'Use Current'} <Navigation className="w-3 h-3" />
-                                </button>
-                            </div>
-                            <input 
-                                type="text" 
-                                placeholder="Your City" 
-                                value={origin}
-                                onChange={(e) => setOrigin(e.target.value)}
-                                className="w-full bg-transparent border-none p-0 text-lg font-semibold text-slate-900 placeholder:text-slate-300 focus:ring-0 outline-none"
-                            />
-                        </div>
-                        <div className="p-3 bg-slate-50 rounded-xl border border-slate-100 focus-within:border-teal-200 focus-within:ring-2 focus-within:ring-teal-100 transition-all">
-                            <label className="text-xs font-bold text-slate-500 uppercase tracking-wide block mb-1">Destination</label>
-                            <input 
-                                type="text" 
-                                placeholder="Anywhere" 
-                                value={destination}
-                                onChange={(e) => setDestination(e.target.value)}
-                                className="w-full bg-transparent border-none p-0 text-lg font-semibold text-slate-900 placeholder:text-slate-300 focus:ring-0 outline-none"
-                            />
-                        </div>
-                    </div>
-                </div>
-
-                <div className="p-4 bg-white border-t border-slate-100 flex items-center justify-between">
-                    <button 
-                        onClick={() => { setTreatment(''); setOrigin(''); setDestination(''); }}
-                        className="text-slate-500 font-semibold text-sm px-4"
-                    >
-                        Clear
-                    </button>
-                    <button 
-                        onClick={handleSubmit}
-                        className="bg-lime-300 text-teal-950 px-8 py-3.5 rounded-xl font-bold text-base shadow-lg flex items-center gap-2 active:scale-95 transition-transform"
-                    >
-                        <Search className="w-5 h-5 stroke-[2.5px]" />
-                        Search
-                    </button>
                 </div>
             </div>
         )}
 
+        {/* Subtle Grid Background */}
+        <div className="absolute inset-0 h-full w-full bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)] bg-[size:40px_40px] pointer-events-none z-0"></div>
+
+        {/* Decorative Curve Line (SVG) */}
+        <div className="absolute top-[100px] left-0 w-full h-[400px] pointer-events-none z-0 opacity-60 hidden md:block">
+            <svg width="100%" height="100%" viewBox="0 0 1440 400" fill="none" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
+                <path d="M-100 350 C 200 350, 400 100, 800 150 C 1200 200, 1400 50, 1600 50" stroke="#EADBC8" strokeWidth="1.5" fill="none" vectorEffect="non-scaling-stroke"/>
+            </svg>
+        </div>
+
+        {/* Top Feature Banner */}
+        <nav className="w-full bg-[#FDFBF7] border-b border-[#F0EAE0] py-2 px-4 md:px-8 flex items-center justify-center md:justify-between text-[#5D5555] text-[10px] md:text-xs overflow-hidden whitespace-nowrap relative z-10">
+            <div className="flex items-center gap-8 md:w-full md:justify-center overflow-x-auto no-scrollbar mask-image-gradient">
+                <div className="flex items-center gap-2 shrink-0">
+                    <span className="font-semibold text-slate-700">Why Medifly?</span>
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                    <Package className="w-3.5 h-3.5" />
+                    <span>Global hospital network</span>
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                    <BadgeCheck className="w-3.5 h-3.5" />
+                    <span>Transparent pricing estimates</span>
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                    <ShieldCheck className="w-3.5 h-3.5" />
+                    <span>JCI accredited partners</span>
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                    <Smartphone className="w-3.5 h-3.5" />
+                    <span>100% digital booking</span>
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                    <MessageSquare className="w-3.5 h-3.5" />
+                    <span>24/7 AI Concierge</span>
+                </div>
+            </div>
+        </nav>
+
+        {/* Main Content */}
+        <main className="relative z-10 max-w-[1400px] mx-auto px-4 pt-6 md:pt-10 pb-12 flex flex-col items-center w-full">
+            
+            {/* Hero Text */}
+            <div className="text-center max-w-4xl mx-auto mb-4">
+                <h1 className="text-3xl md:text-5xl lg:text-6xl font-semibold tracking-tight text-slate-900 mb-4 leading-[1.1]">
+                    Access world-class healthcare beyond borders.
+                </h1>
+                <p className="text-base md:text-xl text-[#867676] font-normal max-w-2xl mx-auto leading-relaxed">
+                    Compare hospitals, connect with specialists, and plan treatment abroad with AI.
+                </p>
+            </div>
+
+            {/* Cards Scroll Section */}
+            <div className="w-full relative mb-8 group/cards">
+                {/* Fade masks for scroll */}
+                <div className="absolute left-0 top-0 bottom-0 w-8 md:w-24 bg-gradient-to-r from-[#FCFCFA] to-transparent z-20 pointer-events-none"></div>
+                <div className="absolute right-0 top-0 bottom-0 w-8 md:w-24 bg-gradient-to-l from-[#FCFCFA] to-transparent z-20 pointer-events-none"></div>
+
+                <div 
+                    ref={scrollContainerRef}
+                    className="flex overflow-x-auto gap-4 px-4 md:px-24 pb-4 pt-2 no-scrollbar snap-x snap-mandatory cursor-grab active:cursor-grabbing scroll-smooth"
+                >
+                    
+                    {/* Card 1 */}
+                    <div 
+                        onMouseEnter={() => setTreatment("Hospitals in Malaysia covered by my insurance?")}
+                        className="min-w-[240px] md:min-w-[280px] h-[200px] md:h-[240px] bg-[#F2F2F2] rounded-2xl p-4 md:p-5 flex flex-col justify-between shrink-0 snap-center snap-always hover:shadow-xl hover:-translate-y-1 transition-all duration-300 border border-transparent hover:border-slate-200 cursor-pointer"
+                    >
+                        <div>
+                            <span className="text-[10px] font-medium text-slate-500 mb-2 block uppercase tracking-wide">Ask AI</span>
+                            <h3 className="text-sm md:text-base font-medium text-slate-800 leading-snug mb-3">“Hospitals in Malaysia covered by my insurance?”</h3>
+                            
+                            {/* Visual Element */}
+                            <div className="bg-white rounded-xl p-2.5 shadow-sm border border-slate-100/50 scale-90 origin-top-left w-full">
+                                <div className="flex gap-2 items-center mb-2">
+                                    <div className="w-2 h-2 rounded-full bg-blue-400"></div>
+                                    <div className="h-1.5 w-16 bg-slate-100 rounded"></div>
+                                </div>
+                                <div className="space-y-2">
+                                    <div className="flex items-center gap-3 p-1.5 bg-slate-50 rounded-lg">
+                                        <div className="w-4 h-4 rounded bg-slate-200"></div>
+                                        <div className="flex-1 space-y-1">
+                                            <div className="h-1.5 w-2/3 bg-slate-200 rounded"></div>
+                                            <div className="h-1.5 w-1/2 bg-slate-100 rounded"></div>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center gap-3 p-1.5 bg-slate-50 rounded-lg opacity-60">
+                                        <div className="w-4 h-4 rounded bg-slate-200"></div>
+                                        <div className="flex-1 space-y-1">
+                                            <div className="h-1.5 w-2/3 bg-slate-200 rounded"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <p className="text-[10px] md:text-xs text-[#867676] leading-relaxed">Compare accredited hospitals that match your policy instantly.</p>
+                    </div>
+
+                    {/* Card 2 */}
+                    <div 
+                        onMouseEnter={() => setTreatment("What surgery options do I have for an ACL tear?")}
+                        className="min-w-[240px] md:min-w-[280px] h-[200px] md:h-[240px] bg-[#F2F2F2] rounded-2xl p-4 md:p-5 flex flex-col justify-between shrink-0 snap-center snap-always hover:shadow-xl hover:-translate-y-1 transition-all duration-300 border border-transparent hover:border-slate-200 cursor-pointer"
+                    >
+                        <div>
+                            <span className="text-[10px] font-medium text-slate-500 mb-2 block uppercase tracking-wide">Ask AI</span>
+                            <h3 className="text-sm md:text-base font-medium text-slate-800 leading-snug mb-3">“What surgery options do I have for an ACL tear?”</h3>
+                            
+                            {/* Visual Element */}
+                            <div className="flex items-center justify-center gap-3 py-2 scale-90">
+                                <div className="w-10 h-12 bg-white rounded shadow-sm flex items-center justify-center flex-col gap-1 border border-slate-100">
+                                    <div className="w-3.5 h-3.5 rounded bg-red-100 text-red-500 flex items-center justify-center"><FileText className="w-2 h-2" /></div>
+                                    <div className="h-0.5 w-5 bg-slate-200 rounded"></div>
+                                </div>
+                                <div className="w-10 h-12 bg-white rounded shadow-sm flex items-center justify-center flex-col gap-1 border border-slate-100">
+                                    <div className="w-3.5 h-3.5 rounded bg-blue-100 text-blue-500 flex items-center justify-center"><FileText className="w-2 h-2" /></div>
+                                    <div className="h-0.5 w-5 bg-slate-200 rounded"></div>
+                                </div>
+                                <div className="w-7 h-7 rounded-full bg-blue-400 text-white flex items-center justify-center shadow-md z-10 -ml-2 border-2 border-[#F2F2F2]">
+                                    <Plus className="w-3.5 h-3.5" />
+                                </div>
+                            </div>
+                        </div>
+                        <p className="text-[10px] md:text-xs text-[#867676] leading-relaxed">See surgical types, cost ranges, and recovery timelines.</p>
+                    </div>
+
+                    {/* Card 3 */}
+                    <div 
+                        onMouseEnter={() => setTreatment("Show me the top 10 wellness centers in Bali.")}
+                        className="min-w-[240px] md:min-w-[280px] h-[200px] md:h-[240px] bg-[#F2F2F2] rounded-2xl p-4 md:p-5 flex flex-col justify-between shrink-0 snap-center snap-always hover:shadow-xl hover:-translate-y-1 transition-all duration-300 border border-transparent hover:border-slate-200 cursor-pointer"
+                    >
+                        <div>
+                            <span className="text-[10px] font-medium text-slate-500 mb-2 block uppercase tracking-wide">Ask AI</span>
+                            <h3 className="text-sm md:text-base font-medium text-slate-800 leading-snug mb-3">“Show me the top 10 wellness centers in Bali.”</h3>
+                            <div className="bg-white/50 h-16 rounded-xl w-full border border-slate-200/50 flex items-center justify-center scale-90">
+                                <div className="flex gap-1 items-end h-8">
+                                    <div className="w-2 bg-slate-300 h-4 rounded-sm"></div>
+                                    <div className="w-2 bg-slate-300 h-6 rounded-sm"></div>
+                                    <div className="w-2 bg-slate-800 h-8 rounded-sm"></div>
+                                    <div className="w-2 bg-slate-300 h-5 rounded-sm"></div>
+                                    <div className="w-2 bg-slate-300 h-3 rounded-sm"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <p className="text-[10px] md:text-xs text-[#867676] leading-relaxed">See wellness packages, ratings and reviews.</p>
+                    </div>
+
+                    {/* Card 4 */}
+                    <div 
+                        onMouseEnter={() => setTreatment("Top 5 Medical checkup packages in Singapore?")}
+                        className="min-w-[240px] md:min-w-[280px] h-[200px] md:h-[240px] bg-[#F2F2F2] rounded-2xl p-4 md:p-5 flex flex-col justify-between shrink-0 snap-center snap-always hover:shadow-xl hover:-translate-y-1 transition-all duration-300 border border-transparent hover:border-slate-200 cursor-pointer"
+                    >
+                        <div>
+                            <span className="text-[10px] font-medium text-slate-500 mb-2 block uppercase tracking-wide">Ask AI</span>
+                            <h3 className="text-sm md:text-base font-medium text-slate-800 leading-snug mb-3">“Top 5 Medical checkup packages in Singapore?”</h3>
+                            {/* Abstract List Visual */}
+                             <div className="space-y-1.5 mt-2 bg-white/50 p-2.5 rounded-xl border border-slate-200/30 scale-90">
+                                <div className="flex items-center gap-2">
+                                    <div className="w-3.5 h-3.5 rounded-full border border-slate-300 flex items-center justify-center text-[7px] text-slate-500 font-bold">1</div>
+                                    <div className="h-1.5 w-3/4 bg-slate-300 rounded-full"></div>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <div className="w-3.5 h-3.5 rounded-full border border-slate-300 flex items-center justify-center text-[7px] text-slate-500 font-bold">2</div>
+                                    <div className="h-1.5 w-2/3 bg-slate-300 rounded-full"></div>
+                                </div>
+                                 <div className="flex items-center gap-2">
+                                    <div className="w-3.5 h-3.5 rounded-full border border-slate-300 flex items-center justify-center text-[7px] text-slate-500 font-bold">3</div>
+                                    <div className="h-1.5 w-1/2 bg-slate-300 rounded-full"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <p className="text-[10px] md:text-xs text-[#867676] leading-relaxed">Compare screening packages and book directly with hospitals.</p>
+                    </div>
+
+                    {/* Card 5 */}
+                    <div 
+                        onMouseEnter={() => setTreatment("Can I talk to a doctor before planning my trip?")}
+                        className="min-w-[240px] md:min-w-[280px] h-[200px] md:h-[240px] bg-[#F2F2F2] rounded-2xl p-4 md:p-5 flex flex-col justify-between shrink-0 snap-center snap-always hover:shadow-xl hover:-translate-y-1 transition-all duration-300 border border-transparent hover:border-slate-200 cursor-pointer"
+                    >
+                        <div>
+                            <span className="text-[10px] font-medium text-slate-500 mb-2 block uppercase tracking-wide">Ask AI</span>
+                            <h3 className="text-sm md:text-base font-medium text-slate-800 leading-snug mb-3">“Can I talk to a doctor before planning my trip?”</h3>
+                            <div className="flex justify-center mt-2">
+                                <div className="relative">
+                                    <div className="w-10 h-10 rounded-full bg-slate-300 border-2 border-white z-0"></div>
+                                    <div className="w-10 h-10 rounded-full bg-slate-800 border-4 border-[#F2F2F2] absolute top-0 left-5 z-10 flex items-center justify-center text-white shadow-md">
+                                        <Video className="w-3.5 h-3.5" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <p className="text-[10px] md:text-xs text-[#867676] leading-relaxed">Connect directly with hospital doctors.</p>
+                    </div>
+
+                     {/* Card 6 */}
+                     <div 
+                        onMouseEnter={() => setTreatment("Compare IVF prices in Thailand VS Singapore")}
+                        className="min-w-[240px] md:min-w-[280px] h-[200px] md:h-[240px] bg-[#F2F2F2] rounded-2xl p-4 md:p-5 flex flex-col justify-between shrink-0 snap-center snap-always hover:shadow-xl hover:-translate-y-1 transition-all duration-300 border border-transparent hover:border-slate-200 cursor-pointer"
+                    >
+                        <div>
+                            <span className="text-[10px] font-medium text-slate-500 mb-2 block uppercase tracking-wide">Ask AI</span>
+                            <h3 className="text-sm md:text-base font-medium text-slate-800 leading-snug mb-3">“Compare IVF prices in Thailand VS Singapore”</h3>
+                            <div className="bg-teal-900 rounded-lg p-2.5 mt-2 w-full shadow-lg scale-95">
+                                <div className="flex justify-between text-[9px] text-teal-200 mb-2 border-b border-teal-800 pb-1 font-medium">
+                                    <span>Procedure</span>
+                                    <span>Avg Cost</span>
+                                </div>
+                                <div className="space-y-1.5">
+                                    <div className="flex justify-between text-[7px] text-white">
+                                        <span>Heart Bypass</span>
+                                        <span>$12k</span>
+                                    </div>
+                                    <div className="flex justify-between text-[7px] text-white">
+                                        <span>Knee Rep.</span>
+                                        <span>$9k</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <p className="text-[10px] md:text-xs text-[#867676] leading-relaxed">Compare prices directly across borders.</p>
+                    </div>
+                </div>
+            </div>
+
+            {/* Search / Input Section */}
+            <div className="w-full max-w-3xl px-4 relative z-30">
+                <div className="bg-white rounded-[26px] shadow-[0_20px_40px_-10px_rgba(0,0,0,0.08)] border border-slate-100 p-2.5 md:p-3">
+                    
+                    {/* Input Area */}
+                    <div className="flex items-start gap-3 px-2 py-1">
+                        <Search className="w-5 h-5 text-slate-400 mt-2 shrink-0" />
+                        <div className="w-full">
+                            <input 
+                                type="text" 
+                                placeholder="Describe your health issue..." 
+                                className="w-full text-base md:text-lg text-slate-800 placeholder-slate-300 outline-none bg-transparent font-medium mb-0.5"
+                                value={treatment}
+                                onChange={(e) => setTreatment(e.target.value)}
+                                onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
+                            />
+                            <p className="text-slate-400 text-xs md:text-sm font-normal italic">E.g. Cheapest Medical Checkups in Malaysia</p>
+                        </div>
+                    </div>
+
+                    {/* Controls & Button */}
+                    <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 mt-3">
+                        
+                        {/* Pills */}
+                        <div className="flex flex-wrap items-center gap-2">
+                            <button 
+                                onClick={() => { if(origin === 'Jakarta') setOrigin(''); else handleUseLocation(); }}
+                                className="flex items-center gap-2 bg-[#F9FAFB] hover:bg-slate-100 border border-slate-200 rounded-xl px-3 py-1.5 transition-colors group"
+                            >
+                                <MapPin className="w-3.5 h-3.5 text-slate-400 group-hover:text-slate-600" />
+                                <span className="text-slate-500 text-xs font-medium">From:</span>
+                                {isLoadingLocation ? (
+                                    <span className="text-slate-400 text-xs italic">Locating...</span>
+                                ) : (
+                                    <input 
+                                        value={origin} 
+                                        onChange={(e) => setOrigin(e.target.value)}
+                                        onClick={(e) => e.stopPropagation()}
+                                        className="bg-transparent border-none p-0 w-20 text-xs font-semibold text-slate-800 focus:ring-0"
+                                        placeholder="City"
+                                    />
+                                )}
+                            </button>
+                            
+                            <button className="flex items-center gap-2 bg-[#F9FAFB] hover:bg-slate-100 border border-slate-200 rounded-xl px-3 py-1.5 transition-colors group">
+                                <Globe className="w-3.5 h-3.5 text-slate-400 group-hover:text-slate-600" />
+                                <span className="text-slate-500 text-xs font-medium">To:</span>
+                                <input 
+                                    value={destination} 
+                                    onChange={(e) => setDestination(e.target.value)}
+                                    className="bg-transparent border-none p-0 w-20 text-xs font-semibold text-slate-800 focus:ring-0"
+                                    placeholder="Anywhere"
+                                />
+                            </button>
+
+                            <button className="flex items-center justify-center w-8 h-8 rounded-full border border-slate-200 hover:bg-slate-50 transition-colors text-slate-500 hover:text-slate-800">
+                                <Paperclip className="w-3.5 h-3.5" />
+                            </button>
+                        </div>
+
+                        {/* Generate Button */}
+                        <button 
+                            onClick={handleSubmit}
+                            disabled={isSearching}
+                            className="bg-[#D9F850] hover:bg-[#cdf034] text-slate-900 text-sm font-bold px-5 py-2 rounded-xl shadow-[0_2px_10px_rgba(217,248,80,0.4)] transition-all flex items-center justify-center gap-2 active:scale-95 active:shadow-none disabled:opacity-70 disabled:cursor-not-allowed"
+                        >
+                            {isSearching ? 'Processing...' : 'Generate'}
+                            {!isSearching && <Sparkles className="w-3.5 h-3.5" />}
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+        
+        {/* Simple Helper Icon Component for the Animation */}
+        <style>{`
+            @keyframes loading {
+                0% { transform: scaleX(0); }
+                50% { transform: scaleX(0.7); }
+                100% { transform: scaleX(1); }
+            }
+        `}</style>
     </div>
   );
 };
 
-// Helper Component for Visual Grid Cards
-const Card = ({ image, badge, title, subtitle, badgeColor }: any) => {
-    const colorClasses: Record<string, string> = {
-        blue: 'bg-blue-50 text-blue-600',
-        emerald: 'bg-emerald-50 text-emerald-600',
-        violet: 'bg-violet-50 text-violet-600',
-        amber: 'bg-amber-50 text-amber-600',
-        rose: 'bg-rose-50 text-rose-600'
-    };
-
-    return (
-        <div className="bg-white p-3 rounded-2xl shadow-sm border border-slate-100 hover:shadow-md transition-shadow group cursor-default">
-            <div className="aspect-[4/3] rounded-xl overflow-hidden mb-3 relative bg-slate-200">
-                <img src={image} alt={title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 relative z-10" />
-            </div>
-            <div className="px-1 pb-1">
-                <span className={`inline-block px-2 py-0.5 rounded-md text-[10px] font-semibold uppercase tracking-wider mb-2 ${colorClasses[badgeColor] || 'bg-slate-100 text-slate-600'}`}>
-                    {badge}
-                </span>
-                <h3 className="text-sm font-semibold text-slate-900 leading-tight mb-1">{title}</h3>
-                <p className="text-xs text-slate-500 font-medium">{subtitle}</p>
-            </div>
-        </div>
-    );
-}
+// Simple icon wrapper for the stats
+const BuildingIcon = ({ className }: { className?: string }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><rect width="16" height="20" x="4" y="2" rx="2" ry="2"/><path d="M9 22v-4h6v4"/><path d="M8 6h.01"/><path d="M16 6h.01"/><path d="M8 10h.01"/><path d="M16 10h.01"/><path d="M8 14h.01"/><path d="M16 14h.01"/></svg>
+);

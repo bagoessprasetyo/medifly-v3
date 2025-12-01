@@ -67,108 +67,114 @@ export const DoctorsPage: React.FC<DoctorsPageProps> = ({ onBack, onNavigateToHo
         {/* Main Content Layout */}
         <div className="flex-1 max-w-[1400px] mx-auto w-full px-6 py-8 flex gap-12 relative">
             
-            {/* Sidebar Filters - Sticky with Independent Scroll */}
-            <aside className="w-64 flex-shrink-0 hidden lg:block pt-2 sticky top-24 h-[calc(100vh-8rem)] overflow-y-auto custom-scrollbar pr-2">
-                <h2 className="text-lg font-semibold mb-8 tracking-tight">Filter</h2>
+            {/* Sidebar Filters - Sticky with Fixed Chat Widget */}
+            <aside className="w-64 flex-shrink-0 hidden lg:flex lg:flex-col pt-2 sticky top-24 h-[calc(100vh-8rem)]">
+                
+                {/* Scrollable Filters */}
+                <div className="flex-1 overflow-y-auto custom-scrollbar pr-2 min-h-0">
+                    <h2 className="text-lg font-semibold mb-8 tracking-tight">Filter</h2>
 
-                {/* Gender Filter */}
-                <div className="mb-8 border-b border-gray-100 pb-8">
-                    <h3 className="text-base font-medium mb-4 text-gray-900">Gender</h3>
-                    <div className="space-y-3">
-                        <label className="flex items-center gap-3 cursor-pointer group">
-                            <div className="relative flex items-center">
-                                <input 
-                                    type="checkbox" 
-                                    checked={selectedGenders.length === 0}
-                                    onChange={() => setSelectedGenders([])}
-                                    className="peer appearance-none w-5 h-5 border border-gray-300 rounded bg-white checked:bg-[#3395FF] checked:border-[#3395FF] transition-all"
-                                />
-                                <Check className="w-3.5 h-3.5 text-white absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 opacity-0 peer-checked:opacity-100" />
-                            </div>
-                            <span className={`text-sm font-medium group-hover:text-gray-900 ${selectedGenders.length === 0 ? 'text-gray-900' : 'text-gray-600'}`}>All</span>
-                        </label>
-                        {['Male', 'Female'].map(gender => (
-                            <label key={gender} className="flex items-center gap-3 cursor-pointer group">
+                    {/* Gender Filter */}
+                    <div className="mb-8 border-b border-gray-100 pb-8">
+                        <h3 className="text-base font-medium mb-4 text-gray-900">Gender</h3>
+                        <div className="space-y-3">
+                            <label className="flex items-center gap-3 cursor-pointer group">
                                 <div className="relative flex items-center">
                                     <input 
                                         type="checkbox" 
-                                        checked={selectedGenders.includes(gender)}
-                                        onChange={() => toggleGender(gender)}
+                                        checked={selectedGenders.length === 0}
+                                        onChange={() => setSelectedGenders([])}
                                         className="peer appearance-none w-5 h-5 border border-gray-300 rounded bg-white checked:bg-[#3395FF] checked:border-[#3395FF] transition-all"
                                     />
                                     <Check className="w-3.5 h-3.5 text-white absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 opacity-0 peer-checked:opacity-100" />
                                 </div>
-                                <span className={`text-sm font-medium group-hover:text-gray-900 ${selectedGenders.includes(gender) ? 'text-gray-900' : 'text-gray-600'}`}>{gender}</span>
+                                <span className={`text-sm font-medium group-hover:text-gray-900 ${selectedGenders.length === 0 ? 'text-gray-900' : 'text-gray-600'}`}>All</span>
                             </label>
-                        ))}
-                    </div>
-                </div>
-
-                {/* Language Filter */}
-                <div className="mb-8 border-b border-gray-100 pb-8">
-                    <h3 className="text-base font-medium mb-4 text-gray-900">Language Proficiency</h3>
-                    <div className="space-y-3">
-                        <label className="flex items-center gap-3 cursor-pointer group">
-                            <div className="relative flex items-center">
-                                <input 
-                                    type="checkbox" 
-                                    checked={selectedLanguages.length === 0}
-                                    onChange={() => setSelectedLanguages([])}
-                                    className="peer appearance-none w-5 h-5 border border-gray-300 rounded bg-white checked:bg-[#3395FF] checked:border-[#3395FF] transition-all"
-                                />
-                                <Check className="w-3.5 h-3.5 text-white absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 opacity-0 peer-checked:opacity-100" />
-                            </div>
-                            <span className={`text-sm font-medium group-hover:text-gray-900 ${selectedLanguages.length === 0 ? 'text-gray-900' : 'text-gray-600'}`}>All</span>
-                        </label>
-                        {['English', 'Mandarin', 'Bahasa Melayu', 'Thai', 'Korean'].map(lang => (
-                            <label key={lang} className="flex items-center gap-3 cursor-pointer group">
-                                <div className="relative flex items-center">
-                                    <input 
-                                        type="checkbox" 
-                                        checked={selectedLanguages.includes(lang)}
-                                        onChange={() => toggleLanguage(lang)}
-                                        className="peer appearance-none w-5 h-5 border border-gray-300 rounded bg-white checked:bg-[#3395FF] checked:border-[#3395FF] transition-all"
-                                    />
-                                    <Check className="w-3.5 h-3.5 text-white absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 opacity-0 peer-checked:opacity-100" />
-                                </div>
-                                <span className={`text-sm font-medium group-hover:text-gray-900 ${selectedLanguages.includes(lang) ? 'text-gray-900' : 'text-gray-600'}`}>{lang}</span>
-                            </label>
-                        ))}
-                    </div>
-                </div>
-
-                {/* Experience Filter */}
-                <div className="mb-8 border-b border-gray-100 pb-8">
-                    <h3 className="text-base font-medium mb-4 text-gray-900">Experience</h3>
-                    <div className="space-y-3">
-                        <label className="flex items-center gap-3 cursor-pointer group">
-                            <div className="relative flex items-center">
-                                <input 
-                                    type="checkbox" 
-                                    checked={minExperience === 10}
-                                    onChange={() => setMinExperience(prev => prev === 10 ? null : 10)}
-                                    className="peer appearance-none w-5 h-5 border border-gray-300 rounded bg-white checked:bg-[#3395FF] checked:border-[#3395FF] transition-all"
-                                />
-                                <Check className="w-3.5 h-3.5 text-white absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 opacity-0 peer-checked:opacity-100" />
-                            </div>
-                            <span className={`text-sm font-medium group-hover:text-gray-900 ${minExperience === 10 ? 'text-gray-900' : 'text-gray-600'}`}>10+ years experience</span>
-                        </label>
-                    </div>
-                </div>
-
-                {/* Chat Widget */}
-                <div className="bg-[#FAF8F7] rounded-xl p-5 mt-4">
-                    <div className="flex items-start gap-3 mb-3">
-                        <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=100&h=100&q=80" alt="Support" className="w-10 h-10 rounded-full object-cover" />
-                        <div>
-                            <p className="text-sm font-semibold text-gray-900">Hi! Need a bit of guidance?</p>
-                            <p className="text-xs text-gray-500 mt-1 leading-relaxed">Tell us what you're looking for we'll help you get there.</p>
+                            {['Male', 'Female'].map(gender => (
+                                <label key={gender} className="flex items-center gap-3 cursor-pointer group">
+                                    <div className="relative flex items-center">
+                                        <input 
+                                            type="checkbox" 
+                                            checked={selectedGenders.includes(gender)}
+                                            onChange={() => toggleGender(gender)}
+                                            className="peer appearance-none w-5 h-5 border border-gray-300 rounded bg-white checked:bg-[#3395FF] checked:border-[#3395FF] transition-all"
+                                        />
+                                        <Check className="w-3.5 h-3.5 text-white absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 opacity-0 peer-checked:opacity-100" />
+                                    </div>
+                                    <span className={`text-sm font-medium group-hover:text-gray-900 ${selectedGenders.includes(gender) ? 'text-gray-900' : 'text-gray-600'}`}>{gender}</span>
+                                </label>
+                            ))}
                         </div>
                     </div>
-                    <button className="w-full bg-[#1C1C1E] text-white text-sm font-medium py-2.5 rounded-lg flex items-center justify-center gap-2 hover:bg-black transition-colors">
-                        <MessageSquare className="w-4 h-4" />
-                        Start Chat
-                    </button>
+
+                    {/* Language Filter */}
+                    <div className="mb-8 border-b border-gray-100 pb-8">
+                        <h3 className="text-base font-medium mb-4 text-gray-900">Language Proficiency</h3>
+                        <div className="space-y-3">
+                            <label className="flex items-center gap-3 cursor-pointer group">
+                                <div className="relative flex items-center">
+                                    <input 
+                                        type="checkbox" 
+                                        checked={selectedLanguages.length === 0}
+                                        onChange={() => setSelectedLanguages([])}
+                                        className="peer appearance-none w-5 h-5 border border-gray-300 rounded bg-white checked:bg-[#3395FF] checked:border-[#3395FF] transition-all"
+                                    />
+                                    <Check className="w-3.5 h-3.5 text-white absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 opacity-0 peer-checked:opacity-100" />
+                                </div>
+                                <span className={`text-sm font-medium group-hover:text-gray-900 ${selectedLanguages.length === 0 ? 'text-gray-900' : 'text-gray-600'}`}>All</span>
+                            </label>
+                            {['English', 'Mandarin', 'Bahasa Melayu', 'Thai', 'Korean'].map(lang => (
+                                <label key={lang} className="flex items-center gap-3 cursor-pointer group">
+                                    <div className="relative flex items-center">
+                                        <input 
+                                            type="checkbox" 
+                                            checked={selectedLanguages.includes(lang)}
+                                            onChange={() => toggleLanguage(lang)}
+                                            className="peer appearance-none w-5 h-5 border border-gray-300 rounded bg-white checked:bg-[#3395FF] checked:border-[#3395FF] transition-all"
+                                        />
+                                        <Check className="w-3.5 h-3.5 text-white absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 opacity-0 peer-checked:opacity-100" />
+                                    </div>
+                                    <span className={`text-sm font-medium group-hover:text-gray-900 ${selectedLanguages.includes(lang) ? 'text-gray-900' : 'text-gray-600'}`}>{lang}</span>
+                                </label>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Experience Filter */}
+                    <div className="mb-8 border-b border-gray-100 pb-8">
+                        <h3 className="text-base font-medium mb-4 text-gray-900">Experience</h3>
+                        <div className="space-y-3">
+                            <label className="flex items-center gap-3 cursor-pointer group">
+                                <div className="relative flex items-center">
+                                    <input 
+                                        type="checkbox" 
+                                        checked={minExperience === 10}
+                                        onChange={() => setMinExperience(prev => prev === 10 ? null : 10)}
+                                        className="peer appearance-none w-5 h-5 border border-gray-300 rounded bg-white checked:bg-[#3395FF] checked:border-[#3395FF] transition-all"
+                                    />
+                                    <Check className="w-3.5 h-3.5 text-white absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 opacity-0 peer-checked:opacity-100" />
+                                </div>
+                                <span className={`text-sm font-medium group-hover:text-gray-900 ${minExperience === 10 ? 'text-gray-900' : 'text-gray-600'}`}>10+ years experience</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Fixed Chat Widget */}
+                <div className="flex-shrink-0 pt-4 bg-white z-10">
+                    <div className="bg-[#FAF8F7] rounded-xl p-5">
+                        <div className="flex items-start gap-3 mb-3">
+                            <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=100&h=100&q=80" alt="Support" className="w-10 h-10 rounded-full object-cover" />
+                            <div>
+                                <p className="text-sm font-semibold text-gray-900">Hi! Need a bit of guidance?</p>
+                                <p className="text-xs text-gray-500 mt-1 leading-relaxed">Tell us what you're looking for we'll help you get there.</p>
+                            </div>
+                        </div>
+                        <button className="w-full bg-[#1C1C1E] text-white text-sm font-medium py-2.5 rounded-lg flex items-center justify-center gap-2 hover:bg-black transition-colors">
+                            <MessageSquare className="w-4 h-4" />
+                            Start Chat
+                        </button>
+                    </div>
                 </div>
 
             </aside>

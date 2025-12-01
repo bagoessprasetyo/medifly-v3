@@ -4,13 +4,12 @@ import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { X, Search, Map, List, BriefcaseMedical, MapPin, Star, MessageSquare, Check, ChevronDown, Globe, ArrowUpDown, Compass, Plane, GitCompare, Trash2 } from 'lucide-react';
 import { FilterState, Hospital, TravelEstimate } from '../types';
 import { HOSPITALS, getCoordinatesForCity, calculateDistance } from '../constants';
-// import { HospitalCard } from './HospitalCard';
+import { HospitalCard } from './HospitalCard';
 import { MapboxMap } from './MapboxMap';
 import { Sheet } from './ui/Sheet';
 import { HospitalDetails } from './HospitalDetails';
 import { ComparisonView } from './ComparisonView';
 import { getTravelEstimates } from '../services/mapService';
-import { HospitalCard } from './HospitalCard';
 
 // ... (constants remain the same)
 const SPECIALIZATIONS = [
@@ -25,6 +24,22 @@ const SPECIALIZATIONS = [
   { name: 'Dental', description: 'Dental implants, cosmetic dentistry, oral surgery, etc.' },
   { name: 'Cosmetic Surgery', description: 'Rhinoplasty, liposuction, facelifts, etc.' },
 ];
+
+// Semantic Mapping for "Smart Search"
+const SEMANTIC_SPECIALTY_MAP: Record<string, string[]> = {
+  'Cardiology': ['heart', 'cardiac', 'pulse', 'blood pressure', 'arrhythmia', 'bypass', 'attack', 'chest pain'],
+  'Orthopedics': ['bone', 'joint', 'knee', 'spine', 'back', 'hip', 'fracture', 'sports injury', 'arthritis', 'acl', 'muscle'],
+  'Neurology': ['brain', 'nerve', 'stroke', 'headache', 'migraine', 'seizure', 'paralysis', 'epilepsy', 'neuro'],
+  'Oncology': ['cancer', 'tumor', 'chemo', 'radiation', 'malignant', 'leukemia', 'lymphoma', 'cyst', 'biopsy'],
+  'Gastroenterology': ['stomach', 'gut', 'liver', 'digestive', 'bowel', 'intestine', 'colon', 'acid', 'endoscopy', 'gerd', 'abdomen'],
+  'Urology': ['kidney', 'bladder', 'prostate', 'urinary', 'stone', 'uti'],
+  'Dermatology': ['skin', 'acne', 'rash', 'mole', 'eczema', 'psoriasis', 'hair', 'derma'],
+  'Fertility': ['ivf', 'baby', 'pregnancy', 'egg', 'sperm', 'conception', 'reproductive', 'infertility', 'family planning'],
+  'Dental': ['tooth', 'teeth', 'gum', 'root canal', 'implant', 'braces', 'cavity', 'smile', 'dentist'],
+  'Cosmetic Surgery': ['plastic', 'nose', 'rhinoplasty', 'face', 'breast', 'liposuction', 'tummy tuck', 'botox', 'filler', 'aesthetic'],
+  'Pediatrics': ['child', 'baby', 'kid', 'infant', 'adolescent'],
+  'Ophthalmology': ['eye', 'vision', 'cataract', 'lasik', 'glaucoma'],
+};
 
 const COUNTRIES = [
   { name: 'Thailand', icon: '🏥', description: 'World-class hospitals, affordable prices, recovery-friendly destination' },
@@ -42,6 +57,7 @@ interface MarketplaceProps {
   onViewHospitalPage: (hospital: Hospital) => void;
   onUpdateFilters?: (filters: FilterState) => void;
   isChatOpen?: boolean;
+  onOpenChat?: () => void;
 }
 
 export const Marketplace: React.FC<MarketplaceProps> = ({
@@ -50,8 +66,9 @@ export const Marketplace: React.FC<MarketplaceProps> = ({
   onViewHospitalPage,
   onUpdateFilters,
   isChatOpen = false,
+  onOpenChat
 }) => {
-  // ... (state and effects remain the same, just showing the render part for update)
+  // ... (state and effects remain the same)
   const [viewMode, setViewMode] = useState<'grid' | 'map'>('grid');
   const [sheetHospital, setSheetHospital] = useState<Hospital | null>(null);
   
@@ -177,13 +194,42 @@ export const Marketplace: React.FC<MarketplaceProps> = ({
 
   // Filtering Logic
   const filteredHospitals = useMemo(() => {
+    // Pre-calculate matched specialties if text input is present (Semantic Search)
+    let matchedSpecialtiesFromInput: string[] = [];
+    if (specialtyInput.trim()) {
+        const inputLower = specialtyInput.toLowerCase().trim();
+        matchedSpecialtiesFromInput = SPECIALIZATIONS.filter(spec => {
+            // 1. Direct name match
+            if (spec.name.toLowerCase().includes(inputLower)) return true;
+            
+            // 2. Keyword match (Semantic)
+            const keywords = SEMANTIC_SPECIALTY_MAP[spec.name] || [];
+            // Check if input contains keyword OR keyword contains input (for partial matches)
+            return keywords.some(k => inputLower.includes(k) || k.includes(inputLower));
+        }).map(s => s.name);
+    }
+
     let results = HOSPITALS.filter(hospital => {
-      // Specialty filtering - use selected specialties or fall back to input
-      const matchesSpecialty = selectedSpecialties.length === 0 && !specialtyInput
-        ? true
-        : selectedSpecialties.length > 0
-          ? selectedSpecialties.some(spec => hospital.specialties.some(s => s.toLowerCase().includes(spec.toLowerCase())))
-          : hospital.specialties.some(s => s.toLowerCase().includes(specialtyInput.toLowerCase()));
+      // Specialty filtering - use selected specialties OR semantic input match
+      let matchesSpecialty = true;
+      
+      if (selectedSpecialties.length > 0) {
+          // If dropdown selection exists, use that (strict match)
+          matchesSpecialty = selectedSpecialties.some(spec => 
+              hospital.specialties.some(s => s.toLowerCase().includes(spec.toLowerCase()))
+          );
+      } else if (specialtyInput.trim()) {
+          // Use semantic text search
+          if (matchedSpecialtiesFromInput.length > 0) {
+              // Matches if the hospital has one of the semantically identified specialties
+              matchesSpecialty = matchedSpecialtiesFromInput.some(targetSpec => 
+                  hospital.specialties.some(hSpec => hSpec.includes(targetSpec))
+              );
+          } else {
+              // Fallback to direct string match if no semantic map found
+              matchesSpecialty = hospital.specialties.some(s => s.toLowerCase().includes(specialtyInput.toLowerCase()));
+          }
+      }
 
       // Location filtering - use selected countries or fall back to input
       const matchesLocation = selectedCountries.length === 0 && !locationInput
@@ -233,6 +279,15 @@ export const Marketplace: React.FC<MarketplaceProps> = ({
             return 0;
         }
       });
+    } else {
+        // Default Sort: Prioritize Indonesia hospitals
+        results = [...results].sort((a, b) => {
+            const aIsIndo = a.country === 'Indonesia';
+            const bIsIndo = b.country === 'Indonesia';
+            if (aIsIndo && !bIsIndo) return -1;
+            if (!aIsIndo && bIsIndo) return 1;
+            return 0;
+        });
     }
 
     return results;
@@ -297,125 +352,135 @@ export const Marketplace: React.FC<MarketplaceProps> = ({
         <div className={`max-w-[1600px] mx-auto w-full px-4 md:px-6 pt-6 md:pt-8 pb-20 flex flex-col lg:flex-row gap-8 lg:gap-12 flex-1 relative ${isChatOpen ? 'lg:flex-col' : ''}`}>
 
             {/* Sidebar Filters (Desktop) - Hidden when chat is open - DoctorsPage style */}
-            <aside id="sidebar-filters" className={`w-64 flex-shrink-0 hidden lg:block pt-2 sticky top-24 h-[calc(100vh-8rem)] overflow-y-auto custom-scrollbar pr-2 transition-all duration-300 ${isChatOpen ? '!hidden' : ''}`}>
+            <aside id="sidebar-filters" className={`w-64 flex-shrink-0 hidden lg:flex lg:flex-col pt-2 sticky top-24 h-[calc(100vh-8rem)] transition-all duration-300 ${isChatOpen ? '!hidden' : ''}`}>
                 <h2 className="text-lg font-semibold mb-8 tracking-tight">Filter</h2>
+                {/* Scrollable Filter Section */}
+                <div className="flex-1 overflow-y-auto custom-scrollbar pr-2 min-h-0">
+                    
 
-                {/* Language Filter */}
-                <div className="mb-8 border-b border-gray-100 pb-8">
-                    <h3 className="text-base font-medium mb-4 text-gray-900">Language Support</h3>
-                    <div className="space-y-3">
-                        <label className="flex items-center gap-3 cursor-pointer group">
-                            <div className="relative flex items-center">
-                                <input
-                                    type="checkbox"
-                                    checked={activeLanguages.length === 0}
-                                    onChange={() => setActiveLanguages([])}
-                                    className="peer appearance-none w-5 h-5 border border-gray-300 rounded bg-white checked:bg-[#3395FF] checked:border-[#3395FF] transition-all"
-                                />
-                                <Check className="w-3.5 h-3.5 text-white absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 opacity-0 peer-checked:opacity-100" />
-                            </div>
-                            <span className={`text-sm font-medium group-hover:text-gray-900 ${activeLanguages.length === 0 ? 'text-gray-900' : 'text-gray-600'}`}>All</span>
-                        </label>
-                        {availableLanguages.map(lang => (
-                            <label key={lang} className="flex items-center gap-3 cursor-pointer group">
+                    {/* Language Filter */}
+                    <div className="mb-8 border-b border-gray-100 pb-8">
+                        <h3 className="text-base font-medium mb-4 text-gray-900">Language Support</h3>
+                        <div className="space-y-3">
+                            <label className="flex items-center gap-3 cursor-pointer group">
                                 <div className="relative flex items-center">
                                     <input
                                         type="checkbox"
-                                        checked={activeLanguages.includes(lang)}
-                                        onChange={() => toggleLanguage(lang)}
+                                        checked={activeLanguages.length === 0}
+                                        onChange={() => setActiveLanguages([])}
                                         className="peer appearance-none w-5 h-5 border border-gray-300 rounded bg-white checked:bg-[#3395FF] checked:border-[#3395FF] transition-all"
                                     />
                                     <Check className="w-3.5 h-3.5 text-white absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 opacity-0 peer-checked:opacity-100" />
                                 </div>
-                                <span className={`text-sm font-medium group-hover:text-gray-900 ${activeLanguages.includes(lang) ? 'text-gray-900' : 'text-gray-600'}`}>{lang}</span>
+                                <span className={`text-sm font-medium group-hover:text-gray-900 ${activeLanguages.length === 0 ? 'text-gray-900' : 'text-gray-600'}`}>All</span>
                             </label>
-                        ))}
+                            {availableLanguages.map(lang => (
+                                <label key={lang} className="flex items-center gap-3 cursor-pointer group">
+                                    <div className="relative flex items-center">
+                                        <input
+                                            type="checkbox"
+                                            checked={activeLanguages.includes(lang)}
+                                            onChange={() => toggleLanguage(lang)}
+                                            className="peer appearance-none w-5 h-5 border border-gray-300 rounded bg-white checked:bg-[#3395FF] checked:border-[#3395FF] transition-all"
+                                        />
+                                        <Check className="w-3.5 h-3.5 text-white absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 opacity-0 peer-checked:opacity-100" />
+                                    </div>
+                                    <span className={`text-sm font-medium group-hover:text-gray-900 ${activeLanguages.includes(lang) ? 'text-gray-900' : 'text-gray-600'}`}>{lang}</span>
+                                </label>
+                            ))}
+                        </div>
                     </div>
-                </div>
 
-                {/* Cost Range Filter */}
-                <div className="mb-8 border-b border-gray-100 pb-8">
-                    <h3 className="text-base font-medium mb-4 text-gray-900">Cost Range</h3>
-                    <div className="space-y-3">
-                        {['$', '$$', '$$$'].map(price => (
-                            <label key={price} className="flex items-center gap-3 cursor-pointer group">
+                    {/* Cost Range Filter */}
+                    <div className="mb-8 border-b border-gray-100 pb-8">
+                        <h3 className="text-base font-medium mb-4 text-gray-900">Cost Range</h3>
+                        <div className="space-y-3">
+                            {['$', '$$', '$$$'].map(price => (
+                                <label key={price} className="flex items-center gap-3 cursor-pointer group">
+                                    <div className="relative flex items-center">
+                                        <input
+                                            type="checkbox"
+                                            checked={activePrice.includes(price)}
+                                            onChange={() => togglePrice(price)}
+                                            className="peer appearance-none w-5 h-5 border border-gray-300 rounded bg-white checked:bg-[#3395FF] checked:border-[#3395FF] transition-all"
+                                        />
+                                        <Check className="w-3.5 h-3.5 text-white absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 opacity-0 peer-checked:opacity-100" />
+                                    </div>
+                                    <span className={`text-sm font-medium group-hover:text-gray-900 ${activePrice.includes(price) ? 'text-gray-900' : 'text-gray-600'}`}>
+                                        {price === '$' ? 'Budget ($)' : price === '$$' ? 'Mid-range ($$)' : 'Premium ($$$)'}
+                                    </span>
+                                </label>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Rating Filter */}
+                    <div className="mb-8 border-b border-gray-100 pb-8">
+                        <h3 className="text-base font-medium mb-4 text-gray-900">Rating</h3>
+                        <div className="space-y-3">
+                            <label className="flex items-center gap-3 cursor-pointer group">
                                 <div className="relative flex items-center">
                                     <input
                                         type="checkbox"
-                                        checked={activePrice.includes(price)}
-                                        onChange={() => togglePrice(price)}
+                                        checked={minRating === 4}
+                                        onChange={toggleRating}
                                         className="peer appearance-none w-5 h-5 border border-gray-300 rounded bg-white checked:bg-[#3395FF] checked:border-[#3395FF] transition-all"
                                     />
                                     <Check className="w-3.5 h-3.5 text-white absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 opacity-0 peer-checked:opacity-100" />
                                 </div>
-                                <span className={`text-sm font-medium group-hover:text-gray-900 ${activePrice.includes(price) ? 'text-gray-900' : 'text-gray-600'}`}>
-                                    {price === '$' ? 'Budget ($)' : price === '$$' ? 'Mid-range ($$)' : 'Premium ($$$)'}
-                                </span>
+                                <div className="flex items-center gap-1.5">
+                                    <Star className="w-3.5 h-3.5 fill-[#FFB800] text-[#FFB800]" />
+                                    <span className={`text-sm font-medium group-hover:text-gray-900 ${minRating === 4 ? 'text-gray-900' : 'text-gray-600'}`}>4+ Star Rating</span>
+                                </div>
                             </label>
-                        ))}
+                        </div>
                     </div>
-                </div>
 
-                {/* Rating Filter */}
-                <div className="mb-8 border-b border-gray-100 pb-8">
-                    <h3 className="text-base font-medium mb-4 text-gray-900">Rating</h3>
-                    <div className="space-y-3">
-                        <label className="flex items-center gap-3 cursor-pointer group">
-                            <div className="relative flex items-center">
+                    {/* Accreditation Filter */}
+                    <div className="mb-8 border-b border-gray-100 pb-8">
+                        <h3 className="text-base font-medium mb-4 text-gray-900">Accreditation</h3>
+                        <div
+                            onClick={() => toggleAccreditation('JCI')}
+                            className={`flex items-start gap-3 p-3 rounded-lg transition cursor-pointer border ${activeAccreditation.includes('JCI') ? 'bg-blue-50 border-blue-200' : 'hover:bg-gray-50 border-transparent'}`}
+                        >
+                            <div className="relative flex items-center mt-0.5">
                                 <input
                                     type="checkbox"
-                                    checked={minRating === 4}
-                                    onChange={toggleRating}
+                                    checked={activeAccreditation.includes('JCI')}
+                                    readOnly
                                     className="peer appearance-none w-5 h-5 border border-gray-300 rounded bg-white checked:bg-[#3395FF] checked:border-[#3395FF] transition-all"
                                 />
                                 <Check className="w-3.5 h-3.5 text-white absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 opacity-0 peer-checked:opacity-100" />
                             </div>
-                            <div className="flex items-center gap-1.5">
-                                <Star className="w-3.5 h-3.5 fill-[#FFB800] text-[#FFB800]" />
-                                <span className={`text-sm font-medium group-hover:text-gray-900 ${minRating === 4 ? 'text-gray-900' : 'text-gray-600'}`}>4+ Star Rating</span>
+                            <div>
+                                <p className="text-sm font-medium text-gray-900 leading-tight">JCI Accredited</p>
+                                <p className="text-xs text-gray-500 mt-0.5">International healthcare gold standard</p>
                             </div>
-                        </label>
-                    </div>
-                </div>
-
-                {/* Accreditation Filter */}
-                <div className="mb-8 border-b border-gray-100 pb-8">
-                    <h3 className="text-base font-medium mb-4 text-gray-900">Accreditation</h3>
-                    <div
-                        onClick={() => toggleAccreditation('JCI')}
-                        className={`flex items-start gap-3 p-3 rounded-lg transition cursor-pointer border ${activeAccreditation.includes('JCI') ? 'bg-blue-50 border-blue-200' : 'hover:bg-gray-50 border-transparent'}`}
-                    >
-                        <div className="relative flex items-center mt-0.5">
-                            <input
-                                type="checkbox"
-                                checked={activeAccreditation.includes('JCI')}
-                                readOnly
-                                className="peer appearance-none w-5 h-5 border border-gray-300 rounded bg-white checked:bg-[#3395FF] checked:border-[#3395FF] transition-all"
-                            />
-                            <Check className="w-3.5 h-3.5 text-white absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 opacity-0 peer-checked:opacity-100" />
-                        </div>
-                        <div>
-                            <p className="text-sm font-medium text-gray-900 leading-tight">JCI Accredited</p>
-                            <p className="text-xs text-gray-500 mt-0.5">International healthcare gold standard</p>
                         </div>
                     </div>
                 </div>
 
-                {/* Chat Widget */}
-                <div className="bg-[#FAF8F7] rounded-xl p-5 mt-4">
-                    <div className="flex items-start gap-3 mb-3">
-                        <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=100&h=100&q=80" alt="Support" className="w-10 h-10 rounded-full object-cover" />
-                        <div>
-                            <p className="text-sm font-semibold text-gray-900">Need help choosing?</p>
-                            <p className="text-xs text-gray-500 mt-1 leading-relaxed">Tell us what you're looking for.</p>
+                {/* Fixed Chat Widget */}
+                <div className="flex-shrink-0 pt-4 bg-white z-10">
+                    <div className="bg-[#FAF8F7] rounded-xl p-5">
+                        <div className="flex items-start gap-3 mb-3">
+                            <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=100&h=100&q=80" alt="Support" className="w-10 h-10 rounded-full object-cover" />
+                            <div>
+                                <p className="text-sm font-semibold text-gray-900">Need help choosing?</p>
+                                <p className="text-xs text-gray-500 mt-1 leading-relaxed">Tell us what you're looking for.</p>
+                            </div>
                         </div>
+                        <button 
+                            onClick={onOpenChat}
+                            className="w-full bg-[#1C1C1E] text-white text-sm font-medium py-2.5 rounded-lg flex items-center justify-center gap-2 hover:bg-black transition-colors"
+                        >
+                            <MessageSquare className="w-4 h-4" />
+                            Start Chat
+                        </button>
                     </div>
-                    <button className="w-full bg-[#1C1C1E] text-white text-sm font-medium py-2.5 rounded-lg flex items-center justify-center gap-2 hover:bg-black transition-colors">
-                        <MessageSquare className="w-4 h-4" />
-                        Start Chat
-                    </button>
                 </div>
             </aside>
+             
 
             {/* Main Content */}
             <main className="flex-1 flex flex-col min-w-0">
@@ -439,9 +504,34 @@ export const Marketplace: React.FC<MarketplaceProps> = ({
                             </div>
                             <div className="flex flex-col justify-center w-full overflow-hidden">
                                 <span className="text-xs font-medium text-slate-500 mb-0.5 leading-tight truncate">Specialization</span>
-                                <span className={`text-sm font-medium leading-tight truncate ${selectedSpecialties.length > 0 ? 'text-slate-900' : 'text-slate-400'}`}>
-                                    {selectedSpecialties.length > 0 ? selectedSpecialties.join(', ') : 'Select specialization'}
-                                </span>
+                                {/* This input acts as both display for selection and search input */}
+                                {selectedSpecialties.length > 0 ? (
+                                    <div className="flex items-center justify-between w-full">
+                                        <span className="text-sm font-medium leading-tight truncate text-slate-900">
+                                            {selectedSpecialties.join(', ')}
+                                        </span>
+                                        <button 
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                setSelectedSpecialties([]);
+                                                setSpecialtyInput('');
+                                            }}
+                                            className="p-0.5 hover:bg-slate-100 rounded-full"
+                                        >
+                                            <X className="w-3 h-3 text-slate-400" />
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <input 
+                                        type="text"
+                                        value={specialtyInput}
+                                        onChange={(e) => setSpecialtyInput(e.target.value)}
+                                        onClick={(e) => e.stopPropagation()} // Prevent dropdown toggle when clicking input
+                                        onFocus={() => setIsSpecialtyOpen(true)}
+                                        placeholder="Heart, Knee, Skin..."
+                                        className="text-sm font-medium leading-tight truncate text-slate-900 placeholder:text-slate-400 w-full outline-none bg-transparent"
+                                    />
+                                )}
                             </div>
                         </button>
 
@@ -452,12 +542,21 @@ export const Marketplace: React.FC<MarketplaceProps> = ({
                                     <h3 className="text-xs font-medium text-slate-400 pl-1">Core Treatment</h3>
                                 </div>
                                 <div className="max-h-[320px] overflow-y-auto p-2 pt-0 flex flex-col gap-1.5 custom-scrollbar">
-                                    {SPECIALIZATIONS.map(spec => {
+                                    {SPECIALIZATIONS.filter(s => 
+                                        !specialtyInput || 
+                                        s.name.toLowerCase().includes(specialtyInput.toLowerCase()) ||
+                                        // Also filter dropdown by semantic keywords if input exists
+                                        (SEMANTIC_SPECIALTY_MAP[s.name] || []).some(k => k.includes(specialtyInput.toLowerCase()))
+                                    ).map(spec => {
                                         const isSelected = selectedSpecialties.includes(spec.name);
                                         return (
                                             <button
                                                 key={spec.name}
-                                                onClick={() => toggleSpecialty(spec.name)}
+                                                onClick={() => {
+                                                    toggleSpecialty(spec.name);
+                                                    setSpecialtyInput(''); // Clear input on selection
+                                                    setIsSpecialtyOpen(false);
+                                                }}
                                                 className={`group relative w-full text-left rounded-lg px-3 py-2.5 transition-all duration-200 focus:outline-none border ${
                                                     isSelected
                                                         ? 'border-slate-900 bg-slate-50'
@@ -497,9 +596,33 @@ export const Marketplace: React.FC<MarketplaceProps> = ({
                             </div>
                             <div className="flex flex-col justify-center w-full overflow-hidden">
                                 <span className="text-xs font-medium text-slate-500 mb-0.5 leading-tight">Location</span>
-                                <span className={`text-sm font-medium leading-tight truncate ${selectedCountries.length > 0 ? 'text-slate-900' : 'text-slate-400'}`}>
-                                    {selectedCountries.length > 0 ? selectedCountries.join(', ') : 'Select countries'}
-                                </span>
+                                {selectedCountries.length > 0 ? (
+                                    <div className="flex items-center justify-between w-full">
+                                        <span className="text-sm font-medium leading-tight truncate text-slate-900">
+                                            {selectedCountries.join(', ')}
+                                        </span>
+                                        <button 
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                setSelectedCountries([]);
+                                                setLocationInput('');
+                                            }}
+                                            className="p-0.5 hover:bg-slate-100 rounded-full"
+                                        >
+                                            <X className="w-3 h-3 text-slate-400" />
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <input 
+                                        type="text"
+                                        value={locationInput}
+                                        onChange={(e) => setLocationInput(e.target.value)}
+                                        onClick={(e) => e.stopPropagation()}
+                                        onFocus={() => setIsLocationOpen(true)}
+                                        placeholder="Singapore, Bangkok..."
+                                        className="text-sm font-medium leading-tight truncate text-slate-900 placeholder:text-slate-400 w-full outline-none bg-transparent"
+                                    />
+                                )}
                             </div>
                         </button>
 
@@ -603,12 +726,16 @@ export const Marketplace: React.FC<MarketplaceProps> = ({
                                     <h3 className="text-xs font-medium text-slate-400 pl-1">Popular Destinations</h3>
                                 </div>
                                 <div className="max-h-[240px] overflow-y-auto p-2 pt-0 flex flex-col gap-1.5 custom-scrollbar">
-                                    {COUNTRIES.map(country => {
+                                    {COUNTRIES.filter(c => !locationInput || c.name.toLowerCase().includes(locationInput.toLowerCase())).map(country => {
                                         const isSelected = selectedCountries.includes(country.name);
                                         return (
                                             <button
                                                 key={country.name}
-                                                onClick={() => toggleCountry(country.name)}
+                                                onClick={() => {
+                                                    toggleCountry(country.name);
+                                                    setLocationInput('');
+                                                    setIsLocationOpen(false);
+                                                }}
                                                 className={`group relative w-full text-left rounded-lg px-3 py-2.5 transition-all duration-200 focus:outline-none border ${
                                                     isSelected
                                                         ? 'border-slate-900 bg-slate-50'
