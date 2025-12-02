@@ -1,6 +1,7 @@
 
 import React, { useState } from 'react';
 import { Play, CheckCircle2, CheckCircle, X } from 'lucide-react';
+import { useTranslation } from '../contexts/TranslationContext';
 
 interface Testimonial {
   id: string;
@@ -15,6 +16,7 @@ interface Testimonial {
 const SAMPLE_VIDEO = "https://videos.pexels.com/video-files/3195394/3195394-uhd_2560_1440_25fps.mp4";
 
 export const Testimonials: React.FC = () => {
+  const { t } = useTranslation();
   const [activeVideo, setActiveVideo] = useState<Testimonial | null>(null);
 
   const testimonialsCol1: Testimonial[] = [
@@ -75,21 +77,21 @@ export const Testimonials: React.FC = () => {
     }
   ];
 
-  const renderCard = (t: Testimonial, idx: number, isMiddleCol: boolean = false) => (
+  const renderCard = (tItem: Testimonial, idx: number, isMiddleCol: boolean = false) => (
     <div 
-        key={t.id} 
-        onClick={() => setActiveVideo(t)}
+        key={tItem.id} 
+        onClick={() => setActiveVideo(tItem)}
         className={`relative w-full bg-gray-200 rounded-xl overflow-hidden group cursor-pointer shadow-sm hover:shadow-md transition-all duration-300
             ${isMiddleCol && idx === 0 ? 'aspect-[9/16] opacity-80' : 'aspect-[9/16]'}
         `}
     >
-        <img src={t.thumbnail} alt="Testimonial" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+        <img src={tItem.thumbnail} alt="Testimonial" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
         <div className="absolute inset-0 bg-black/10 group-hover:bg-black/20 transition-colors"></div>
         
         {/* Play Button - Center for some, Corner for others based on design */}
-        {t.name ? (
+        {tItem.name ? (
              <div className="absolute top-4 left-4 bg-black/30 backdrop-blur-md rounded-full pl-2 pr-1.5 py-1 flex items-center gap-1.5">
-                <span className="text-[10px] font-medium text-white tracking-wide">{t.name} member</span>
+                <span className="text-[10px] font-medium text-white tracking-wide">{tItem.name} {t('member')}</span>
                 <CheckCircle2 className="w-3 h-3 text-white" strokeWidth={2} />
             </div>
         ) : (
@@ -136,17 +138,17 @@ export const Testimonials: React.FC = () => {
                     <div className="rounded-full border border-gray-400/50 p-0.5">
                         <CheckCircle className="w-4 h-4 text-gray-600" strokeWidth={1.5} />
                     </div>
-                    <span className="text-base text-gray-700 font-medium">98% of travelers loved their Medifly experience</span>
+                    <span className="text-base text-gray-700 font-medium">{t('98% of travelers loved their Medifly experience')}</span>
                 </div>
 
                 {/* Main Quote */}
                 <h2 className="text-4xl sm:text-5xl lg:text-[3.25rem] leading-[1.05] tracking-tight font-medium text-gray-900 mb-8">
-                    “Medifly made my search for affordable overseas care so much easier. I finally feel confident taking the next step.”
+                    “{t('Medifly made my search for affordable overseas care so much easier. I finally feel confident taking the next step.')}”
                 </h2>
 
                 {/* Author */}
                 <div className="flex items-center gap-2 text-base text-gray-600 font-medium">
-                    <span>Nadya Bike - from Indonesia</span>
+                    <span>Nadya Bike - {t('from Indonesia')}</span>
                     <span className="text-lg leading-none">🇮🇩</span>
                 </div>
 

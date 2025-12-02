@@ -6,7 +6,7 @@ import {
   Bus, Flag, Wind, Heart, Link, Brain, Droplet, HeartPulse, Bone, Dna, 
   BrainCircuit, Baby, Utensils, Eye, Ear, ChevronUp, Star, LayoutGrid,
   CheckCircle2, ArrowLeft, ArrowRight, Microscope, Filter, Clock, ChevronLeft,
-  GraduationCap, Scan, CheckCircle, Scissors
+  GraduationCap, Scan, CheckCircle, Scissors, Sparkles, Bot, MessageSquare
 } from 'lucide-react';
 import { Hospital } from '../types';
 import { HOSPITALS } from '../constants';
@@ -18,11 +18,23 @@ interface HospitalPageProps {
   onNavigateToDoctors: () => void;
   onViewGallery: () => void;
   onViewFacilities: () => void;
+  onAskAria: (query: string) => void;
+  onViewSpecialization?: (spec: string) => void; // Added prop
 }
 
-export const HospitalPage: React.FC<HospitalPageProps> = ({ hospital, onBack, onNavigateToHospitals, onNavigateToDoctors, onViewGallery, onViewFacilities }) => {
+export const HospitalPage: React.FC<HospitalPageProps> = ({ 
+  hospital, 
+  onBack, 
+  onNavigateToHospitals, 
+  onNavigateToDoctors, 
+  onViewGallery, 
+  onViewFacilities,
+  onAskAria,
+  onViewSpecialization
+}) => {
   
   const [activeTab, setActiveTab] = useState('overview');
+  const [showAllAwards, setShowAllAwards] = useState(false);
 
   // Scroll to top on mount
   useEffect(() => {
@@ -117,8 +129,20 @@ export const HospitalPage: React.FC<HospitalPageProps> = ({ hospital, onBack, on
       { id: 'packages', label: 'Packages' }
   ];
 
+  // Awards Data
+  const awardsList = [
+      { year: "2023", title: "Best Medical Tourism Hospital", org: "APAC Healthcare Awards" },
+      { year: "2023", title: "Smart Hospital Initiative of the Year", org: "Healthcare Asia" },
+      { year: "2022", title: "Patient Care Excellence Award", org: "Global Health Asia" },
+      { year: "2021", title: "Gold Seal of Approval®", org: "Joint Commission International (JCI)" },
+      { year: "2020", title: "Best International Hospital", org: "IMTJ Medical Travel Awards" },
+      { year: "2019", title: "Clinical Service Initiative of the Year", org: "Hospital Management Asia" }
+  ];
+
+  const visibleAwards = showAllAwards ? awardsList : awardsList.slice(0, 3);
+
   return (
-    <div className="bg-white text-[#1C1C1C] font-sans antialiased w-full min-h-full">
+    <div className="bg-white text-[#1C1C1C] font-sans antialiased w-full min-h-full pb-20">
 
       {/* Mobile Back Button */}
       <div className="md:hidden sticky top-0 z-[50] bg-white/90 backdrop-blur-sm border-b border-[#FAF8F7] px-6 h-16 flex items-center">
@@ -174,7 +198,7 @@ export const HospitalPage: React.FC<HospitalPageProps> = ({ hospital, onBack, on
           </div>
       </div>
 
-      {/* Sticky Info Header - Correctly placed after Hero */}
+      {/* Sticky Info Header */}
       <div className="sticky top-20 z-40 bg-white border-b border-gray-100 hidden md:block transition-shadow duration-300">
           <div className="max-w-7xl mx-auto px-6 h-[72px] relative flex items-center justify-center">
               {/* Left: Identity - Absolute Position */}
@@ -205,8 +229,12 @@ export const HospitalPage: React.FC<HospitalPageProps> = ({ hospital, onBack, on
 
               {/* Right: CTA - Absolute Position */}
               <div className="absolute right-6">
-                  <button className="bg-[#1C1C1C] text-white px-5 py-2.5 rounded-lg text-sm font-semibold hover:bg-black transition-colors shadow-sm">
-                      Request Treatment Info
+                  <button 
+                    onClick={() => onAskAria(`I have questions about ${hospital.name}`)}
+                    className="bg-[#1C1C1C] text-white px-5 py-2.5 rounded-lg text-sm font-semibold hover:bg-black transition-all shadow-sm shadow-slate-200 flex items-center gap-2 active:scale-95"
+                  >
+                      {/* <Sparkles className="w-3.5 h-3.5 fill-[#F1FCA7] text-[#F1FCA7]" /> */}
+                      Book a Consultation
                   </button>
               </div>
           </div>
@@ -233,7 +261,12 @@ export const HospitalPage: React.FC<HospitalPageProps> = ({ hospital, onBack, on
                               <span className="text-xs text-zinc-500 border border-zinc-200 px-2.5 py-1 rounded-md bg-[#FAF8F7]">English, Local, Mandarin</span>
                           </div>
                       </div>
-                      <button className="w-full md:w-auto bg-[#1C1C1C] hover:bg-zinc-800 text-white px-6 py-3 rounded-lg text-sm font-medium transition-all shadow-lg shadow-[#1C1C1C]/10 shrink-0 md:hidden">Request Info</button>
+                      <button 
+                        onClick={() => onAskAria(`Info about ${hospital.name}`)}
+                        className="w-full md:w-auto bg-[#1C1C1C] hover:bg-zinc-800 text-white px-6 py-3 rounded-lg text-sm font-medium transition-all shadow-lg shadow-[#1C1C1C]/10 shrink-0 md:hidden"
+                      >
+                        Ask Aria
+                      </button>
                   </div>
 
                   {hospital.accreditation && hospital.accreditation.length > 0 && (
@@ -279,16 +312,19 @@ export const HospitalPage: React.FC<HospitalPageProps> = ({ hospital, onBack, on
                           <Trophy className="w-5 h-5" /> Awards & Accreditations
                       </h3>
                       <div className="space-y-4 pl-2">
-                          <div className="flex gap-4 text-sm">
-                              <span className="font-medium text-[#1C1C1C] w-12 shrink-0">2023</span>
-                              <span className="text-zinc-600"><span className="underline decoration-zinc-300 underline-offset-4">Best Medical Tourism Hospital</span> — APAC Healthcare Awards</span>
-                          </div>
-                          <div className="flex gap-4 text-sm">
-                              <span className="font-medium text-[#1C1C1C] w-12 shrink-0">2022</span>
-                              <span className="text-zinc-600"><span className="underline decoration-zinc-300 underline-offset-4">Patient Care Excellence</span> — Global Health Asia</span>
-                          </div>
-                          <button className="text-zinc-500 text-xs font-medium flex items-center gap-1 bg-[#FAF8F7] px-3 py-1.5 rounded-full border border-zinc-200 mt-2 hover:bg-zinc-100">
-                              View More <ChevronDown className="w-3 h-3" />
+                          {visibleAwards.map((award, i) => (
+                              <div key={i} className="flex gap-4 text-sm animate-in fade-in slide-in-from-top-1 duration-300">
+                                  <span className="font-medium text-[#1C1C1C] w-12 shrink-0">{award.year}</span>
+                                  <span className="text-zinc-600"><span className="underline decoration-zinc-300 underline-offset-4">{award.title}</span> — {award.org}</span>
+                              </div>
+                          ))}
+                          
+                          <button 
+                            onClick={() => setShowAllAwards(!showAllAwards)}
+                            className="text-zinc-500 text-xs font-medium flex items-center gap-1 bg-[#FAF8F7] px-3 py-1.5 rounded-full border border-zinc-200 mt-2 hover:bg-zinc-100 transition-colors"
+                          >
+                              {showAllAwards ? 'Show Less' : `View ${awardsList.length - 3} More`} 
+                              {showAllAwards ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
                           </button>
                       </div>
                   </div>
@@ -298,6 +334,66 @@ export const HospitalPage: React.FC<HospitalPageProps> = ({ hospital, onBack, on
           {/* Right Column: Widgets */}
           <div className="space-y-6">
               
+              {/* AI Concierge Widget */}
+              <div className="border border-slate-200 bg-gradient-to-br from-white to-slate-50 rounded-xl p-6 shadow-sm relative overflow-hidden group">
+                  <div className="absolute top-0 right-0 p-3 opacity-5 group-hover:opacity-10 transition-opacity">
+                      <Bot className="w-24 h-24 text-slate-900" />
+                  </div>
+                  
+                  <div className="relative z-10">
+                      <div className="flex items-center gap-2 mb-3">
+                          <div className="p-2 bg-[#1C1C1C] rounded-lg text-[#F1FCA7] shadow-lg shadow-slate-200">
+                              <Sparkles className="w-4 h-4" />
+                          </div>
+                          <div>
+                              <h3 className="font-bold text-gray-900 text-sm">Hospital Concierge</h3>
+                              <p className="text-[10px] text-slate-500 font-medium">Powered by Aria AI</p>
+                          </div>
+                      </div>
+                      
+                      <p className="text-xs text-slate-600 mb-4 leading-relaxed">
+                          I can analyze <strong>{hospital.name}</strong>'s pricing, insurance coverage, and specialist availability instantly.
+                      </p>
+
+                      <div className="grid grid-cols-2 gap-2 mb-4">
+                          <button 
+                              onClick={() => onAskAria(`What are the estimated costs for treatments at ${hospital.name}?`)}
+                              className="text-xs font-medium bg-white border border-slate-200 text-slate-700 py-2 px-3 rounded-lg hover:border-slate-900 hover:text-slate-900 transition-all text-left flex items-center gap-2 hover:shadow-sm"
+                          >
+                              💰 Pricing
+                          </button>
+                          <button 
+                              onClick={() => onAskAria(`What insurance plans are accepted at ${hospital.name}?`)}
+                              className="text-xs font-medium bg-white border border-slate-200 text-slate-700 py-2 px-3 rounded-lg hover:border-slate-900 hover:text-slate-900 transition-all text-left flex items-center gap-2 hover:shadow-sm"
+                          >
+                              🛡️ Insurance
+                          </button>
+                          <button 
+                              onClick={() => onAskAria(`Who are the top specialists at ${hospital.name}?`)}
+                              className="text-xs font-medium bg-white border border-slate-200 text-slate-700 py-2 px-3 rounded-lg hover:border-slate-900 hover:text-slate-900 transition-all text-left flex items-center gap-2 hover:shadow-sm"
+                          >
+                              👨‍⚕️ Doctors
+                          </button>
+                          <button 
+                              onClick={() => onAskAria(`How do I book an appointment at ${hospital.name}?`)}
+                              className="text-xs font-medium bg-white border border-slate-200 text-slate-700 py-2 px-3 rounded-lg hover:border-slate-900 hover:text-slate-900 transition-all text-left flex items-center gap-2 hover:shadow-sm"
+                          >
+                              📅 Booking
+                          </button>
+                      </div>
+
+                      <button 
+                          onClick={() => onAskAria(`I have general questions about ${hospital.name}`)}
+                          className="w-full bg-white border border-slate-200 text-slate-400 text-xs py-3 px-4 rounded-xl text-left flex justify-between items-center hover:border-slate-900 hover:text-slate-600 transition-colors shadow-sm group/input"
+                      >
+                          <span>Ask anything...</span>
+                          <div className="w-6 h-6 bg-slate-100 rounded-lg flex items-center justify-center group-hover/input:bg-[#1C1C1C] transition-colors">
+                              <ArrowRight className="w-3 h-3 text-slate-400 group-hover/input:text-[#F1FCA7] transition-colors" />
+                          </div>
+                      </button>
+                  </div>
+              </div>
+
               {/* Getting Here */}
               <div className="border border-zinc-200 rounded-xl p-6 shadow-sm bg-white">
                   <div className="flex items-center justify-between mb-6">
@@ -371,36 +467,43 @@ export const HospitalPage: React.FC<HospitalPageProps> = ({ hospital, onBack, on
                 { icon: BrainCircuit, title: "Neurology", desc: "Specialized brain & nerve care with precise diagnosis tools." },
                 { icon: Droplet, title: "Hematology", desc: "State-of-the-art care, diagnosis and concerns for blood-related issues." },
             ].map((item, idx) => (
-                <div key={idx} className="group p-6 rounded-xl border border-gray-100 bg-white hover:shadow-lg hover:border-gray-200 transition-all duration-300">
+                <div 
+                    key={idx} 
+                    className="group p-6 rounded-xl border border-gray-100 bg-white hover:shadow-lg hover:border-gray-200 transition-all duration-300 cursor-pointer"
+                    onClick={() => onViewSpecialization?.(item.title)}
+                >
                     <div className="w-10 h-10 rounded-full bg-lime-100 flex items-center justify-center mb-4 text-lime-700">
                         <item.icon strokeWidth={1.5} className="w-5 h-5" />
                     </div>
-                    <h3 className="text-lg font-medium mb-2 tracking-tight">{item.title}</h3>
+                    <h3 className="text-lg font-medium mb-2 tracking-tight group-hover:text-[#1C1C1C] transition-colors">{item.title}</h3>
                     <p className="text-sm text-gray-500 leading-relaxed">{item.desc}</p>
                 </div>
             ))}
         </div>
 
-        {/* Specialization Tags */}
-        <div className="mt-16">
-            <h4 className="text-center text-sm font-medium text-gray-900 mb-6">Specialization Available in Our Hospital</h4>
-            <div className="flex flex-wrap justify-center gap-3 px-4 max-w-4xl mx-auto">
+        {/* Other Specializations Grid */}
+        <div className="mt-20 bg-[#FAFAFA] rounded-2xl p-8 md:p-12">
+            <h4 className="text-center text-xl font-medium text-gray-900 mb-10">Other Specializations Available</h4>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 max-w-5xl mx-auto">
                 {[
-                    { icon: Heart, label: "Cardiology" },
-                    { icon: Bone, label: "Orthopedics" },
-                    { icon: Activity, label: "Oncology" },
-                    { icon: Brain, label: "Neurology" },
-                    { icon: Baby, label: "Fertility & IVF" },
-                    { icon: Stethoscope, label: "Gastroenterology" },
-                    { icon: Eye, label: "Ophthalmology" },
-                    { icon: Ear, label: "ENT" },
-                    { icon: Scissors, label: "General Surgery" },
-                    { icon: Microscope, label: "Pathology" },
-                    { icon: Scan, label: "Radiology" }
-                ].map((tag, i) => (
-                    <span key={i} className="inline-flex items-center px-4 py-2 rounded-full border border-gray-200 text-xs text-gray-600 bg-white hover:bg-gray-50 cursor-default transition-colors">
-                        <tag.icon className="w-3 h-3 mr-2" /> {tag.label}
-                    </span>
+                    "Fertility & IVF",
+                    "Gastroenterology",
+                    "Internal Medicine",
+                    "Aesthetics",
+                    "Dermatology",
+                    "General Surgery",
+                    "Dental Care",
+                    "Diabetes & Chronic Diseases Care",
+                    "ENT"
+                ].map((spec, i) => (
+                    <div 
+                        key={i} 
+                        onClick={() => onViewSpecialization?.(spec)}
+                        className="bg-white px-6 py-4 rounded-xl border border-gray-100 text-sm font-medium text-gray-800 shadow-sm hover:shadow-md transition-all cursor-pointer hover:border-gray-300 hover:text-black flex justify-between items-center group"
+                    >
+                        {spec}
+                        <ArrowRight className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity text-gray-400" />
+                    </div>
                 ))}
             </div>
         </div>
@@ -456,7 +559,7 @@ export const HospitalPage: React.FC<HospitalPageProps> = ({ hospital, onBack, on
                     <div className="p-5">
                         <h3 className="text-base font-semibold text-gray-900 mb-1">{doc.name}</h3>
                         <div className="flex items-center text-xs text-gray-500 mb-3">
-                            <span className="w-2 h-2 rounded-full bg-red-500 mr-2"></span>
+                            <span className="w-2 h-2 rounded-full bg-red-50 mr-2"></span>
                             {hospital.name}, {hospital.country}
                         </div>
                         <p className="text-xs font-medium text-gray-900 mb-1">{doc.role}</p>
@@ -660,6 +763,22 @@ export const HospitalPage: React.FC<HospitalPageProps> = ({ hospital, onBack, on
             )}
         </div>
       </section>
+
+      {/* Floating Action Button (Concierge) */}
+      <div className="fixed bottom-6 right-6 z-50 animate-in slide-in-from-bottom-10 fade-in duration-500">
+        <button 
+            onClick={() => onAskAria(`Start a concierge session for ${hospital.name}. I need help with...`)}
+            className="group flex items-center gap-3 bg-[#1C1C1C] text-white p-2 pr-6 rounded-full shadow-2xl hover:scale-105 transition-all border border-gray-800"
+        >
+            <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center overflow-hidden border-2 border-[#1C1C1C]">
+                 <img src={hospital.imageUrl} alt="Logo" className="w-full h-full object-cover opacity-80" />
+            </div>
+            <div className="text-left">
+                <p className="text-[10px] text-gray-400 font-medium uppercase tracking-wider">Concierge</p>
+                <p className="text-sm font-bold leading-none">Ask Aria</p>
+            </div>
+        </button>
+      </div>
       
     </div>
   );

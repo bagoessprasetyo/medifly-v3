@@ -1,8 +1,10 @@
 
 import React, { useRef } from 'react';
 import { BadgeCheck, ArrowRight, ArrowLeft, GraduationCap } from 'lucide-react';
+import { useTranslation } from '../contexts/TranslationContext';
 
 export const MedicalTeam: React.FC = () => {
+  const { t } = useTranslation();
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const scroll = (direction: 'left' | 'right') => {
@@ -18,31 +20,31 @@ export const MedicalTeam: React.FC = () => {
   const teamMembers = [
     {
       name: "Rachel Yew",
-      role: "Chief Executive Officer",
+      role: t("Chief Executive Officer"),
       image: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=600&auto=format&fit=crop",
-      desc: "She led transformative initiatives to position the hospital as a leading healthcare provider in the region.",
-      education: ["University of Malaysia", "Stanford University"]
+      desc: t("She led transformative initiatives to position the hospital as a leading healthcare provider in the region."),
+      education: [t("University of Malaysia"), t("Stanford University")]
     },
     {
       name: "Dr Kelvin Ch'ng",
-      role: "Chief Executive Officer",
+      role: t("Chief Executive Officer"),
       image: "https://images.unsplash.com/photo-1537368910025-700350fe46c7?q=80&w=600&auto=format&fit=crop",
-      desc: "Dr Kelvin has over 17 years' experience in healthcare. He joined Pantai Hospital Penang as a medical officer in 2012.",
-      education: ["University of Malaysia", "Stanford University"]
+      desc: t("Dr Kelvin has over 17 years' experience in healthcare. He joined Pantai Hospital Penang as a medical officer in 2012."),
+      education: [t("University of Malaysia"), t("Stanford University")]
     },
     {
       name: "Dr Kamal Amzan",
-      role: "Chief Executive Officer",
+      role: t("Chief Executive Officer"),
       image: "https://images.unsplash.com/photo-1560250097-0b93528c311a?q=80&w=600&auto=format&fit=crop",
-      desc: "He led transformative initiatives to position the hospital as a leading healthcare provider in the region.",
-      education: ["University of Malaysia", "Stanford University"]
+      desc: t("He led transformative initiatives to position the hospital as a leading healthcare provider in the region."),
+      education: [t("University of Malaysia"), t("Stanford University")]
     },
     {
       name: "Dr Sarah Lim",
-      role: "Chief Medical Officer",
+      role: t("Chief Medical Officer"),
       image: "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?auto=format&fit=crop&q=80&w=600",
-      desc: "Specializing in advanced cardiology with a focus on preventative care strategies for international patients.",
-      education: ["University of Singapore", "Harvard Medical School"]
+      desc: t("Specializing in advanced cardiology with a focus on preventative care strategies for international patients."),
+      education: [t("University of Singapore"), t("Harvard Medical School")]
     }
   ];
 
@@ -60,18 +62,18 @@ export const MedicalTeam: React.FC = () => {
 
                     {/* Headline */}
                     <h2 className="text-4xl lg:text-5xl font-medium tracking-tight text-gray-900 leading-[1.1]">
-                        Guided by trusted doctors and global care partners
+                        {t('Guided by trusted doctors and global care partners')}
                     </h2>
 
                     {/* Description */}
                     <p className="mt-8 text-lg text-gray-500 leading-relaxed font-normal">
-                        Medifly collaborates with experienced physicians and accredited hospitals worldwide to ensure every patient gets reliable, high-quality care. Our growing network of medical advisors helps us design safe, patient-first experiences.
+                        {t('Medifly collaborates with experienced physicians and accredited hospitals worldwide to ensure every patient gets reliable, high-quality care. Our growing network of medical advisors helps us design safe, patient-first experiences.')}
                     </p>
 
                     {/* CTA Button */}
                     <div className="mt-10">
                         <button className="group inline-flex items-center gap-4 bg-white border border-gray-200 rounded-full pl-6 pr-2 py-2 shadow-sm hover:border-gray-300 transition-colors duration-200">
-                            <span className="text-base font-medium text-gray-900">Explore Hospitals Now</span>
+                            <span className="text-base font-medium text-gray-900">{t('Explore Hospitals Now')}</span>
                             <span className="bg-black text-white rounded-full p-2 group-hover:bg-gray-800 transition-colors">
                                 <ArrowRight className="w-4 h-4" />
                             </span>

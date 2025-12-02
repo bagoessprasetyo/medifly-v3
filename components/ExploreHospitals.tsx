@@ -1,11 +1,14 @@
 
 import React from 'react';
 import { Plane, Stethoscope, Building2, Search } from 'lucide-react';
+import { useTranslation } from '../contexts/TranslationContext';
 
 export const ExploreHospitals: React.FC = () => {
+  const { t } = useTranslation();
+
   return (
     <section className="max-w-[1400px] mx-auto px-6 py-20 lg:py-24 bg-white text-gray-900 antialiased">
-        <h1 className="text-3xl md:text-4xl font-semibold tracking-tight text-gray-900 mb-10">Explore hospitals around the world</h1>
+        <h1 className="text-3xl md:text-4xl font-semibold tracking-tight text-gray-900 mb-10">{t('Explore hospitals around the world')}</h1>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-12">
             
@@ -26,7 +29,7 @@ export const ExploreHospitals: React.FC = () => {
 
                     {/* Center Title */}
                     <div className="absolute inset-0 flex items-center justify-center">
-                        <h2 className="text-2xl font-semibold text-white tracking-widest uppercase drop-shadow-lg">Indonesia</h2>
+                        <h2 className="text-2xl font-semibold text-white tracking-widest uppercase drop-shadow-lg">{t('Indonesia')}</h2>
                     </div>
                 </div>
 
@@ -34,40 +37,40 @@ export const ExploreHospitals: React.FC = () => {
                 <div className="mt-5">
                     <div className="flex items-center gap-2 mb-2">
                         <span className="text-xl">🇮🇩</span>
-                        <h3 className="text-lg font-semibold text-gray-900">Indonesia</h3>
+                        <h3 className="text-lg font-semibold text-gray-900">{t('Indonesia')}</h3>
                     </div>
                     
                     <p className="text-sm text-gray-500 leading-relaxed min-h-[3em]">
-                        Modern medical facilities with affordable care and growing centers of excellence.
+                        {t('Modern medical facilities with affordable care and growing centers of excellence.')}
                     </p>
 
                     {/* Stats Badges */}
                     <div className="flex flex-wrap gap-3 mt-4">
                         <div className="flex items-center gap-2 border border-gray-200 rounded-lg px-3 py-2">
                             <Stethoscope className="w-3.5 h-3.5 text-gray-500" />
-                            <span className="text-xs font-medium text-gray-600">2,300 Specialists</span>
+                            <span className="text-xs font-medium text-gray-600">2,300 {t('Specialists')}</span>
                         </div>
                         <div className="flex items-center gap-2 border border-gray-200 rounded-lg px-3 py-2">
                             <Building2 className="w-3.5 h-3.5 text-gray-500" />
-                            <span className="text-xs font-medium text-gray-600">115 Hospitals</span>
+                            <span className="text-xs font-medium text-gray-600">115 {t('Hospitals')}</span>
                         </div>
                     </div>
 
                     {/* Popular Searches */}
                     <div className="mt-5">
-                        <p className="text-xs font-medium text-gray-400 mb-2.5 uppercase tracking-wide">Popular Searches:</p>
+                        <p className="text-xs font-medium text-gray-400 mb-2.5 uppercase tracking-wide">{t('Popular Searches:')}</p>
                         <ul className="space-y-2">
                             <li className="flex items-start gap-2 text-xs text-gray-500 hover:text-gray-900 transition-colors cursor-pointer group/link">
                                 <Search className="w-3 h-3 mt-0.5 text-gray-400 group-hover/link:text-gray-600 shrink-0" />
-                                Top hospitals in Bali
+                                {t('Top hospitals in Bali')}
                             </li>
                             <li className="flex items-start gap-2 text-xs text-gray-500 hover:text-gray-900 transition-colors cursor-pointer group/link">
                                 <Search className="w-3 h-3 mt-0.5 text-gray-400 group-hover/link:text-gray-600 shrink-0" />
-                                Top Wellness centers in Bali
+                                {t('Top Wellness centers in Bali')}
                             </li>
                             <li className="flex items-start gap-2 text-xs text-gray-500 hover:text-gray-900 transition-colors cursor-pointer group/link">
                                 <Search className="w-3 h-3 mt-0.5 text-gray-400 group-hover/link:text-gray-600 shrink-0" />
-                                Wellness & detox clinics in Ubud
+                                {t('Wellness & detox clinics in Ubud')}
                             </li>
                         </ul>
                     </div>
@@ -87,45 +90,45 @@ export const ExploreHospitals: React.FC = () => {
                     </div>
 
                     <div className="absolute inset-0 flex items-center justify-center">
-                        <h2 className="text-2xl font-semibold text-white tracking-widest uppercase drop-shadow-lg">Malaysia</h2>
+                        <h2 className="text-2xl font-semibold text-white tracking-widest uppercase drop-shadow-lg">{t('Malaysia')}</h2>
                     </div>
                 </div>
 
                 <div className="mt-5">
                     <div className="flex items-center gap-2 mb-2">
                         <span className="text-xl">🇲🇾</span>
-                        <h3 className="text-lg font-semibold text-gray-900">Malaysia</h3>
+                        <h3 className="text-lg font-semibold text-gray-900">{t('Malaysia')}</h3>
                     </div>
                     
                     <p className="text-sm text-gray-500 leading-relaxed min-h-[3em]">
-                        Modern hospitals with Bahasa-speaking staff and excellent patient safety.
+                        {t('Modern hospitals with Bahasa-speaking staff and excellent patient safety.')}
                     </p>
 
                     <div className="flex flex-wrap gap-3 mt-4">
                         <div className="flex items-center gap-2 border border-gray-200 rounded-lg px-3 py-2">
                             <Stethoscope className="w-3.5 h-3.5 text-gray-500" />
-                            <span className="text-xs font-medium text-gray-600">2,300 Specialists</span>
+                            <span className="text-xs font-medium text-gray-600">2,300 {t('Specialists')}</span>
                         </div>
                         <div className="flex items-center gap-2 border border-gray-200 rounded-lg px-3 py-2">
                             <Building2 className="w-3.5 h-3.5 text-gray-500" />
-                            <span className="text-xs font-medium text-gray-600">115 Hospitals</span>
+                            <span className="text-xs font-medium text-gray-600">115 {t('Hospitals')}</span>
                         </div>
                     </div>
 
                     <div className="mt-5">
-                        <p className="text-xs font-medium text-gray-400 mb-2.5 uppercase tracking-wide">Popular Searches:</p>
+                        <p className="text-xs font-medium text-gray-400 mb-2.5 uppercase tracking-wide">{t('Popular Searches:')}</p>
                         <ul className="space-y-2">
                             <li className="flex items-start gap-2 text-xs text-gray-500 hover:text-gray-900 transition-colors cursor-pointer group/link">
                                 <Search className="w-3 h-3 mt-0.5 text-gray-400 group-hover/link:text-gray-600 shrink-0" />
-                                IVF centers in Kuala Lumpur
+                                {t('IVF centers in Kuala Lumpur')}
                             </li>
                             <li className="flex items-start gap-2 text-xs text-gray-500 hover:text-gray-900 transition-colors cursor-pointer group/link">
                                 <Search className="w-3 h-3 mt-0.5 text-gray-400 group-hover/link:text-gray-600 shrink-0" />
-                                Top 10 Orthopedic hospitals in Penang
+                                {t('Top 10 Orthopedic hospitals in Penang')}
                             </li>
                             <li className="flex items-start gap-2 text-xs text-gray-500 hover:text-gray-900 transition-colors cursor-pointer group/link">
                                 <Search className="w-3 h-3 mt-0.5 text-gray-400 group-hover/link:text-gray-600 shrink-0" />
-                                Top cardiac surgeons in Malaysia
+                                {t('Top cardiac surgeons in Malaysia')}
                             </li>
                         </ul>
                     </div>
@@ -145,45 +148,45 @@ export const ExploreHospitals: React.FC = () => {
                     </div>
 
                     <div className="absolute inset-0 flex items-center justify-center">
-                        <h2 className="text-2xl font-semibold text-white tracking-widest uppercase drop-shadow-lg">Singapore</h2>
+                        <h2 className="text-2xl font-semibold text-white tracking-widest uppercase drop-shadow-lg">{t('Singapore')}</h2>
                     </div>
                 </div>
 
                 <div className="mt-5">
                     <div className="flex items-center gap-2 mb-2">
                         <span className="text-xl">🇸🇬</span>
-                        <h3 className="text-lg font-semibold text-gray-900">Singapore</h3>
+                        <h3 className="text-lg font-semibold text-gray-900">{t('Singapore')}</h3>
                     </div>
                     
                     <p className="text-sm text-gray-500 leading-relaxed min-h-[3em]">
-                        Premium healthcare standards with cutting-edge technology.
+                        {t('Premium healthcare standards with cutting-edge technology.')}
                     </p>
 
                     <div className="flex flex-wrap gap-3 mt-4">
                         <div className="flex items-center gap-2 border border-gray-200 rounded-lg px-3 py-2">
                             <Stethoscope className="w-3.5 h-3.5 text-gray-500" />
-                            <span className="text-xs font-medium text-gray-600">2,300 Specialists</span>
+                            <span className="text-xs font-medium text-gray-600">2,300 {t('Specialists')}</span>
                         </div>
                         <div className="flex items-center gap-2 border border-gray-200 rounded-lg px-3 py-2">
                             <Building2 className="w-3.5 h-3.5 text-gray-500" />
-                            <span className="text-xs font-medium text-gray-600">115 Hospitals</span>
+                            <span className="text-xs font-medium text-gray-600">115 {t('Hospitals')}</span>
                         </div>
                     </div>
 
                     <div className="mt-5">
-                        <p className="text-xs font-medium text-gray-400 mb-2.5 uppercase tracking-wide">Popular Searches:</p>
+                        <p className="text-xs font-medium text-gray-400 mb-2.5 uppercase tracking-wide">{t('Popular Searches:')}</p>
                         <ul className="space-y-2">
                             <li className="flex items-start gap-2 text-xs text-gray-500 hover:text-gray-900 transition-colors cursor-pointer group/link">
                                 <Search className="w-3 h-3 mt-0.5 text-gray-400 group-hover/link:text-gray-600 shrink-0" />
-                                Cancer centers in Singapore
+                                {t('Cancer centers in Singapore')}
                             </li>
                             <li className="flex items-start gap-2 text-xs text-gray-500 hover:text-gray-900 transition-colors cursor-pointer group/link">
                                 <Search className="w-3 h-3 mt-0.5 text-gray-400 group-hover/link:text-gray-600 shrink-0" />
-                                Cardiac surgery specialists
+                                {t('Cardiac surgery specialists')}
                             </li>
                             <li className="flex items-start gap-2 text-xs text-gray-500 hover:text-gray-900 transition-colors cursor-pointer group/link">
                                 <Search className="w-3 h-3 mt-0.5 text-gray-400 group-hover/link:text-gray-600 shrink-0" />
-                                Executive health screening packages
+                                {t('Executive health screening packages')}
                             </li>
                         </ul>
                     </div>
@@ -203,45 +206,45 @@ export const ExploreHospitals: React.FC = () => {
                     </div>
 
                     <div className="absolute inset-0 flex items-center justify-center">
-                        <h2 className="text-2xl font-semibold text-white tracking-widest uppercase drop-shadow-lg">Thailand</h2>
+                        <h2 className="text-2xl font-semibold text-white tracking-widest uppercase drop-shadow-lg">{t('Thailand')}</h2>
                     </div>
                 </div>
 
                 <div className="mt-5">
                     <div className="flex items-center gap-2 mb-2">
                         <span className="text-xl">🇹🇭</span>
-                        <h3 className="text-lg font-semibold text-gray-900">Thailand</h3>
+                        <h3 className="text-lg font-semibold text-gray-900">{t('Thailand')}</h3>
                     </div>
                     
                     <p className="text-sm text-gray-500 leading-relaxed min-h-[3em]">
-                        World-leading destination for affordable surgeries and wellness retreats.
+                        {t('World-leading destination for affordable surgeries and wellness retreats.')}
                     </p>
 
                     <div className="flex flex-wrap gap-3 mt-4">
                         <div className="flex items-center gap-2 border border-gray-200 rounded-lg px-3 py-2">
                             <Stethoscope className="w-3.5 h-3.5 text-gray-500" />
-                            <span className="text-xs font-medium text-gray-600">2,300 Specialists</span>
+                            <span className="text-xs font-medium text-gray-600">2,300 {t('Specialists')}</span>
                         </div>
                         <div className="flex items-center gap-2 border border-gray-200 rounded-lg px-3 py-2">
                             <Building2 className="w-3.5 h-3.5 text-gray-500" />
-                            <span className="text-xs font-medium text-gray-600">115 Hospitals</span>
+                            <span className="text-xs font-medium text-gray-600">115 {t('Hospitals')}</span>
                         </div>
                     </div>
 
                     <div className="mt-5">
-                        <p className="text-xs font-medium text-gray-400 mb-2.5 uppercase tracking-wide">Popular Searches:</p>
+                        <p className="text-xs font-medium text-gray-400 mb-2.5 uppercase tracking-wide">{t('Popular Searches:')}</p>
                         <ul className="space-y-2">
                             <li className="flex items-start gap-2 text-xs text-gray-500 hover:text-gray-900 transition-colors cursor-pointer group/link">
                                 <Search className="w-3 h-3 mt-0.5 text-gray-400 group-hover/link:text-gray-600 shrink-0" />
-                                Cosmetic surgery in Bangkok
+                                {t('Cosmetic surgery in Bangkok')}
                             </li>
                             <li className="flex items-start gap-2 text-xs text-gray-500 hover:text-gray-900 transition-colors cursor-pointer group/link">
                                 <Search className="w-3 h-3 mt-0.5 text-gray-400 group-hover/link:text-gray-600 shrink-0" />
-                                Dental clinics in Phuket
+                                {t('Dental clinics in Phuket')}
                             </li>
                             <li className="flex items-start gap-2 text-xs text-gray-500 hover:text-gray-900 transition-colors cursor-pointer group/link">
                                 <Search className="w-3 h-3 mt-0.5 text-gray-400 group-hover/link:text-gray-600 shrink-0" />
-                                Top 10 Weight-loss centers in Bangkok
+                                {t('Top 10 Weight-loss centers in Bangkok')}
                             </li>
                         </ul>
                     </div>

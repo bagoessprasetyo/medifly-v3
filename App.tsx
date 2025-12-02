@@ -9,28 +9,33 @@ import { FacilityGalleryPage } from './components/FacilityGalleryPage';
 import { FacilityDetailsPage } from './components/FacilityDetailsPage'; 
 import { DoctorsPage } from './components/DoctorsPage'; 
 import { DoctorDetailsPage } from './components/DoctorDetailsPage';
-// import { PackagesPage } from './components/PackagesPage'; 
-import { PackageDetailsPage } from './components/PackageDetailsPage'; // New Component
+import { PackageDetailsPage } from './components/PackageDetailsPage';
+import { SpecializationDetailsPage } from './components/SpecializationDetailsPage'; 
+// import { HospitalInsightsPage } from './components/HospitalInsightsPage'; 
+import { ArticleDetailsPage } from './components/ArticleDetailsPage';
+import { ResearchDetailsPage } from './components/ResearchDetailsPage'; // Import
 import { Layout } from './components/Layout';
 import { FilterState, Hospital, ChatSession, Message, Doctor, MedicalPackage } from './types';
 import { ArrowLeft, MessageSquare } from 'lucide-react';
 import { HOSPITALS, DOCTORS, PACKAGES, createSlug } from './constants';
 import { PackagesPage } from './components/PackagesPage';
-// import { ProductTour, TourStep } from './components/ProductTour'; // Tour Disabled
 import { HealthPotential } from './components/HealthPotential';
 import { Testimonials } from './components/Testimonials';
 import { MedicalTeam } from './components/MedicalTeam';
 import { ExploreHospitals } from './components/ExploreHospitals';
 import { Mission } from './components/Mission';
+import { TranslationProvider, useTranslation } from './contexts/TranslationContext';
+// import { AITranslationOverlay } from './components/ui/AITranslationOverlay';
+import { HospitalInsightsPage } from './components/HospitalInsights';
+import { AITranslationOverlay } from './components/ui/AiTranslationOverlay';
 
-const App: React.FC = () => {
-  const [page, setPage] = useState<'home' | 'marketplace' | 'hospital-page' | 'doctors' | 'doctor-details' | 'gallery' | 'facilities' | 'facility-details' | 'packages' | 'package-details'>('home');
+// Inner App to access translation context if needed
+const MainApp: React.FC = () => {
+  const [page, setPage] = useState<'home' | 'marketplace' | 'hospital-page' | 'doctors' | 'doctor-details' | 'gallery' | 'facilities' | 'facility-details' | 'packages' | 'package-details' | 'specialization-details' | 'hospital-insights' | 'article-details' | 'research-details'>('home');
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [isDeepFocusMode, setIsDeepFocusMode] = useState(false); 
+  const { isTranslating, language, setLanguage } = useTranslation();
   
-  // -- Language State --
-  const [selectedLanguage, setSelectedLanguage] = useState('English');
-
   // -- Session Management State --
   const [sessions, setSessions] = useState<ChatSession[]>([]);
   const [currentSessionId, setCurrentSessionId] = useState<string>('');
@@ -45,6 +50,9 @@ const App: React.FC = () => {
   const [viewedFacilityName, setViewedFacilityName] = useState<string | null>(null);
   const [viewedDoctor, setViewedDoctor] = useState<Doctor | null>(null);
   const [viewedPackage, setViewedPackage] = useState<MedicalPackage | null>(null);
+  const [viewedSpecializationName, setViewedSpecializationName] = useState<string | null>(null);
+  const [viewedArticleTitle, setViewedArticleTitle] = useState<string | null>(null);
+  const [viewedResearchTitle, setViewedResearchTitle] = useState<string | null>(null); // New state
 
   // Load Sessions from LocalStorage on Mount
   useEffect(() => {
@@ -137,18 +145,18 @@ const App: React.FC = () => {
       // Check for /hospitals/:slug or subpages
       if (path.startsWith('/hospitals/')) {
           const parts = path.split('/');
-          // parts[0] = "", parts[1] = "hospitals", parts[2] = slug, parts[3] = "tour" | "facilities"
-          const slug = parts[2];
-          const subPage = parts[3];
-          const subItem = parts[4]; // Facility Name (Slug)
+          // parts[0] = "", parts[1] = "hospitals", parts[2] = slug
+          const hospitalSlug = parts[2];
+          const subPageOrSpec = parts[3]; // "tour", "facilities", "insights", "articles", "research", or specialization slug
+          const subItem = parts[4]; // Facility/Article/Research Slug
           
-          const hospital = HOSPITALS.find(h => createSlug(h.name) === slug);
+          const hospital = HOSPITALS.find(h => createSlug(h.name) === hospitalSlug);
           if (hospital) {
               setViewedHospital(hospital);
               
-              if (subPage === 'tour') {
+              if (subPageOrSpec === 'tour') {
                   setPage('gallery');
-              } else if (subPage === 'facilities') {
+              } else if (subPageOrSpec === 'facilities') {
                   if (subItem) {
                       const name = subItem.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
                       setViewedFacilityName(name);
@@ -156,6 +164,26 @@ const App: React.FC = () => {
                   } else {
                       setPage('facilities');
                   }
+              } else if (subPageOrSpec === 'insights') {
+                  setPage('hospital-insights');
+              } else if (subPageOrSpec === 'articles') {
+                  if (subItem) {
+                      // Attempt to restore title from slug roughly, or rely on state if internal nav
+                      const title = subItem.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+                      setViewedArticleTitle(title);
+                      setPage('article-details');
+                  }
+              } else if (subPageOrSpec === 'research') {
+                  if (subItem) {
+                      const title = subItem.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+                      setViewedResearchTitle(title);
+                      setPage('research-details');
+                  }
+              } else if (subPageOrSpec) {
+                  // Assume it is a specialization slug if not reserved word
+                  const specName = subPageOrSpec.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+                  setViewedSpecializationName(specName);
+                  setPage('specialization-details');
               } else {
                   setPage('hospital-page');
               }
@@ -287,6 +315,68 @@ const App: React.FC = () => {
       }
   }
 
+  const handleNavigateToSpecialization = (specName: string) => {
+      if (viewedHospital) {
+          setViewedSpecializationName(specName);
+          setPage('specialization-details');
+          const specSlug = createSlug(specName);
+          window.history.pushState(null, '', `/hospitals/${createSlug(viewedHospital.name)}/${specSlug}`);
+      }
+  }
+
+  const handleBackFromSpecialization = () => {
+      if (viewedHospital) {
+          setPage('hospital-page');
+          window.history.pushState(null, '', `/hospitals/${createSlug(viewedHospital.name)}`);
+      }
+  }
+
+  const handleNavigateToInsights = () => {
+      if (viewedHospital) {
+          setPage('hospital-insights');
+          window.history.pushState(null, '', `/hospitals/${createSlug(viewedHospital.name)}/insights`);
+      }
+  }
+
+  const handleBackFromInsights = () => {
+      if (viewedHospital) {
+          setPage('hospital-page');
+          window.history.pushState(null, '', `/hospitals/${createSlug(viewedHospital.name)}`);
+      }
+  }
+
+  const handleNavigateToArticle = (articleTitle: string) => {
+      if (viewedHospital) {
+          setViewedArticleTitle(articleTitle);
+          setPage('article-details');
+          const articleSlug = createSlug(articleTitle);
+          window.history.pushState(null, '', `/hospitals/${createSlug(viewedHospital.name)}/articles/${articleSlug}`);
+      }
+  }
+
+  const handleNavigateToResearch = (researchTitle: string) => {
+      if (viewedHospital) {
+          setViewedResearchTitle(researchTitle);
+          setPage('research-details');
+          const researchSlug = createSlug(researchTitle);
+          window.history.pushState(null, '', `/hospitals/${createSlug(viewedHospital.name)}/research/${researchSlug}`);
+      }
+  }
+
+  const handleBackFromArticle = () => {
+      if (viewedHospital) {
+          setPage('hospital-insights');
+          window.history.pushState(null, '', `/hospitals/${createSlug(viewedHospital.name)}/insights`);
+      }
+  }
+
+  const handleBackFromResearch = () => {
+      if (viewedHospital) {
+          setPage('hospital-insights');
+          window.history.pushState(null, '', `/hospitals/${createSlug(viewedHospital.name)}/insights`);
+      }
+  }
+
   const handleNavigateToDoctor = (doctor: Doctor) => {
       setViewedDoctor(doctor);
       setPage('doctor-details');
@@ -311,7 +401,6 @@ const App: React.FC = () => {
       window.history.pushState(null, '', '/packages');
   };
 
-  // This state is just to trigger the effect in ChatInterface one time. 
   const [initialQuery, setInitialQuery] = useState<string>('');
 
   const handleQuickSearch = (query: string, origin?: string, location?: { lat: number; lng: number }) => {
@@ -322,29 +411,28 @@ const App: React.FC = () => {
         userOrigin: origin || undefined,
         userLocation: location || undefined
     }));
-    setPage('marketplace');
+    if (page !== 'hospital-page') {
+        setPage('marketplace');
+    }
     setIsChatOpen(true);
-    window.history.pushState(null, '', '/');
+    if (page !== 'hospital-page') {
+        window.history.pushState(null, '', '/');
+    }
   };
   
   const handleApplyFilters = (newFilters: FilterState) => {
     setFilters(prev => ({ ...prev, ...newFilters }));
-    
-    // Update session title AND persist these filters to the session
     setSessions(prev => prev.map(s => {
         if (s.id === currentSessionId) {
             return { 
                 ...s, 
-                // Always rename the session to the AI list name if provided, creating a "Saved Search" effect
                 title: newFilters.aiListName || s.title,
-                lastActiveFilters: { ...filters, ...newFilters }, // Save the filters
+                lastActiveFilters: { ...filters, ...newFilters },
                 updatedAt: Date.now()
             };
         }
         return s;
     }));
-
-    // Always switch to marketplace view so user sees results immediately
     setPage('marketplace'); 
     window.history.pushState(null, '', '/');
   };
@@ -352,8 +440,6 @@ const App: React.FC = () => {
   const handleClearFilters = () => {
     const emptyFilters = { searchQuery: '' };
     setFilters(emptyFilters);
-    
-    // Clear filters in session too
     setSessions(prev => prev.map(s => {
         if (s.id === currentSessionId) {
             return { ...s, lastActiveFilters: undefined };
@@ -364,14 +450,13 @@ const App: React.FC = () => {
 
   const handleNewSessionClick = () => {
       createNewSession();
-      setInitialQuery(''); // clear any previous initial query
+      setInitialQuery('');
       handleClearFilters();
   };
 
-  // Helper for direct navigation
   const navigateToMarketplace = () => {
       setPage('marketplace');
-      setFilters({ searchQuery: '' }); // Optional: Reset filters when clicking "Hospitals" directly
+      setFilters({ searchQuery: '' });
       window.history.pushState(null, '', '/');
   };
 
@@ -390,46 +475,19 @@ const App: React.FC = () => {
       window.history.pushState(null, '', '/');
   }
 
-  // Common Layout Props
   const layoutProps = {
     onNavigateToHome: navigateToHome,
     onNavigateToMarketplace: navigateToMarketplace,
     onNavigateToDoctors: navigateToDoctors,
     onNavigateToPackages: navigateToPackages,
-    selectedLanguage,
-    onLanguageChange: setSelectedLanguage,
     isHomePage: page === 'home',
-    // onStartTour: handleStartTour // Disabled
   };
 
   return (
     <div className="h-[100dvh] w-screen overflow-hidden flex bg-white relative">
       
-      {/* Product Tour Overlay - Disabled */}
-      {/* <ProductTour 
-        steps={tourSteps}
-        isOpen={isTourOpen}
-        onClose={() => setIsTourOpen(false)}
-        onComplete={handleTourComplete}
-      /> */}
+      {isTranslating && <AITranslationOverlay />}
 
-      {/* Chat Open Toggle (Floating Button) - Disabled */}
-      {/* {!isChatOpen && (
-      <div id="ask-aria-button" className="absolute bottom-6 left-6 z-40 animate-in fade-in slide-in-from-bottom-4 duration-500">
-         <button 
-            onClick={() => setIsChatOpen(true)}
-            className="flex items-center gap-2 pl-4 pr-5 py-3 bg-slate-900 text-white rounded-full shadow-2xl hover:scale-105 hover:bg-black transition-all group"
-         >
-            <div className="relative">
-                <MessageSquare className="w-5 h-5" />
-                <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-[#B2D7FF] rounded-full border-2 border-slate-900 animate-pulse" />
-            </div>
-            <span className="font-semibold text-sm">Ask Aria</span>
-         </button>
-      </div>
-      )} */}
-
-      {/* Left Panel: Aria Chat Sidebar */}
       <div 
         className={`
             h-full flex-shrink-0 bg-white border-r border-slate-200 relative z-30 transition-all duration-500 ease-[cubic-bezier(0.25,1,0.5,1)]
@@ -443,33 +501,26 @@ const App: React.FC = () => {
         <div className="w-full h-full">
             {currentSession && (
                 <ChatInterface 
-                    // Add Key to force re-mount on session switch
                     key={currentSession.id}
-                    // Session Props
                     currentSession={currentSession}
                     sessions={sessions}
                     onSelectSession={setCurrentSessionId}
                     onNewSession={handleNewSessionClick}
                     onUpdateSessionMessages={updateSessionMessages}
-                    language={selectedLanguage}
-                    onLanguageChange={setSelectedLanguage}
-                    
-                    // Deep Focus Props
                     isDeepFocusMode={isDeepFocusMode}
                     onToggleDeepFocus={() => setIsDeepFocusMode(!isDeepFocusMode)}
-
-                    // Legacy Props
                     initialQuery={initialQuery && currentSession.messages.length === 0 ? initialQuery : undefined} 
-                    onSendMessage={async () => {}} // Not really used directly anymore, handled inside
+                    onSendMessage={async () => {}}
                     onApplyFilters={handleApplyFilters} 
                     onClose={() => setIsChatOpen(false)}
-                    activeFilters={filters} // Pass global filters for sync
+                    activeFilters={filters}
+                    language={language}
+                    onLanguageChange={setLanguage}
                 />
             )}
         </div>
       </div>
 
-      {/* Right Panel: Main Content with Layout */}
       <div 
         id="main-content-area"
         className={`
@@ -477,8 +528,7 @@ const App: React.FC = () => {
             ${isDeepFocusMode ? 'hidden w-0 opacity-0' : ''} 
         `}
       >
-         {/* Mobile Back Button Area - Only show if NOT deep page OR on marketplace */}
-         <div className={`md:hidden absolute top-4 left-4 z-20 flex gap-2 ${['hospital-page', 'doctors', 'marketplace', 'gallery', 'facilities', 'facility-details', 'doctor-details', 'packages', 'package-details'].includes(page) ? 'hidden' : ''}`}>
+         <div className={`md:hidden absolute top-4 left-4 z-20 flex gap-2 ${['hospital-page', 'doctors', 'marketplace', 'gallery', 'facilities', 'facility-details', 'doctor-details', 'packages', 'package-details', 'specialization-details', 'hospital-insights', 'article-details', 'research-details'].includes(page) ? 'hidden' : ''}`}>
              <button onClick={() => {
                  setPage('home');
              }} className="p-2 bg-white rounded-full shadow-md border border-slate-100">
@@ -491,7 +541,6 @@ const App: React.FC = () => {
              )}
          </div>
 
-         {/* Layout Wrapper applying Navbar and Footer to all pages */}
          <Layout {...layoutProps}>
             {page === 'home' && (
                 <>
@@ -526,6 +575,8 @@ const App: React.FC = () => {
                     onNavigateToDoctors={navigateToDoctors}
                     onViewGallery={handleNavigateToGallery}
                     onViewFacilities={handleNavigateToFacilities}
+                    onAskAria={handleQuickSearch}
+                    onViewSpecialization={handleNavigateToSpecialization}
                 />
             )}
 
@@ -553,11 +604,55 @@ const App: React.FC = () => {
                 />
             )}
 
+            {page === 'specialization-details' && viewedHospital && viewedSpecializationName && (
+                <SpecializationDetailsPage
+                    hospital={viewedHospital}
+                    specializationName={viewedSpecializationName}
+                    onBack={handleBackFromSpecialization}
+                    onNavigateToHospital={() => handleNavigateToHospital(viewedHospital)}
+                    onNavigateToDoctor={handleNavigateToDoctor}
+                    onViewAllInsights={handleNavigateToInsights}
+                    onNavigateToArticle={handleNavigateToArticle}
+                />
+            )}
+
+            {page === 'hospital-insights' && viewedHospital && (
+                <HospitalInsightsPage
+                    hospital={viewedHospital}
+                    onBack={handleBackFromInsights}
+                    onNavigateToHospital={() => handleNavigateToHospital(viewedHospital)}
+                    onNavigateToArticle={handleNavigateToArticle}
+                    onNavigateToResearch={handleNavigateToResearch}
+                />
+            )}
+
+            {page === 'article-details' && viewedHospital && viewedArticleTitle && (
+                <ArticleDetailsPage
+                    hospital={viewedHospital}
+                    articleTitle={viewedArticleTitle}
+                    onBack={handleBackFromArticle}
+                    onNavigateToHospital={() => handleNavigateToHospital(viewedHospital)}
+                    onNavigateToArticle={handleNavigateToArticle}
+                    onNavigateToResearch={handleNavigateToResearch}
+                />
+            )}
+
+            {page === 'research-details' && viewedHospital && viewedResearchTitle && (
+                <ResearchDetailsPage
+                    hospital={viewedHospital}
+                    researchTitle={viewedResearchTitle}
+                    onBack={handleBackFromResearch}
+                    onNavigateToHospital={() => handleNavigateToHospital(viewedHospital)}
+                    onNavigateToArticle={handleNavigateToArticle}
+                    onNavigateToResearch={handleNavigateToResearch}
+                />
+            )}
+
             {page === 'doctors' && (
                 <DoctorsPage 
                     onBack={() => setPage('home')}
                     onNavigateToHospitals={navigateToMarketplace}
-                    onNavigateToDoctors={() => {}} // Already here
+                    onNavigateToDoctors={() => {}} 
                     onViewDoctor={handleNavigateToDoctor}
                 />
             )}
@@ -588,6 +683,14 @@ const App: React.FC = () => {
          </Layout>
       </div>
     </div>
+  );
+}
+
+const App: React.FC = () => {
+  return (
+    <TranslationProvider>
+      <MainApp />
+    </TranslationProvider>
   );
 };
 

@@ -320,7 +320,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
   onClose,
   initialQuery,
   activeFilters,
-  language = 'English',
+  language = 'Bahasa Indonesia',
   onLanguageChange,
   isDeepFocusMode = false,
   onToggleDeepFocus

@@ -2,14 +2,14 @@
 import React, { useState } from 'react';
 import { Menu, X, Plane, ArrowRight, Compass } from 'lucide-react';
 // import { LanguageSelector } from './ui/LanguageSelector';
+import { useTranslation } from '../contexts/TranslationContext';
+import { LanguageSelector } from './ui/Languageselector';
 
 interface NavbarProps {
   onNavigateToHome: () => void;
   onNavigateToMarketplace: () => void;
   onNavigateToDoctors: () => void;
   onNavigateToPackages?: () => void;
-  selectedLanguage: string;
-  onLanguageChange: (lang: string) => void;
   onStartTour?: () => void;
 }
 
@@ -18,11 +18,10 @@ export const Navbar: React.FC<NavbarProps> = ({
   onNavigateToMarketplace, 
   onNavigateToDoctors,
   onNavigateToPackages,
-  selectedLanguage,
-  onLanguageChange,
   onStartTour
 }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { t } = useTranslation();
 
   const handleMobileNav = (action: () => void) => {
     action();
@@ -47,43 +46,43 @@ export const Navbar: React.FC<NavbarProps> = ({
                 onClick={onNavigateToHome}
                 className="text-sm font-medium text-slate-500 hover:text-slate-900 transition-colors"
              >
-                How it works
+                {t('How it works')}
              </button>
              <button 
                 onClick={onNavigateToMarketplace}
                 className="text-sm font-medium text-slate-500 hover:text-slate-900 transition-colors"
              >
-                Hospitals
+                {t('Hospitals')}
              </button>
              <button 
                 onClick={onNavigateToDoctors}
                 className="text-sm font-medium text-slate-500 hover:text-slate-900 transition-colors"
              >
-                Doctors
+                {t('Doctors')}
              </button>
              <button 
                 onClick={onNavigateToPackages}
                 className="text-sm font-medium text-slate-500 hover:text-slate-900 transition-colors"
              >
-                Packages
+                {t('Packages')}
              </button>
           </div>
 
           {/* Right Actions */}
           <div className="hidden md:flex items-center gap-4">
-             {/* {onStartTour && (
+             {onStartTour && (
                  <button 
                     onClick={onStartTour}
                     className="text-sm font-medium text-indigo-600 hover:bg-indigo-50 px-3 py-2 rounded-lg transition-colors flex items-center gap-1.5"
                  >
-                    <Compass className="w-4 h-4" /> Tour
+                    <Compass className="w-4 h-4" /> {t('Tour')}
                  </button>
-             )} */}
-             {/* <div className="hidden lg:block">
-                  <LanguageSelector selectedLanguage={selectedLanguage} onLanguageChange={onLanguageChange} />
-             </div> */}
+             )}
+             <div className="hidden lg:block">
+                  <LanguageSelector />
+             </div>
              <button className="text-sm font-medium bg-slate-900 text-white px-5 py-2.5 rounded-full hover:bg-slate-800 transition-colors shadow-sm hover:shadow-md">
-                Sign in
+                {t('Sign in')}
              </button>
           </div>
 
@@ -106,21 +105,21 @@ export const Navbar: React.FC<NavbarProps> = ({
                         onClick={() => handleMobileNav(onNavigateToMarketplace)}
                         className="flex items-center justify-between w-full text-lg font-semibold text-slate-900 border-b border-slate-100 pb-4"
                     >
-                        <span>Hospitals</span>
+                        <span>{t('Hospitals')}</span>
                         <ArrowRight className="w-5 h-5 text-slate-300" />
                     </button>
                     <button 
                         onClick={() => handleMobileNav(onNavigateToDoctors)}
                         className="flex items-center justify-between w-full text-lg font-semibold text-slate-900 border-b border-slate-100 pb-4"
                     >
-                        <span>Doctors</span>
+                        <span>{t('Doctors')}</span>
                         <ArrowRight className="w-5 h-5 text-slate-300" />
                     </button>
                     <button 
                         onClick={() => handleMobileNav(onNavigateToPackages || (() => {}))}
                         className="flex items-center justify-between w-full text-lg font-semibold text-slate-900 border-b border-slate-100 pb-4"
                     >
-                        <span>Packages</span>
+                        <span>{t('Packages')}</span>
                         <ArrowRight className="w-5 h-5 text-slate-300" />
                     </button>
                     {onStartTour && (
@@ -128,19 +127,19 @@ export const Navbar: React.FC<NavbarProps> = ({
                             onClick={() => handleMobileNav(onStartTour)}
                             className="flex items-center justify-between w-full text-lg font-semibold text-indigo-600 border-b border-indigo-100 pb-4"
                         >
-                            <span className="flex items-center gap-2"><Compass className="w-5 h-5" /> Take Tour</span>
+                            <span className="flex items-center gap-2"><Compass className="w-5 h-5" /> {t('Tour')}</span>
                             <ArrowRight className="w-5 h-5 text-indigo-300" />
                         </button>
                     )}
                 </div>
 
                 <div className="mt-8 space-y-4">
-                    {/* <div className="flex items-center justify-between">
-                        <span className="text-sm font-medium text-slate-500">Language</span>
-                        <LanguageSelector selectedLanguage={selectedLanguage} onLanguageChange={onLanguageChange} />
-                    </div> */}
+                    <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium text-slate-500">{t('Language')}</span>
+                        <LanguageSelector />
+                    </div>
                     <button className="w-full bg-slate-900 text-white text-base font-semibold py-4 rounded-xl hover:bg-black transition shadow-sm mt-4">
-                        Sign in
+                        {t('Sign in')}
                     </button>
                 </div>
             </div>

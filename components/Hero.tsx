@@ -1,9 +1,11 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { 
   Search, MapPin, Globe, Sparkles, ArrowRight, X, Navigation, 
   Package, BadgeCheck, ShieldCheck, Smartphone, MessageSquare, 
   FileText, Plus, Video, Paperclip, Database, Activity, Stethoscope, Loader2
 } from 'lucide-react';
+import { useTranslation } from '../contexts/TranslationContext';
 
 interface HeroProps {
   onQuickSearch: (query: string, origin?: string, location?: { lat: number; lng: number }) => void;
@@ -11,6 +13,7 @@ interface HeroProps {
 }
 
 export const Hero: React.FC<HeroProps> = ({ onQuickSearch }) => {
+  const { t } = useTranslation();
   // Desktop State
   const [treatment, setTreatment] = useState('');
   const [origin, setOrigin] = useState('Jakarta');
@@ -181,8 +184,8 @@ export const Hero: React.FC<HeroProps> = ({ onQuickSearch }) => {
                     {/* Animated Icons / Graphics */}
                     <div className="relative mb-8">
                         <div className="w-24 h-24 rounded-full border-4 border-slate-100 flex items-center justify-center relative">
-                            <div className="absolute inset-0 border-4 border-indigo-500 rounded-full border-t-transparent animate-spin"></div>
-                            <Globe className="w-10 h-10 text-indigo-600" strokeWidth={1.5} />
+                            <div className="absolute inset-0 border-4 border-[#E4F28A] rounded-full border-t-transparent animate-spin"></div>
+                            <Globe className="w-10 h-10 text-[#E4F28A]" strokeWidth={2} />
                         </div>
                         {/* Orbiting Icons */}
                         <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-full animate-bounce delay-100">
@@ -193,12 +196,12 @@ export const Hero: React.FC<HeroProps> = ({ onQuickSearch }) => {
                     </div>
 
                     <h2 className="text-2xl font-bold text-slate-900 mb-2 text-center tracking-tight">
-                        {loadingPhase === 0 && "Accessing Global Database..."}
-                        {loadingPhase === 1 && "Analyzing Medical Network..."}
-                        {loadingPhase === 2 && "Matches Found"}
+                        {loadingPhase === 0 && t("Accessing Global Database...")}
+                        {loadingPhase === 1 && t("Analyzing Medical Network...")}
+                        {loadingPhase === 2 && t("Matches Found")}
                     </h2>
                     <p className="text-slate-500 text-sm mb-10 text-center animate-pulse">
-                        Scanning verified JCI-accredited facilities tailored to "{treatment}"
+                        {t('Scanning verified JCI-accredited facilities tailored to')} "{treatment}"
                     </p>
 
                     {/* Counters Grid */}
@@ -206,23 +209,23 @@ export const Hero: React.FC<HeroProps> = ({ onQuickSearch }) => {
                         <div className="flex flex-col items-center p-4 bg-slate-50 rounded-2xl border border-slate-100">
                             <BuildingIcon className="w-6 h-6 text-slate-400 mb-2" />
                             <span className="text-xl font-bold text-slate-900 tabular-nums">{stats.hospitals.toLocaleString()}</span>
-                            <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Hospitals</span>
+                            <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">{t('Hospitals')}</span>
                         </div>
                         <div className="flex flex-col items-center p-4 bg-slate-50 rounded-2xl border border-slate-100">
                             <Stethoscope className="w-6 h-6 text-slate-400 mb-2" />
                             <span className="text-xl font-bold text-slate-900 tabular-nums">{stats.doctors.toLocaleString()}+</span>
-                            <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Specialists</span>
+                            <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">{t('Specialists')}</span>
                         </div>
                         <div className="flex flex-col items-center p-4 bg-slate-50 rounded-2xl border border-slate-100">
                             <MapPin className="w-6 h-6 text-slate-400 mb-2" />
                             <span className="text-xl font-bold text-slate-900 tabular-nums">{stats.countries}</span>
-                            <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Countries</span>
+                            <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">{t('Countries')}</span>
                         </div>
                     </div>
 
                     {/* Progress Bar */}
                     <div className="w-64 h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                        <div className="h-full bg-indigo-600 rounded-full animate-[loading_2s_ease-in-out_forwards] w-full origin-left"></div>
+                        <div className="h-full bg-[#E4F28A] rounded-full animate-[loading_2s_ease-in-out_forwards] w-full origin-left"></div>
                     </div>
                 </div>
             </div>
@@ -242,27 +245,27 @@ export const Hero: React.FC<HeroProps> = ({ onQuickSearch }) => {
         <nav className="w-full bg-[#FDFBF7] border-b border-[#F0EAE0] py-2 px-4 md:px-8 flex items-center justify-center md:justify-between text-[#5D5555] text-[10px] md:text-xs overflow-hidden whitespace-nowrap relative z-10">
             <div className="flex items-center gap-8 md:w-full md:justify-center overflow-x-auto no-scrollbar mask-image-gradient">
                 <div className="flex items-center gap-2 shrink-0">
-                    <span className="font-semibold text-slate-700">Why Medifly?</span>
+                    <span className="font-semibold text-slate-700">{t('Why Medifly?')}</span>
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
                     <Package className="w-3.5 h-3.5" />
-                    <span>Global hospital network</span>
+                    <span>{t('Global hospital network')}</span>
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
                     <BadgeCheck className="w-3.5 h-3.5" />
-                    <span>Transparent pricing estimates</span>
+                    <span>{t('Transparent pricing estimates')}</span>
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
                     <ShieldCheck className="w-3.5 h-3.5" />
-                    <span>JCI accredited partners</span>
+                    <span>{t('JCI accredited partners')}</span>
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
                     <Smartphone className="w-3.5 h-3.5" />
-                    <span>100% digital booking</span>
+                    <span>{t('100% digital booking')}</span>
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
                     <MessageSquare className="w-3.5 h-3.5" />
-                    <span>24/7 AI Concierge</span>
+                    <span>{t('24/7 AI Concierge')}</span>
                 </div>
             </div>
         </nav>
@@ -271,12 +274,12 @@ export const Hero: React.FC<HeroProps> = ({ onQuickSearch }) => {
         <main className="relative z-10 max-w-[1400px] mx-auto px-4 pt-6 md:pt-10 pb-12 flex flex-col items-center w-full">
             
             {/* Hero Text */}
-            <div className="text-center max-w-4xl mx-auto mb-4">
+            <div className="text-center max-w-4xl mx-auto mb-8 md:mb-10">
                 <h1 className="text-3xl md:text-5xl lg:text-6xl font-semibold tracking-tight text-slate-900 mb-4 leading-[1.1]">
-                    Access world-class healthcare beyond borders.
+                    {t('Access world-class healthcare beyond borders.')}
                 </h1>
                 <p className="text-base md:text-xl text-[#867676] font-normal max-w-2xl mx-auto leading-relaxed">
-                    Compare hospitals, connect with specialists, and plan treatment abroad with AI.
+                    {t('Compare hospitals, connect with specialists, and plan treatment abroad with AI.')}
                 </p>
             </div>
 
@@ -293,12 +296,12 @@ export const Hero: React.FC<HeroProps> = ({ onQuickSearch }) => {
                     
                     {/* Card 1 */}
                     <div 
-                        onMouseEnter={() => setTreatment("Hospitals in Malaysia covered by my insurance?")}
+                        onMouseEnter={() => setTreatment(t("Hospitals in Malaysia covered by my insurance?"))}
                         className="min-w-[240px] md:min-w-[280px] h-[200px] md:h-[240px] bg-[#F2F2F2] rounded-2xl p-4 md:p-5 flex flex-col justify-between shrink-0 snap-center snap-always hover:shadow-xl hover:-translate-y-1 transition-all duration-300 border border-transparent hover:border-slate-200 cursor-pointer"
                     >
                         <div>
-                            <span className="text-[10px] font-medium text-slate-500 mb-2 block uppercase tracking-wide">Ask AI</span>
-                            <h3 className="text-sm md:text-base font-medium text-slate-800 leading-snug mb-3">“Hospitals in Malaysia covered by my insurance?”</h3>
+                            <span className="text-[10px] font-medium text-slate-500 mb-2 block uppercase tracking-wide">{t('Ask AI')}</span>
+                            <h3 className="text-sm md:text-base font-medium text-slate-800 leading-snug mb-3">“{t('Hospitals in Malaysia covered by my insurance?')}”</h3>
                             
                             {/* Visual Element */}
                             <div className="bg-white rounded-xl p-2.5 shadow-sm border border-slate-100/50 scale-90 origin-top-left w-full">
@@ -323,17 +326,17 @@ export const Hero: React.FC<HeroProps> = ({ onQuickSearch }) => {
                                 </div>
                             </div>
                         </div>
-                        <p className="text-[10px] md:text-xs text-[#867676] leading-relaxed">Compare accredited hospitals that match your policy instantly.</p>
+                        <p className="text-[10px] md:text-xs text-[#867676] leading-relaxed">{t('Compare accredited hospitals that match your policy instantly.')}</p>
                     </div>
 
                     {/* Card 2 */}
                     <div 
-                        onMouseEnter={() => setTreatment("What surgery options do I have for an ACL tear?")}
+                        onMouseEnter={() => setTreatment(t("What surgery options do I have for an ACL tear?"))}
                         className="min-w-[240px] md:min-w-[280px] h-[200px] md:h-[240px] bg-[#F2F2F2] rounded-2xl p-4 md:p-5 flex flex-col justify-between shrink-0 snap-center snap-always hover:shadow-xl hover:-translate-y-1 transition-all duration-300 border border-transparent hover:border-slate-200 cursor-pointer"
                     >
                         <div>
-                            <span className="text-[10px] font-medium text-slate-500 mb-2 block uppercase tracking-wide">Ask AI</span>
-                            <h3 className="text-sm md:text-base font-medium text-slate-800 leading-snug mb-3">“What surgery options do I have for an ACL tear?”</h3>
+                            <span className="text-[10px] font-medium text-slate-500 mb-2 block uppercase tracking-wide">{t('Ask AI')}</span>
+                            <h3 className="text-sm md:text-base font-medium text-slate-800 leading-snug mb-3">“{t('What surgery options do I have for an ACL tear?')}”</h3>
                             
                             {/* Visual Element */}
                             <div className="flex items-center justify-center gap-3 py-2 scale-90">
@@ -350,17 +353,17 @@ export const Hero: React.FC<HeroProps> = ({ onQuickSearch }) => {
                                 </div>
                             </div>
                         </div>
-                        <p className="text-[10px] md:text-xs text-[#867676] leading-relaxed">See surgical types, cost ranges, and recovery timelines.</p>
+                        <p className="text-[10px] md:text-xs text-[#867676] leading-relaxed">{t('See surgical types, cost ranges, and recovery timelines.')}</p>
                     </div>
 
                     {/* Card 3 */}
                     <div 
-                        onMouseEnter={() => setTreatment("Show me the top 10 wellness centers in Bali.")}
+                        onMouseEnter={() => setTreatment(t("Show me the top 10 wellness centers in Bali."))}
                         className="min-w-[240px] md:min-w-[280px] h-[200px] md:h-[240px] bg-[#F2F2F2] rounded-2xl p-4 md:p-5 flex flex-col justify-between shrink-0 snap-center snap-always hover:shadow-xl hover:-translate-y-1 transition-all duration-300 border border-transparent hover:border-slate-200 cursor-pointer"
                     >
                         <div>
-                            <span className="text-[10px] font-medium text-slate-500 mb-2 block uppercase tracking-wide">Ask AI</span>
-                            <h3 className="text-sm md:text-base font-medium text-slate-800 leading-snug mb-3">“Show me the top 10 wellness centers in Bali.”</h3>
+                            <span className="text-[10px] font-medium text-slate-500 mb-2 block uppercase tracking-wide">{t('Ask AI')}</span>
+                            <h3 className="text-sm md:text-base font-medium text-slate-800 leading-snug mb-3">“{t('Show me the top 10 wellness centers in Bali.')}”</h3>
                             <div className="bg-white/50 h-16 rounded-xl w-full border border-slate-200/50 flex items-center justify-center scale-90">
                                 <div className="flex gap-1 items-end h-8">
                                     <div className="w-2 bg-slate-300 h-4 rounded-sm"></div>
@@ -371,17 +374,17 @@ export const Hero: React.FC<HeroProps> = ({ onQuickSearch }) => {
                                 </div>
                             </div>
                         </div>
-                        <p className="text-[10px] md:text-xs text-[#867676] leading-relaxed">See wellness packages, ratings and reviews.</p>
+                        <p className="text-[10px] md:text-xs text-[#867676] leading-relaxed">{t('See wellness packages, ratings and reviews.')}</p>
                     </div>
 
                     {/* Card 4 */}
                     <div 
-                        onMouseEnter={() => setTreatment("Top 5 Medical checkup packages in Singapore?")}
+                        onMouseEnter={() => setTreatment(t("Top 5 Medical checkup packages in Singapore?"))}
                         className="min-w-[240px] md:min-w-[280px] h-[200px] md:h-[240px] bg-[#F2F2F2] rounded-2xl p-4 md:p-5 flex flex-col justify-between shrink-0 snap-center snap-always hover:shadow-xl hover:-translate-y-1 transition-all duration-300 border border-transparent hover:border-slate-200 cursor-pointer"
                     >
                         <div>
-                            <span className="text-[10px] font-medium text-slate-500 mb-2 block uppercase tracking-wide">Ask AI</span>
-                            <h3 className="text-sm md:text-base font-medium text-slate-800 leading-snug mb-3">“Top 5 Medical checkup packages in Singapore?”</h3>
+                            <span className="text-[10px] font-medium text-slate-500 mb-2 block uppercase tracking-wide">{t('Ask AI')}</span>
+                            <h3 className="text-sm md:text-base font-medium text-slate-800 leading-snug mb-3">“{t('Top 5 Medical checkup packages in Singapore?')}”</h3>
                             {/* Abstract List Visual */}
                              <div className="space-y-1.5 mt-2 bg-white/50 p-2.5 rounded-xl border border-slate-200/30 scale-90">
                                 <div className="flex items-center gap-2">
@@ -398,17 +401,17 @@ export const Hero: React.FC<HeroProps> = ({ onQuickSearch }) => {
                                 </div>
                             </div>
                         </div>
-                        <p className="text-[10px] md:text-xs text-[#867676] leading-relaxed">Compare screening packages and book directly with hospitals.</p>
+                        <p className="text-[10px] md:text-xs text-[#867676] leading-relaxed">{t('Compare screening packages and book directly with hospitals.')}</p>
                     </div>
 
                     {/* Card 5 */}
                     <div 
-                        onMouseEnter={() => setTreatment("Can I talk to a doctor before planning my trip?")}
+                        onMouseEnter={() => setTreatment(t("Can I talk to a doctor before planning my trip?"))}
                         className="min-w-[240px] md:min-w-[280px] h-[200px] md:h-[240px] bg-[#F2F2F2] rounded-2xl p-4 md:p-5 flex flex-col justify-between shrink-0 snap-center snap-always hover:shadow-xl hover:-translate-y-1 transition-all duration-300 border border-transparent hover:border-slate-200 cursor-pointer"
                     >
                         <div>
-                            <span className="text-[10px] font-medium text-slate-500 mb-2 block uppercase tracking-wide">Ask AI</span>
-                            <h3 className="text-sm md:text-base font-medium text-slate-800 leading-snug mb-3">“Can I talk to a doctor before planning my trip?”</h3>
+                            <span className="text-[10px] font-medium text-slate-500 mb-2 block uppercase tracking-wide">{t('Ask AI')}</span>
+                            <h3 className="text-sm md:text-base font-medium text-slate-800 leading-snug mb-3">“{t('Can I talk to a doctor before planning my trip?')}”</h3>
                             <div className="flex justify-center mt-2">
                                 <div className="relative">
                                     <div className="w-10 h-10 rounded-full bg-slate-300 border-2 border-white z-0"></div>
@@ -418,21 +421,21 @@ export const Hero: React.FC<HeroProps> = ({ onQuickSearch }) => {
                                 </div>
                             </div>
                         </div>
-                        <p className="text-[10px] md:text-xs text-[#867676] leading-relaxed">Connect directly with hospital doctors.</p>
+                        <p className="text-[10px] md:text-xs text-[#867676] leading-relaxed">{t('Connect directly with hospital doctors.')}</p>
                     </div>
 
                      {/* Card 6 */}
                      <div 
-                        onMouseEnter={() => setTreatment("Compare IVF prices in Thailand VS Singapore")}
+                        onMouseEnter={() => setTreatment(t("Compare IVF prices in Thailand VS Singapore"))}
                         className="min-w-[240px] md:min-w-[280px] h-[200px] md:h-[240px] bg-[#F2F2F2] rounded-2xl p-4 md:p-5 flex flex-col justify-between shrink-0 snap-center snap-always hover:shadow-xl hover:-translate-y-1 transition-all duration-300 border border-transparent hover:border-slate-200 cursor-pointer"
                     >
                         <div>
-                            <span className="text-[10px] font-medium text-slate-500 mb-2 block uppercase tracking-wide">Ask AI</span>
-                            <h3 className="text-sm md:text-base font-medium text-slate-800 leading-snug mb-3">“Compare IVF prices in Thailand VS Singapore”</h3>
+                            <span className="text-[10px] font-medium text-slate-500 mb-2 block uppercase tracking-wide">{t('Ask AI')}</span>
+                            <h3 className="text-sm md:text-base font-medium text-slate-800 leading-snug mb-3">“{t('Compare IVF prices in Thailand VS Singapore')}”</h3>
                             <div className="bg-teal-900 rounded-lg p-2.5 mt-2 w-full shadow-lg scale-95">
                                 <div className="flex justify-between text-[9px] text-teal-200 mb-2 border-b border-teal-800 pb-1 font-medium">
-                                    <span>Procedure</span>
-                                    <span>Avg Cost</span>
+                                    <span>{t('Procedure')}</span>
+                                    <span>{t('Avg Cost')}</span>
                                 </div>
                                 <div className="space-y-1.5">
                                     <div className="flex justify-between text-[7px] text-white">
@@ -446,7 +449,7 @@ export const Hero: React.FC<HeroProps> = ({ onQuickSearch }) => {
                                 </div>
                             </div>
                         </div>
-                        <p className="text-[10px] md:text-xs text-[#867676] leading-relaxed">Compare prices directly across borders.</p>
+                        <p className="text-[10px] md:text-xs text-[#867676] leading-relaxed">{t('Compare prices directly across borders.')}</p>
                     </div>
                 </div>
             </div>
@@ -461,13 +464,13 @@ export const Hero: React.FC<HeroProps> = ({ onQuickSearch }) => {
                         <div className="w-full">
                             <input 
                                 type="text" 
-                                placeholder="Describe your health issue..." 
+                                placeholder={t('Describe your health issue...')}
                                 className="w-full text-base md:text-lg text-slate-800 placeholder-slate-300 outline-none bg-transparent font-medium mb-0.5"
                                 value={treatment}
                                 onChange={(e) => setTreatment(e.target.value)}
                                 onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
                             />
-                            <p className="text-slate-400 text-xs md:text-sm font-normal italic">E.g. Cheapest Medical Checkups in Malaysia</p>
+                            <p className="text-slate-400 text-xs md:text-sm font-normal italic">{t('E.g. Cheapest Medical Checkups in Malaysia')}</p>
                         </div>
                     </div>
 
@@ -481,28 +484,28 @@ export const Hero: React.FC<HeroProps> = ({ onQuickSearch }) => {
                                 className="flex items-center gap-2 bg-[#F9FAFB] hover:bg-slate-100 border border-slate-200 rounded-xl px-3 py-1.5 transition-colors group"
                             >
                                 <MapPin className="w-3.5 h-3.5 text-slate-400 group-hover:text-slate-600" />
-                                <span className="text-slate-500 text-xs font-medium">From:</span>
+                                <span className="text-slate-500 text-xs font-medium">{t('From:')}</span>
                                 {isLoadingLocation ? (
-                                    <span className="text-slate-400 text-xs italic">Locating...</span>
+                                    <span className="text-slate-400 text-xs italic">{t('Locating...')}</span>
                                 ) : (
                                     <input 
                                         value={origin} 
                                         onChange={(e) => setOrigin(e.target.value)}
                                         onClick={(e) => e.stopPropagation()}
                                         className="bg-transparent border-none p-0 w-20 text-xs font-semibold text-slate-800 focus:ring-0"
-                                        placeholder="City"
+                                        placeholder={t('City')}
                                     />
                                 )}
                             </button>
                             
                             <button className="flex items-center gap-2 bg-[#F9FAFB] hover:bg-slate-100 border border-slate-200 rounded-xl px-3 py-1.5 transition-colors group">
                                 <Globe className="w-3.5 h-3.5 text-slate-400 group-hover:text-slate-600" />
-                                <span className="text-slate-500 text-xs font-medium">To:</span>
+                                <span className="text-slate-500 text-xs font-medium">{t('To:')}</span>
                                 <input 
                                     value={destination} 
                                     onChange={(e) => setDestination(e.target.value)}
                                     className="bg-transparent border-none p-0 w-20 text-xs font-semibold text-slate-800 focus:ring-0"
-                                    placeholder="Anywhere"
+                                    placeholder={t('Anywhere')}
                                 />
                             </button>
 
@@ -517,7 +520,7 @@ export const Hero: React.FC<HeroProps> = ({ onQuickSearch }) => {
                             disabled={isSearching}
                             className="bg-[#D9F850] hover:bg-[#cdf034] text-slate-900 text-sm font-bold px-5 py-2 rounded-xl shadow-[0_2px_10px_rgba(217,248,80,0.4)] transition-all flex items-center justify-center gap-2 active:scale-95 active:shadow-none disabled:opacity-70 disabled:cursor-not-allowed"
                         >
-                            {isSearching ? 'Processing...' : 'Generate'}
+                            {isSearching ? t('Processing...') : t('Generate')}
                             {!isSearching && <Sparkles className="w-3.5 h-3.5" />}
                         </button>
                     </div>

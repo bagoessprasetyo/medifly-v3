@@ -1,23 +1,14 @@
 
 import React, { useState, useRef, useEffect } from 'react';
-import { ChevronDown, Check, Globe, MessageSquareText, Info } from "lucide-react";
+import { ChevronDown, Check, MessageSquareText, Info } from "lucide-react";
+import { useTranslation } from '../../contexts/TranslationContext';
 
-interface LanguageSelectorProps {
-  selectedLanguage: string;
-  onLanguageChange: (language: string) => void;
-}
-
-interface Country {
-  label: string;
-  value: string;
-  flag: string;
-}
-
-export const LanguageSelector: React.FC<LanguageSelectorProps> = ({ selectedLanguage, onLanguageChange }) => {
+export const LanguageSelector: React.FC = () => {
+  const { language: selectedLanguage, setLanguage } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  const countries: Country[] = [
+  const countries = [
     { label: "Singapore", value: "English", flag: "🇸🇬" },
     { label: "Thailand", value: "Thai", flag: "🇹🇭" },
     { label: "Indonesia", value: "Bahasa Indonesia", flag: "🇮🇩" },
@@ -51,7 +42,6 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({ selectedLang
         title="Change conversation language"
       >
         <span className="text-lg leading-none">{currentCountry.flag}</span>
-        {/* Changed from currentCountry.label to currentCountry.value to show Language Name */}
         <span className="text-sm font-medium text-slate-700 hidden sm:inline group-hover:text-slate-900 transition-colors">
             {currentCountry.value}
         </span>
@@ -60,7 +50,6 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({ selectedLang
 
       {isOpen && (
         <div className="absolute top-full right-0 mt-2 w-64 bg-white rounded-xl shadow-[0_4px_20px_-4px_rgba(0,0,0,0.1)] border border-slate-100 overflow-hidden py-1 z-[100] animate-in fade-in zoom-in-95 duration-200 origin-top-right">
-            {/* Explicit Header */}
             <div className="px-4 py-2.5 border-b border-slate-50 mb-1 bg-slate-50/50">
                 <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
                     <MessageSquareText className="w-3 h-3" /> Conversation Language
@@ -72,7 +61,7 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({ selectedLang
                 <button
                     key={country.value}
                     onClick={() => {
-                        onLanguageChange(country.value);
+                        setLanguage(country.value);
                         setIsOpen(false);
                     }}
                     className={`w-full relative flex items-center px-4 py-2.5 text-sm transition-colors hover:bg-slate-50 text-left gap-3 group
@@ -95,11 +84,10 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({ selectedLang
                 ))}
             </div>
 
-            {/* Helper Footer */}
             <div className="px-4 py-2.5 bg-slate-50 border-t border-slate-100 mt-1 flex items-start gap-2">
                 <Info className="w-3 h-3 text-slate-400 mt-0.5 shrink-0" />
                 <p className="text-[10px] text-slate-500 leading-tight">
-                    Aria will respond to you in the selected language.
+                    Medifly will automatically translate content to {selectedLanguage}.
                 </p>
             </div>
         </div>

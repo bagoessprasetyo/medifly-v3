@@ -258,3 +258,45 @@ Supported Artifact Types:
     yield { text: "I apologize, but I'm having trouble connecting to my medical knowledge base right now. Please try again in a moment." };
   }
 };
+
+export const translateBatch = async (
+  texts: string[],
+  targetLanguage: string
+): Promise<Record<string, string>> => {
+  // If target is English or empty list, return identity map
+  if (texts.length === 0 || targetLanguage === 'English') {
+      return texts.reduce((acc, text) => ({ ...acc, [text]: text }), {});
+  }
+
+  try {
+    const model = 'gemini-2.5-flash';
+    const prompt = `You are a professional localization AI for a medical application called "Medifly".
+    Translate the following UI text strings into ${targetLanguage}. 
+    
+    Rules:
+    1. Return strictly a JSON object where keys are the original English text and values are the translations.
+    2. Maintain tone: Professional, Trustworthy, Modern, Clinical yet Empathetic.
+    3. Do not translate proper nouns like "Medifly", "Aria", "JCI" unless standard in that language.
+    4. Keep variable placeholders intact if they appear (e.g. {0}).
+    
+    Strings to translate:
+    ${JSON.stringify(texts)}
+    `;
+
+    const response = await ai.models.generateContent({
+      model: model,
+      contents: prompt,
+      config: {
+        responseMimeType: "application/json",
+      }
+    });
+
+    const jsonStr = response.text;
+    if (!jsonStr) return {};
+    return JSON.parse(jsonStr);
+  } catch (error) {
+    console.error("Translation error:", error);
+    // Fallback to original texts on error
+    return texts.reduce((acc, text) => ({ ...acc, [text]: text }), {});
+  }
+};
