@@ -11,9 +11,10 @@ import { DoctorsPage } from './components/DoctorsPage';
 import { DoctorDetailsPage } from './components/DoctorDetailsPage';
 import { PackageDetailsPage } from './components/PackageDetailsPage';
 import { SpecializationDetailsPage } from './components/SpecializationDetailsPage'; 
-// import { HospitalInsightsPage } from './components/HospitalInsightsPage'; 
+import { HospitalInsightsPage } from './components/HospitalInsightsPage'; 
 import { ArticleDetailsPage } from './components/ArticleDetailsPage';
-import { ResearchDetailsPage } from './components/ResearchDetailsPage'; // Import
+import { ResearchDetailsPage } from './components/ResearchDetailsPage'; 
+import { TreatmentDetailsPage } from './components/TreatmentDetailsPage'; // Import
 import { Layout } from './components/Layout';
 import { FilterState, Hospital, ChatSession, Message, Doctor, MedicalPackage } from './types';
 import { ArrowLeft, MessageSquare } from 'lucide-react';
@@ -25,13 +26,11 @@ import { MedicalTeam } from './components/MedicalTeam';
 import { ExploreHospitals } from './components/ExploreHospitals';
 import { Mission } from './components/Mission';
 import { TranslationProvider, useTranslation } from './contexts/TranslationContext';
-// import { AITranslationOverlay } from './components/ui/AITranslationOverlay';
-import { HospitalInsightsPage } from './components/HospitalInsights';
-import { AITranslationOverlay } from './components/ui/AiTranslationOverlay';
+import { AITranslationOverlay } from './components/ui/AITranslationOverlay';
 
 // Inner App to access translation context if needed
 const MainApp: React.FC = () => {
-  const [page, setPage] = useState<'home' | 'marketplace' | 'hospital-page' | 'doctors' | 'doctor-details' | 'gallery' | 'facilities' | 'facility-details' | 'packages' | 'package-details' | 'specialization-details' | 'hospital-insights' | 'article-details' | 'research-details'>('home');
+  const [page, setPage] = useState<'home' | 'marketplace' | 'hospital-page' | 'doctors' | 'doctor-details' | 'gallery' | 'facilities' | 'facility-details' | 'packages' | 'package-details' | 'specialization-details' | 'hospital-insights' | 'article-details' | 'research-details' | 'treatment-details'>('home');
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [isDeepFocusMode, setIsDeepFocusMode] = useState(false); 
   const { isTranslating, language, setLanguage } = useTranslation();
@@ -52,7 +51,8 @@ const MainApp: React.FC = () => {
   const [viewedPackage, setViewedPackage] = useState<MedicalPackage | null>(null);
   const [viewedSpecializationName, setViewedSpecializationName] = useState<string | null>(null);
   const [viewedArticleTitle, setViewedArticleTitle] = useState<string | null>(null);
-  const [viewedResearchTitle, setViewedResearchTitle] = useState<string | null>(null); // New state
+  const [viewedResearchTitle, setViewedResearchTitle] = useState<string | null>(null);
+  const [viewedTreatmentName, setViewedTreatmentName] = useState<string | null>(null); // New state
 
   // Load Sessions from LocalStorage on Mount
   useEffect(() => {
@@ -148,7 +148,7 @@ const MainApp: React.FC = () => {
           // parts[0] = "", parts[1] = "hospitals", parts[2] = slug
           const hospitalSlug = parts[2];
           const subPageOrSpec = parts[3]; // "tour", "facilities", "insights", "articles", "research", or specialization slug
-          const subItem = parts[4]; // Facility/Article/Research Slug
+          const subItem = parts[4]; // Facility/Article/Research/Treatment Slug
           
           const hospital = HOSPITALS.find(h => createSlug(h.name) === hospitalSlug);
           if (hospital) {
@@ -168,7 +168,6 @@ const MainApp: React.FC = () => {
                   setPage('hospital-insights');
               } else if (subPageOrSpec === 'articles') {
                   if (subItem) {
-                      // Attempt to restore title from slug roughly, or rely on state if internal nav
                       const title = subItem.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
                       setViewedArticleTitle(title);
                       setPage('article-details');
@@ -180,10 +179,18 @@ const MainApp: React.FC = () => {
                       setPage('research-details');
                   }
               } else if (subPageOrSpec) {
-                  // Assume it is a specialization slug if not reserved word
+                  // Specialization or Specialization -> Treatment
                   const specName = subPageOrSpec.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
                   setViewedSpecializationName(specName);
-                  setPage('specialization-details');
+                  
+                  if (subItem) {
+                      // It's a treatment page: /hospitals/:slug/:spec/:treatment
+                      const treatmentName = subItem.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+                      setViewedTreatmentName(treatmentName);
+                      setPage('treatment-details');
+                  } else {
+                      setPage('specialization-details');
+                  }
               } else {
                   setPage('hospital-page');
               }
@@ -328,6 +335,24 @@ const MainApp: React.FC = () => {
       if (viewedHospital) {
           setPage('hospital-page');
           window.history.pushState(null, '', `/hospitals/${createSlug(viewedHospital.name)}`);
+      }
+  }
+
+  const handleNavigateToTreatment = (treatmentName: string) => {
+      if (viewedHospital && viewedSpecializationName) {
+          setViewedTreatmentName(treatmentName);
+          setPage('treatment-details');
+          const specSlug = createSlug(viewedSpecializationName);
+          const treatmentSlug = createSlug(treatmentName);
+          window.history.pushState(null, '', `/hospitals/${createSlug(viewedHospital.name)}/${specSlug}/${treatmentSlug}`);
+      }
+  }
+
+  const handleBackFromTreatment = () => {
+      if (viewedHospital && viewedSpecializationName) {
+          setPage('specialization-details');
+          const specSlug = createSlug(viewedSpecializationName);
+          window.history.pushState(null, '', `/hospitals/${createSlug(viewedHospital.name)}/${specSlug}`);
       }
   }
 
@@ -528,7 +553,7 @@ const MainApp: React.FC = () => {
             ${isDeepFocusMode ? 'hidden w-0 opacity-0' : ''} 
         `}
       >
-         <div className={`md:hidden absolute top-4 left-4 z-20 flex gap-2 ${['hospital-page', 'doctors', 'marketplace', 'gallery', 'facilities', 'facility-details', 'doctor-details', 'packages', 'package-details', 'specialization-details', 'hospital-insights', 'article-details', 'research-details'].includes(page) ? 'hidden' : ''}`}>
+         <div className={`md:hidden absolute top-4 left-4 z-20 flex gap-2 ${['hospital-page', 'doctors', 'marketplace', 'gallery', 'facilities', 'facility-details', 'doctor-details', 'packages', 'package-details', 'specialization-details', 'hospital-insights', 'article-details', 'research-details', 'treatment-details'].includes(page) ? 'hidden' : ''}`}>
              <button onClick={() => {
                  setPage('home');
              }} className="p-2 bg-white rounded-full shadow-md border border-slate-100">
@@ -613,6 +638,18 @@ const MainApp: React.FC = () => {
                     onNavigateToDoctor={handleNavigateToDoctor}
                     onViewAllInsights={handleNavigateToInsights}
                     onNavigateToArticle={handleNavigateToArticle}
+                    onNavigateToTreatment={handleNavigateToTreatment} // Pass prop
+                />
+            )}
+
+            {page === 'treatment-details' && viewedHospital && viewedSpecializationName && viewedTreatmentName && (
+                <TreatmentDetailsPage
+                    hospital={viewedHospital}
+                    specializationName={viewedSpecializationName}
+                    treatmentName={viewedTreatmentName}
+                    onBack={handleBackFromTreatment}
+                    onNavigateToHospital={() => handleNavigateToHospital(viewedHospital)}
+                    onNavigateToSpecialization={handleBackFromTreatment}
                 />
             )}
 

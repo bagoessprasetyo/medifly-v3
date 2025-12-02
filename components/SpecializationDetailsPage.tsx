@@ -14,7 +14,8 @@ interface SpecializationDetailsPageProps {
   onNavigateToHospital: () => void;
   onNavigateToDoctor: (doctor: Doctor) => void;
   onViewAllInsights?: () => void;
-  onNavigateToArticle?: (title: string) => void; // Added prop
+  onNavigateToArticle?: (title: string) => void;
+  onNavigateToTreatment?: (title: string) => void; // Added prop
 }
 
 export const SpecializationDetailsPage: React.FC<SpecializationDetailsPageProps> = ({ 
@@ -24,7 +25,8 @@ export const SpecializationDetailsPage: React.FC<SpecializationDetailsPageProps>
   onNavigateToHospital,
   onNavigateToDoctor,
   onViewAllInsights,
-  onNavigateToArticle
+  onNavigateToArticle,
+  onNavigateToTreatment
 }) => {
   
   // Filter doctors for this specialization and hospital (or generic fallback for demo)
@@ -158,10 +160,14 @@ export const SpecializationDetailsPage: React.FC<SpecializationDetailsPageProps>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {[
-                        "Robotic Surgery", "Laser Therapy", "Advanced Imaging", 
-                        "Precision Medicine", "Telemedicine Consults", "Clinical Trials"
+                        "Chemotherapy", "Radiation Therapy", "Immunotherapy", 
+                        "Palliative Care", "Genetic Counseling", "Clinical Trials"
                     ].map((treatment, i) => (
-                        <div key={i} className="bg-white p-6 rounded-lg shadow-sm border border-gray-100 flex items-center justify-between group cursor-pointer hover:border-gray-300 transition-all">
+                        <div 
+                            key={i} 
+                            onClick={() => onNavigateToTreatment?.(treatment)}
+                            className="bg-white p-6 rounded-lg shadow-sm border border-gray-100 flex items-center justify-between group cursor-pointer hover:border-gray-300 transition-all"
+                        >
                             <h3 className="font-medium text-sm">{treatment}</h3>
                             {i === 0 && <ArrowRight className="w-4 h-4 text-gray-400 group-hover:text-black transition-colors" />}
                         </div>
