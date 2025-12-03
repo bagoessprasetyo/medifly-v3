@@ -1,15 +1,27 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { ChevronDown, Check, MessageSquareText, Info } from "lucide-react";
 import { useTranslation } from '../../contexts/TranslationContext';
 
-export const LanguageSelector: React.FC = () => {
-  const { language: selectedLanguage, setLanguage } = useTranslation();
+interface LanguageSelectorProps {
+  selectedLanguage?: string;
+  onLanguageChange?: (lang: string) => void;
+}
+
+export const LanguageSelector: React.FC<LanguageSelectorProps> = ({ 
+  selectedLanguage: propLanguage, 
+  onLanguageChange: propOnChange 
+}) => {
+  const { language: contextLanguage, setLanguage: contextSetLanguage } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
+  // Priority to props, fallback to context
+  const selectedLanguage = propLanguage || contextLanguage;
+  const setLanguage = propOnChange || contextSetLanguage;
+
   const countries = [
-    { label: "Singapore", value: "English", flag: "🇸🇬" },
+    { label: "United States", value: "English (US)", flag: "🇺🇸" },
+    // { label: "Singapore", value: "English", flag: "🇸🇬" },
     { label: "Thailand", value: "Thai", flag: "🇹🇭" },
     { label: "Indonesia", value: "Bahasa Indonesia", flag: "🇮🇩" },
     { label: "Malaysia", value: "Bahasa Melayu", flag: "🇲🇾" },

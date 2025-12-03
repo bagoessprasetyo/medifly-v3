@@ -1,8 +1,6 @@
-
-// ... (imports remain the same)
 import React, { useState, useMemo, useEffect, useRef } from 'react';
-import { X, Search, Map, List, BriefcaseMedical, MapPin, Star, MessageSquare, Check, ChevronDown, Globe, ArrowUpDown, Compass, Plane, GitCompare, Trash2 } from 'lucide-react';
-import { FilterState, Hospital, TravelEstimate } from '../types';
+import { X, Search, Map, List, BriefcaseMedical, MapPin, Star, MessageSquare, Check, ChevronDown, Globe, ArrowUpDown, Compass, Plane, GitCompare, Trash2, Info } from 'lucide-react';
+import { FilterState, Hospital, TravelEstimate, CountryOption } from '../types';
 import { HOSPITALS, getCoordinatesForCity, calculateDistance } from '../constants';
 import { HospitalCard } from './HospitalCard';
 import { MapboxMap } from './MapboxMap';
@@ -10,8 +8,9 @@ import { Sheet } from './ui/Sheet';
 import { HospitalDetails } from './HospitalDetails';
 import { ComparisonView } from './ComparisonView';
 import { getTravelEstimates } from '../services/mapService';
+import { LocationFilter } from './LocationFilter';
 
-// ... (constants remain the same)
+// ... (SPECIALIZATIONS, SEMANTIC_SPECIALTY_MAP, COUNTRIES constants remain the same)
 const SPECIALIZATIONS = [
   { name: 'Cardiology', description: 'Heart checkup, angioplasty, heart valve surgery, etc.' },
   { name: 'Orthopedics', description: 'Knee replacement, spine surgery, sports injury care, etc.' },
@@ -41,14 +40,31 @@ const SEMANTIC_SPECIALTY_MAP: Record<string, string[]> = {
   'Ophthalmology': ['eye', 'vision', 'cataract', 'lasik', 'glaucoma'],
 };
 
-const COUNTRIES = [
-  { name: 'Thailand', icon: '🏥', description: 'World-class hospitals, affordable prices, recovery-friendly destination' },
-  { name: 'Malaysia', icon: '🏥', description: 'Affordable, high-quality care with strong specialties in cardiology & oncology' },
-  { name: 'Singapore', icon: '🏥', description: 'Premium healthcare hub, cutting-edge technology, English-speaking' },
-  { name: 'South Korea', icon: '🏥', description: 'Advanced cosmetic surgery, dermatology, and cancer treatment' },
-  { name: 'Indonesia', icon: '🏥', description: 'Growing medical tourism, competitive prices, tropical recovery' },
-  { name: 'Turkey', icon: '🏥', description: 'Leading in hair transplants, dental care, and cosmetic procedures' },
-  { name: 'India', icon: '🏥', description: 'Highly skilled doctors, affordable complex surgeries, JCI-accredited' },
+const COUNTRIES: CountryOption[] = [
+  { id: '1', name: 'Thailand', description: 'World-class hospitals, affordable prices, recovery-friendly destination' },
+  { id: '2', name: 'Malaysia', description: 'Affordable, high-quality care with strong specialties in cardiology & oncology' },
+  { id: '3', name: 'Singapore', description: 'Premium healthcare hub, cutting-edge technology, English-speaking' },
+  { id: '4', name: 'South Korea', description: 'Advanced cosmetic surgery, dermatology, and cancer treatment' },
+  { id: '5', name: 'Indonesia', description: 'Growing medical tourism, competitive prices, tropical recovery' },
+  { id: '6', name: 'Turkey', description: 'Leading in hair transplants, dental care, and cosmetic procedures' },
+  { id: '7', name: 'India', description: 'Highly skilled doctors, affordable complex surgeries, JCI-accredited' },
+];
+
+const EXPERIENCE_HIGHLIGHTS = [
+    'Ideal Location',
+    'Multi-Language Support',
+    'Holistic Care',
+    'Specialized Care',
+    'VIP Patient Experience',
+    'Advanced Technology'
+];
+
+const HOSPITAL_TYPES = [
+    'General Hospital',
+    'Specialty Hospital',
+    'Surgical Hospital',
+    'Wellness & Preventive Care',
+    'Rehabilitation Hospital'
 ];
 
 interface MarketplaceProps {
@@ -68,7 +84,6 @@ export const Marketplace: React.FC<MarketplaceProps> = ({
   isChatOpen = false,
   onOpenChat
 }) => {
-  // ... (state and effects remain the same)
   const [viewMode, setViewMode] = useState<'grid' | 'map'>('grid');
   const [sheetHospital, setSheetHospital] = useState<Hospital | null>(null);
   
@@ -78,27 +93,25 @@ export const Marketplace: React.FC<MarketplaceProps> = ({
 
   // Search Bar Local State
   const [specialtyInput, setSpecialtyInput] = useState(filters.specialty || '');
-  const [locationInput, setLocationInput] = useState(filters.userOrigin || filters.country || '');
+  
+  // Replace old location state with specific props for LocationFilter
+  const [selectedCountries, setSelectedCountries] = useState<string[]>(filters.country ? [filters.country] : []);
+  const [isNearbyActive, setIsNearbyActive] = useState(!!filters.userLocation);
+  const [flightOrigin, setFlightOrigin] = useState<string>(filters.userOrigin || 'Jakarta');
+  const [isLoadingNearby, setIsLoadingNearby] = useState(false);
 
   // Dropdown States
   const [isSpecialtyOpen, setIsSpecialtyOpen] = useState(false);
-  const [isLocationOpen, setIsLocationOpen] = useState(false);
   const [selectedSpecialties, setSelectedSpecialties] = useState<string[]>(filters.specialty ? [filters.specialty] : []);
-  const [selectedCountries, setSelectedCountries] = useState<string[]>(filters.country ? [filters.country] : []);
-
-  // Flight Origin State
-  const [flightOrigin, setFlightOrigin] = useState<string>(filters.userOrigin || 'Jakarta');
-  const [isEditingOrigin, setIsEditingOrigin] = useState(false);
-  const [originInput, setOriginInput] = useState(flightOrigin);
 
   // Refs for click outside
   const specialtyRef = useRef<HTMLDivElement>(null);
-  const locationRef = useRef<HTMLDivElement>(null);
 
   // Advanced Filters State
   const [activePrice, setActivePrice] = useState<string[]>(filters.priceRange || []);
-  const [activeAccreditation, setActiveAccreditation] = useState<string[]>(filters.accreditation || []);
   const [activeLanguages, setActiveLanguages] = useState<string[]>(filters.languages || []);
+  const [activeHighlights, setActiveHighlights] = useState<string[]>([]);
+  const [activeHospitalType, setActiveHospitalType] = useState<string[]>([]);
   const [minRating, setMinRating] = useState<number | null>(filters.minRating || null);
   const [sortBy, setSortBy] = useState<'nearest' | 'rating' | 'price_low' | 'price_high' | null>(filters.sortBy || null);
 
@@ -114,9 +127,7 @@ export const Marketplace: React.FC<MarketplaceProps> = ({
   // Sync props to state
   useEffect(() => {
     setSpecialtyInput(filters.specialty || '');
-    setLocationInput(filters.userOrigin || filters.country || '');
     setActivePrice(filters.priceRange || []);
-    setActiveAccreditation(filters.accreditation || []);
     setActiveLanguages(filters.languages || []);
     setMinRating(filters.minRating || null);
     setSortBy(filters.sortBy || null);
@@ -130,9 +141,6 @@ export const Marketplace: React.FC<MarketplaceProps> = ({
       if (specialtyRef.current && !specialtyRef.current.contains(event.target as Node)) {
         setIsSpecialtyOpen(false);
       }
-      if (locationRef.current && !locationRef.current.contains(event.target as Node)) {
-        setIsLocationOpen(false);
-      }
     };
 
     document.addEventListener('mousedown', handleClickOutside);
@@ -144,16 +152,6 @@ export const Marketplace: React.FC<MarketplaceProps> = ({
     setSelectedSpecialties(prev => {
       if (prev.includes(name)) {
         return prev.filter(s => s !== name);
-      }
-      return [...prev, name];
-    });
-  };
-
-  // Toggle country selection
-  const toggleCountry = (name: string) => {
-    setSelectedCountries(prev => {
-      if (prev.includes(name)) {
-        return prev.filter(c => c !== name);
       }
       return [...prev, name];
     });
@@ -231,20 +229,55 @@ export const Marketplace: React.FC<MarketplaceProps> = ({
           }
       }
 
-      // Location filtering - use selected countries or fall back to input
-      const matchesLocation = selectedCountries.length === 0 && !locationInput
-        ? true
-        : selectedCountries.length > 0
-          ? selectedCountries.some(country => hospital.country.toLowerCase() === country.toLowerCase())
-          : hospital.country.toLowerCase().includes(locationInput.toLowerCase()) ||
-            hospital.location.toLowerCase().includes(locationInput.toLowerCase());
+      // Location filtering
+      // If "Nearby" is active (userLocation is set and sortBy is nearest), we respect that by default distance sorting logic (below).
+      // If selectedCountries is set, we strictly filter by country.
+      let matchesLocation = true;
+      if (selectedCountries.length > 0) {
+          matchesLocation = selectedCountries.some(country => hospital.country.toLowerCase() === country.toLowerCase());
+      } else if (!isNearbyActive && !filters.userLocation && filters.country) {
+          matchesLocation = hospital.country.toLowerCase() === filters.country.toLowerCase();
+      }
 
       const matchesPrice = activePrice.length === 0 || activePrice.includes(hospital.priceRange);
-      const matchesAccreditation = activeAccreditation.length === 0 || activeAccreditation.some(acc => hospital.accreditation.includes(acc));
       const matchesRating = !minRating || hospital.rating >= minRating;
       const matchesLanguage = activeLanguages.length === 0 || activeLanguages.some(lang => hospital.languages?.includes(lang));
 
-      return matchesSpecialty && matchesLocation && matchesPrice && matchesAccreditation && matchesRating && matchesLanguage;
+      // Highlights Filtering (Heuristics)
+      let matchesHighlights = true;
+      if (activeHighlights.length > 0) {
+          matchesHighlights = activeHighlights.every(highlight => {
+              const desc = hospital.description.toLowerCase();
+              switch (highlight) {
+                  case 'Ideal Location': return true; // Generally true for medical tourism hubs
+                  case 'Multi-Language Support': return (hospital.languages?.length || 0) > 2;
+                  case 'Holistic Care': return desc.includes('holistic') || desc.includes('care') || desc.includes('comprehensive');
+                  case 'Specialized Care': return hospital.specialties.length > 3;
+                  case 'VIP Patient Experience': return desc.includes('tourism') || desc.includes('international') || desc.includes('quality');
+                  case 'Advanced Technology': return desc.includes('advanced') || desc.includes('technology');
+                  default: return true;
+              }
+          });
+      }
+
+      // Hospital Type Filtering (Heuristics)
+      let matchesHospitalType = true;
+      if (activeHospitalType.length > 0) {
+          matchesHospitalType = activeHospitalType.some(type => {
+              const desc = hospital.description.toLowerCase();
+              const name = hospital.name.toLowerCase();
+              switch (type) {
+                  case 'General Hospital': return desc.includes('general') || hospital.specialties.length > 5;
+                  case 'Specialty Hospital': return desc.includes('specialty') || hospital.specialties.length <= 5;
+                  case 'Surgical Hospital': return desc.includes('surgery') || desc.includes('surgical');
+                  case 'Wellness & Preventive Care': return desc.includes('wellness') || desc.includes('preventive') || desc.includes('check-up');
+                  case 'Rehabilitation Hospital': return desc.includes('rehab') || desc.includes('recovery') || desc.includes('physio');
+                  default: return true;
+              }
+          });
+      }
+
+      return matchesSpecialty && matchesLocation && matchesPrice && matchesRating && matchesLanguage && matchesHighlights && matchesHospitalType;
     });
 
     // Sorting logic
@@ -291,7 +324,7 @@ export const Marketplace: React.FC<MarketplaceProps> = ({
     }
 
     return results;
-  }, [specialtyInput, locationInput, selectedSpecialties, selectedCountries, activePrice, activeAccreditation, activeLanguages, minRating, sortBy, filters.userLocation, filters.userOrigin]);
+  }, [specialtyInput, selectedSpecialties, selectedCountries, activePrice, activeLanguages, activeHighlights, activeHospitalType, minRating, sortBy, filters.userLocation, filters.userOrigin, filters.country, isNearbyActive]);
 
   // Visible Items
   const displayedHospitals = filteredHospitals.slice(0, visibleCount);
@@ -308,16 +341,22 @@ export const Marketplace: React.FC<MarketplaceProps> = ({
       onUpdateFilters?.({ ...filters, minRating: newRating || undefined });
   };
 
-  const toggleAccreditation = (acc: string) => {
-      const newAcc = activeAccreditation.includes(acc) ? activeAccreditation.filter(a => a !== acc) : [...activeAccreditation, acc];
-      setActiveAccreditation(newAcc);
-      onUpdateFilters?.({ ...filters, accreditation: newAcc });
-  };
-
   const toggleLanguage = (lang: string) => {
       const newLangs = activeLanguages.includes(lang) ? activeLanguages.filter(l => l !== lang) : [...activeLanguages, lang];
       setActiveLanguages(newLangs);
       onUpdateFilters?.({ ...filters, languages: newLangs });
+  };
+
+  const toggleHighlight = (highlight: string) => {
+      setActiveHighlights(prev => 
+          prev.includes(highlight) ? prev.filter(h => h !== highlight) : [...prev, highlight]
+      );
+  };
+
+  const toggleHospitalType = (type: string) => {
+      setActiveHospitalType(prev => 
+          prev.includes(type) ? prev.filter(t => t !== type) : [...prev, type]
+      );
   };
 
   const handleSortChange = (newSort: 'nearest' | 'rating' | 'price_low' | 'price_high' | null) => {
@@ -334,16 +373,48 @@ export const Marketplace: React.FC<MarketplaceProps> = ({
           ...filters,
           specialty,
           country,
-          userOrigin: !country && locationInput ? locationInput : undefined
+          // userOrigin update handled in LocationFilter callback immediately or here if preferred
       });
 
       // Close dropdowns after search
       setIsSpecialtyOpen(false);
-      setIsLocationOpen(false);
   };
 
   const loadMore = () => {
       setVisibleCount(prev => prev + 6);
+  };
+
+  const handleGeolocation = () => {
+      setIsLoadingNearby(true);
+      if (navigator.geolocation) {
+          navigator.geolocation.getCurrentPosition(
+              (position) => {
+                  const loc = { lat: position.coords.latitude, lng: position.coords.longitude };
+                  onUpdateFilters?.({
+                      ...filters,
+                      userLocation: loc,
+                      sortBy: 'nearest',
+                      country: undefined
+                  });
+                  setIsLoadingNearby(false);
+                  setIsNearbyActive(true);
+                  setSelectedCountries([]); // Exclusive
+              },
+              () => {
+                  console.log('Location access denied');
+                  setIsLoadingNearby(false);
+              }
+          );
+      } else {
+          setIsLoadingNearby(false);
+      }
+  };
+
+  const handleCountriesChange = (countries: string[]) => {
+      setSelectedCountries(countries);
+      // Update filters immediately or wait for search submit depending on UX preference.
+      // Here we keep local state and only update parent on search submit OR specific actions if desired.
+      if (countries.length > 0) setIsNearbyActive(false);
   };
 
   return (
@@ -351,16 +422,14 @@ export const Marketplace: React.FC<MarketplaceProps> = ({
         {/* Main Layout Container */}
         <div className={`max-w-[1600px] mx-auto w-full px-4 md:px-6 pt-6 md:pt-8 pb-20 flex flex-col lg:flex-row gap-8 lg:gap-12 flex-1 relative ${isChatOpen ? 'lg:flex-col' : ''}`}>
 
-            {/* Sidebar Filters (Desktop) - Hidden when chat is open - DoctorsPage style */}
+            {/* Sidebar Filters (Desktop) */}
             <aside id="sidebar-filters" className={`w-64 flex-shrink-0 hidden lg:flex lg:flex-col pt-2 sticky top-24 h-[calc(100vh-8rem)] transition-all duration-300 ${isChatOpen ? '!hidden' : ''}`}>
                 <h2 className="text-lg font-semibold mb-8 tracking-tight">Filter</h2>
                 {/* Scrollable Filter Section */}
                 <div className="flex-1 overflow-y-auto custom-scrollbar pr-2 min-h-0">
-                    
-
                     {/* Language Filter */}
                     <div className="mb-8 border-b border-gray-100 pb-8">
-                        <h3 className="text-base font-medium mb-4 text-gray-900">Language Support</h3>
+                        <h3 className="text-base font-medium mb-4 text-gray-900">Language Support Available</h3>
                         <div className="space-y-3">
                             <label className="flex items-center gap-3 cursor-pointer group">
                                 <div className="relative flex items-center">
@@ -390,10 +459,40 @@ export const Marketplace: React.FC<MarketplaceProps> = ({
                             ))}
                         </div>
                     </div>
-
+                    {/* Experience Highlights Filter */}
+                    <div className="mb-8 border-b border-gray-100 pb-8">
+                        <h3 className="text-base font-medium mb-4 text-gray-900">Experience Highlights</h3>
+                        <div className="space-y-3">
+                            {EXPERIENCE_HIGHLIGHTS.map(highlight => (
+                                <label key={highlight} className="flex items-center gap-3 cursor-pointer group">
+                                    <div className="relative flex items-center">
+                                        <input
+                                            type="checkbox"
+                                            checked={activeHighlights.includes(highlight)}
+                                            onChange={() => toggleHighlight(highlight)}
+                                            className="peer appearance-none w-5 h-5 border border-gray-300 rounded bg-white checked:bg-[#3395FF] checked:border-[#3395FF] transition-all"
+                                        />
+                                        <Check className="w-3.5 h-3.5 text-white absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 opacity-0 peer-checked:opacity-100" />
+                                    </div>
+                                    <span className={`text-sm font-medium group-hover:text-gray-900 ${activeHighlights.includes(highlight) ? 'text-gray-900' : 'text-gray-600'}`}>
+                                        {highlight}
+                                    </span>
+                                </label>
+                            ))}
+                        </div>
+                    </div>
                     {/* Cost Range Filter */}
                     <div className="mb-8 border-b border-gray-100 pb-8">
-                        <h3 className="text-base font-medium mb-4 text-gray-900">Cost Range</h3>
+                        <div className="flex items-center gap-2 mb-4">
+                            <h3 className="text-base font-medium text-gray-900">Cost Range</h3>
+                            <div className="relative group">
+                                <Info className="w-3.5 h-3.5 text-gray-400 cursor-help" />
+                                <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 w-48 bg-gray-900 text-white text-[10px] p-2 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50 text-center leading-relaxed font-normal shadow-lg">
+                                    Current price ranges ($, $$, $$$) reflect general cost averages. Exact prices are available upon request.
+                                    <div className="absolute left-1/2 -translate-x-1/2 top-full w-0 h-0 border-x-4 border-x-transparent border-t-4 border-t-gray-900"></div>
+                                </div>
+                            </div>
+                        </div>
                         <div className="space-y-3">
                             {['$', '$$', '$$$'].map(price => (
                                 <label key={price} className="flex items-center gap-3 cursor-pointer group">
@@ -414,6 +513,28 @@ export const Marketplace: React.FC<MarketplaceProps> = ({
                         </div>
                     </div>
 
+                    {/* Hospital Type Filter */}
+                    <div className="mb-8 border-b border-gray-100 pb-8">
+                        <h3 className="text-base font-medium mb-4 text-gray-900">Hospital Type</h3>
+                        <div className="space-y-3">
+                            {HOSPITAL_TYPES.map(type => (
+                                <label key={type} className="flex items-center gap-3 cursor-pointer group">
+                                    <div className="relative flex items-center">
+                                        <input
+                                            type="checkbox"
+                                            checked={activeHospitalType.includes(type)}
+                                            onChange={() => toggleHospitalType(type)}
+                                            className="peer appearance-none w-5 h-5 border border-gray-300 rounded bg-white checked:bg-[#3395FF] checked:border-[#3395FF] transition-all"
+                                        />
+                                        <Check className="w-3.5 h-3.5 text-white absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 opacity-0 peer-checked:opacity-100" />
+                                    </div>
+                                    <span className={`text-sm font-medium group-hover:text-gray-900 ${activeHospitalType.includes(type) ? 'text-gray-900' : 'text-gray-600'}`}>
+                                        {type}
+                                    </span>
+                                </label>
+                            ))}
+                        </div>
+                    </div>
                     {/* Rating Filter */}
                     <div className="mb-8 border-b border-gray-100 pb-8">
                         <h3 className="text-base font-medium mb-4 text-gray-900">Rating</h3>
@@ -435,29 +556,6 @@ export const Marketplace: React.FC<MarketplaceProps> = ({
                             </label>
                         </div>
                     </div>
-
-                    {/* Accreditation Filter */}
-                    <div className="mb-8 border-b border-gray-100 pb-8">
-                        <h3 className="text-base font-medium mb-4 text-gray-900">Accreditation</h3>
-                        <div
-                            onClick={() => toggleAccreditation('JCI')}
-                            className={`flex items-start gap-3 p-3 rounded-lg transition cursor-pointer border ${activeAccreditation.includes('JCI') ? 'bg-blue-50 border-blue-200' : 'hover:bg-gray-50 border-transparent'}`}
-                        >
-                            <div className="relative flex items-center mt-0.5">
-                                <input
-                                    type="checkbox"
-                                    checked={activeAccreditation.includes('JCI')}
-                                    readOnly
-                                    className="peer appearance-none w-5 h-5 border border-gray-300 rounded bg-white checked:bg-[#3395FF] checked:border-[#3395FF] transition-all"
-                                />
-                                <Check className="w-3.5 h-3.5 text-white absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 opacity-0 peer-checked:opacity-100" />
-                            </div>
-                            <div>
-                                <p className="text-sm font-medium text-gray-900 leading-tight">JCI Accredited</p>
-                                <p className="text-xs text-gray-500 mt-0.5">International healthcare gold standard</p>
-                            </div>
-                        </div>
-                    </div>
                 </div>
 
                 {/* Fixed Chat Widget */}
@@ -466,8 +564,8 @@ export const Marketplace: React.FC<MarketplaceProps> = ({
                         <div className="flex items-start gap-3 mb-3">
                             <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=100&h=100&q=80" alt="Support" className="w-10 h-10 rounded-full object-cover" />
                             <div>
-                                <p className="text-sm font-semibold text-gray-900">Need help choosing?</p>
-                                <p className="text-xs text-gray-500 mt-1 leading-relaxed">Tell us what you're looking for.</p>
+                                <p className="text-sm font-semibold text-gray-900">Hi! Need some help?</p>
+                                <p className="text-xs text-gray-500 mt-1 leading-relaxed">Tell us what you're looking for and we'll help you get there.</p>
                             </div>
                         </div>
                         <button 
@@ -493,7 +591,6 @@ export const Marketplace: React.FC<MarketplaceProps> = ({
                         <button
                             onClick={() => {
                                 setIsSpecialtyOpen(!isSpecialtyOpen);
-                                setIsLocationOpen(false);
                             }}
                             className={`min-h-[56px] flex hover:border-slate-300 transition-all duration-200 focus:outline-none text-left bg-white w-full h-auto border rounded-xl py-2.5 px-4 shadow-[0_1px_2px_rgba(0,0,0,0.02)] gap-x-3 items-center ${
                                 isSpecialtyOpen ? 'border-slate-400 ring-2 ring-slate-50' : 'border-slate-200'
@@ -503,7 +600,7 @@ export const Marketplace: React.FC<MarketplaceProps> = ({
                                 <BriefcaseMedical className="w-5 h-5" strokeWidth={1.5} />
                             </div>
                             <div className="flex flex-col justify-center w-full overflow-hidden">
-                                <span className="text-xs font-medium text-slate-500 mb-0.5 leading-tight truncate">Specialization</span>
+                                <span className="text-xs font-medium text-slate-500 mb-0.5 leading-tight truncate">What are you searching for?</span>
                                 {/* This input acts as both display for selection and search input */}
                                 {selectedSpecialties.length > 0 ? (
                                     <div className="flex items-center justify-between w-full">
@@ -528,7 +625,7 @@ export const Marketplace: React.FC<MarketplaceProps> = ({
                                         onChange={(e) => setSpecialtyInput(e.target.value)}
                                         onClick={(e) => e.stopPropagation()} // Prevent dropdown toggle when clicking input
                                         onFocus={() => setIsSpecialtyOpen(true)}
-                                        placeholder="Heart, Knee, Skin..."
+                                        placeholder="Select specialization or treatment"
                                         className="text-sm font-medium leading-tight truncate text-slate-900 placeholder:text-slate-400 w-full outline-none bg-transparent"
                                     />
                                 )}
@@ -580,189 +677,19 @@ export const Marketplace: React.FC<MarketplaceProps> = ({
                         )}
                     </div>
 
-                    {/* Location Dropdown */}
-                    <div ref={locationRef} className="relative flex-grow w-full md:w-[45%]">
-                        <button
-                            onClick={() => {
-                                setIsLocationOpen(!isLocationOpen);
-                                setIsSpecialtyOpen(false);
-                            }}
-                            className={`min-h-[56px] flex hover:border-slate-300 transition-all duration-200 focus:outline-none text-left bg-white w-full h-auto border rounded-xl py-2.5 px-4 shadow-[0_1px_2px_rgba(0,0,0,0.02)] gap-x-3 items-center ${
-                                isLocationOpen ? 'border-slate-400 ring-2 ring-slate-50' : 'border-slate-200'
-                            }`}
-                        >
-                            <div className="flex-shrink-0 text-slate-400">
-                                <MapPin className="w-5 h-5" strokeWidth={1.5} />
-                            </div>
-                            <div className="flex flex-col justify-center w-full overflow-hidden">
-                                <span className="text-xs font-medium text-slate-500 mb-0.5 leading-tight">Location</span>
-                                {selectedCountries.length > 0 ? (
-                                    <div className="flex items-center justify-between w-full">
-                                        <span className="text-sm font-medium leading-tight truncate text-slate-900">
-                                            {selectedCountries.join(', ')}
-                                        </span>
-                                        <button 
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                setSelectedCountries([]);
-                                                setLocationInput('');
-                                            }}
-                                            className="p-0.5 hover:bg-slate-100 rounded-full"
-                                        >
-                                            <X className="w-3 h-3 text-slate-400" />
-                                        </button>
-                                    </div>
-                                ) : (
-                                    <input 
-                                        type="text"
-                                        value={locationInput}
-                                        onChange={(e) => setLocationInput(e.target.value)}
-                                        onClick={(e) => e.stopPropagation()}
-                                        onFocus={() => setIsLocationOpen(true)}
-                                        placeholder="Singapore, Bangkok..."
-                                        className="text-sm font-medium leading-tight truncate text-slate-900 placeholder:text-slate-400 w-full outline-none bg-transparent"
-                                    />
-                                )}
-                            </div>
-                        </button>
-
-                        {/* Location Dropdown Menu */}
-                        {isLocationOpen && (
-                            <div className="absolute top-full left-0 w-full mt-1.5 bg-white rounded-lg border border-slate-200 shadow-lg overflow-hidden z-50 animate-in fade-in slide-in-from-top-2 duration-200">
-
-                                {/* Discover Nearby Section */}
-                                <div className="p-3 border-b border-slate-100">
-                                    <h3 className="text-xs font-medium text-slate-400 mb-2">Discover Nearby</h3>
-                                    <button
-                                        onClick={() => {
-                                            // Request user location and find nearby hospitals
-                                            if (navigator.geolocation) {
-                                                navigator.geolocation.getCurrentPosition(
-                                                    (position) => {
-                                                        onUpdateFilters?.({
-                                                            ...filters,
-                                                            userLocation: {
-                                                                lat: position.coords.latitude,
-                                                                lng: position.coords.longitude
-                                                            },
-                                                            sortBy: 'nearest'
-                                                        });
-                                                        setIsLocationOpen(false);
-                                                    },
-                                                    () => {
-                                                        console.log('Location access denied');
-                                                    }
-                                                );
-                                            }
-                                        }}
-                                        className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100 hover:border-slate-300 transition-all duration-200"
-                                    >
-                                        <div className="w-9 h-9 rounded-lg bg-white border border-slate-200 flex items-center justify-center flex-shrink-0">
-                                            <Compass className="w-4 h-4 text-slate-600" />
-                                        </div>
-                                        <div className="text-left">
-                                            <span className="text-sm font-medium text-slate-900 block">Find Nearby Hospitals</span>
-                                            <span className="text-xs text-slate-500">Use your current location</span>
-                                        </div>
-                                    </button>
-                                </div>
-
-                                {/* Flight Origin Card */}
-                                <div className="p-3 border-b border-slate-100">
-                                    <div className="rounded-lg bg-gradient-to-r from-lime-100 to-yellow-100 px-3 py-2.5">
-                                        <div className="flex items-center justify-between">
-                                            <div className="flex items-center gap-2.5">
-                                                <div className="w-8 h-8 rounded-md bg-white/80 flex items-center justify-center">
-                                                    <Plane className="w-4 h-4 text-slate-700" />
-                                                </div>
-                                                <div>
-                                                    <span className="text-[10px] font-medium text-slate-500 block">Flying from</span>
-                                                    {isEditingOrigin ? (
-                                                        <input
-                                                            type="text"
-                                                            value={originInput}
-                                                            onChange={(e) => setOriginInput(e.target.value)}
-                                                            onKeyDown={(e) => {
-                                                                if (e.key === 'Enter') {
-                                                                    setFlightOrigin(originInput);
-                                                                    setIsEditingOrigin(false);
-                                                                    onUpdateFilters?.({ ...filters, userOrigin: originInput });
-                                                                }
-                                                                if (e.key === 'Escape') {
-                                                                    setOriginInput(flightOrigin);
-                                                                    setIsEditingOrigin(false);
-                                                                }
-                                                            }}
-                                                            onBlur={() => {
-                                                                setFlightOrigin(originInput);
-                                                                setIsEditingOrigin(false);
-                                                                onUpdateFilters?.({ ...filters, userOrigin: originInput });
-                                                            }}
-                                                            autoFocus
-                                                            className="text-sm font-semibold text-slate-900 bg-white/60 border border-slate-300 rounded px-1.5 py-0.5 w-28 focus:outline-none focus:ring-2 focus:ring-slate-400"
-                                                        />
-                                                    ) : (
-                                                        <span className="text-sm font-semibold text-slate-900">{flightOrigin}</span>
-                                                    )}
-                                                </div>
-                                            </div>
-                                            {!isEditingOrigin && (
-                                                <button
-                                                    onClick={() => {
-                                                        setOriginInput(flightOrigin);
-                                                        setIsEditingOrigin(true);
-                                                    }}
-                                                    className="text-xs font-medium text-slate-600 hover:text-slate-900 underline underline-offset-2 transition-colors"
-                                                >
-                                                    change
-                                                </button>
-                                            )}
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {/* Country List */}
-                                <div className="pt-3 px-3 pb-1.5">
-                                    <h3 className="text-xs font-medium text-slate-400 pl-1">Popular Destinations</h3>
-                                </div>
-                                <div className="max-h-[240px] overflow-y-auto p-2 pt-0 flex flex-col gap-1.5 custom-scrollbar">
-                                    {COUNTRIES.filter(c => !locationInput || c.name.toLowerCase().includes(locationInput.toLowerCase())).map(country => {
-                                        const isSelected = selectedCountries.includes(country.name);
-                                        return (
-                                            <button
-                                                key={country.name}
-                                                onClick={() => {
-                                                    toggleCountry(country.name);
-                                                    setLocationInput('');
-                                                    setIsLocationOpen(false);
-                                                }}
-                                                className={`group relative w-full text-left rounded-lg px-3 py-2.5 transition-all duration-200 focus:outline-none border ${
-                                                    isSelected
-                                                        ? 'border-slate-900 bg-slate-50'
-                                                        : 'border-slate-100 bg-white hover:border-slate-200 hover:bg-slate-50'
-                                                }`}
-                                            >
-                                                <div className="flex items-start gap-2.5">
-                                                    <div className="w-8 h-8 rounded-md bg-slate-100 flex items-center justify-center flex-shrink-0 text-base">
-                                                        {country.icon}
-                                                    </div>
-                                                    <div className="flex-1 min-w-0">
-                                                        <span className="text-sm font-medium text-slate-900 group-hover:text-black block">{country.name}</span>
-                                                        <span className="text-xs text-slate-500 line-clamp-1">{country.description}</span>
-                                                    </div>
-                                                </div>
-                                                {isSelected && (
-                                                    <div className="absolute top-2.5 right-2.5">
-                                                        <Check className="w-4 h-4 text-slate-900" />
-                                                    </div>
-                                                )}
-                                            </button>
-                                        );
-                                    })}
-                                </div>
-                            </div>
-                        )}
-                    </div>
+                    {/* Reusable Location Filter */}
+                    <LocationFilter 
+                        className="relative flex-grow w-full md:w-[45%]"
+                        selectedCountries={selectedCountries}
+                        isNearbyActive={isNearbyActive}
+                        userOrigin={flightOrigin}
+                        countries={COUNTRIES}
+                        isLoadingNearby={isLoadingNearby}
+                        onCountriesChange={handleCountriesChange}
+                        onNearbyChange={setIsNearbyActive}
+                        onOriginChange={setFlightOrigin}
+                        onGeolocationRequest={handleGeolocation}
+                    />
 
                     {/* Search Button */}
                     <button
@@ -773,8 +700,9 @@ export const Marketplace: React.FC<MarketplaceProps> = ({
                     </button>
                 </div>
 
-                {/* Results Header - DoctorsPage style */}
+                {/* Results Header */}
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+                    {/* ... Existing ... */}
                     <div className="flex items-center gap-3">
                         {/* AI List Name Badge - Show prominently when chat is open */}
                         {isChatOpen && filters.aiListName && (
@@ -811,18 +739,26 @@ export const Marketplace: React.FC<MarketplaceProps> = ({
                                     <button onClick={() => onUpdateFilters?.({ ...filters, specialty: undefined })} className="text-emerald-400 hover:text-emerald-600"><X className="w-3 h-3" /></button>
                                 </span>
                             )}
+                            {/* Highlights pills */}
+                            {activeHighlights.map(highlight => (
+                                <span key={highlight} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-sky-200 bg-sky-50 text-xs font-medium text-sky-700 animate-in fade-in zoom-in-95">
+                                    {highlight}
+                                    <button onClick={() => toggleHighlight(highlight)} className="text-sky-400 hover:text-sky-600"><X className="w-3 h-3" /></button>
+                                </span>
+                            ))}
+                            {/* Hospital Type pills */}
+                            {activeHospitalType.map(type => (
+                                <span key={type} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-violet-200 bg-violet-50 text-xs font-medium text-violet-700 animate-in fade-in zoom-in-95">
+                                    {type}
+                                    <button onClick={() => toggleHospitalType(type)} className="text-violet-400 hover:text-violet-600"><X className="w-3 h-3" /></button>
+                                </span>
+                            ))}
                             {/* Language pills */}
                             {activeLanguages.map(lang => (
                                 <span key={lang} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-purple-200 bg-purple-50 text-xs font-medium text-purple-700 animate-in fade-in zoom-in-95">
                                     <Globe className="w-3 h-3" />
                                     {lang}
                                     <button onClick={() => toggleLanguage(lang)} className="text-purple-400 hover:text-purple-600"><X className="w-3 h-3" /></button>
-                                </span>
-                            ))}
-                            {activeAccreditation.map(acc => (
-                                <span key={acc} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-gray-200 bg-white text-xs font-medium text-gray-700 animate-in fade-in zoom-in-95">
-                                    {acc} Accredited
-                                    <button onClick={() => toggleAccreditation(acc)} className="text-gray-400 hover:text-gray-600"><X className="w-3 h-3" /></button>
                                 </span>
                             ))}
                             {minRating && (
@@ -839,7 +775,7 @@ export const Marketplace: React.FC<MarketplaceProps> = ({
                                 </span>
                             ))}
                         </div>
-                        {(activePrice.length > 0 || activeAccreditation.length > 0 || activeLanguages.length > 0 || minRating || sortBy || (isChatOpen && (filters.country || filters.specialty))) && (
+                        {(activePrice.length > 0 || activeLanguages.length > 0 || activeHighlights.length > 0 || activeHospitalType.length > 0 || minRating || sortBy || (isChatOpen && (filters.country || filters.specialty))) && (
                             <>
                                 <div className="hidden sm:block w-px h-6 bg-gray-200 mx-2"></div>
                                 <button onClick={onClearFilters} className="text-xs font-medium text-gray-600 hover:text-gray-900 underline decoration-gray-300 underline-offset-4">Reset Filter</button>

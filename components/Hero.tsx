@@ -235,11 +235,11 @@ export const Hero: React.FC<HeroProps> = ({ onQuickSearch }) => {
         <div className="absolute inset-0 h-full w-full bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)] bg-[size:40px_40px] pointer-events-none z-0"></div>
 
         {/* Decorative Curve Line (SVG) */}
-        <div className="absolute top-[100px] left-0 w-full h-[400px] pointer-events-none z-0 opacity-60 hidden md:block">
+        {/* <div className="absolute top-[100px] left-0 w-full h-[400px] pointer-events-none z-0 opacity-60 hidden md:block">
             <svg width="100%" height="100%" viewBox="0 0 1440 400" fill="none" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
                 <path d="M-100 350 C 200 350, 400 100, 800 150 C 1200 200, 1400 50, 1600 50" stroke="#EADBC8" strokeWidth="1.5" fill="none" vectorEffect="non-scaling-stroke"/>
             </svg>
-        </div>
+        </div> */}
 
         {/* Top Feature Banner */}
         <nav className="w-full bg-[#FDFBF7] border-b border-[#F0EAE0] py-2 px-4 md:px-8 flex items-center justify-center md:justify-between text-[#5D5555] text-[10px] md:text-xs overflow-hidden whitespace-nowrap relative z-10">

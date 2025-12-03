@@ -1,9 +1,19 @@
-
-import React, { useState, useMemo } from 'react';
-import { DOCTORS } from '../constants';
-import { Doctor } from '../types';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
+import { DOCTORS, SPECIALIZATIONS, SEMANTIC_SPECIALTY_MAP } from '../constants';
+import { Doctor, CountryOption } from '../types';
 import { DoctorCard } from './DoctorCard';
-import { Search, BriefcaseMedical, MapPin, X, Check, MessageSquare, ChevronDown } from 'lucide-react';
+import { Search, BriefcaseMedical, Check, MessageSquare, ChevronDown, X, MapPin } from 'lucide-react';
+import { LocationFilter } from './LocationFilter';
+
+const COUNTRIES: CountryOption[] = [
+  { id: '1', name: 'Thailand', description: 'World-class hospitals, affordable prices' },
+  { id: '2', name: 'Malaysia', description: 'High-quality care, cardiology & oncology' },
+  { id: '3', name: 'Singapore', description: 'Premium healthcare hub, advanced tech' },
+  { id: '4', name: 'South Korea', description: 'Cosmetic surgery & dermatology leaders' },
+  { id: '5', name: 'Indonesia', description: 'Growing medical tourism sector' },
+  { id: '6', name: 'Turkey', description: 'Hair transplant & dental experts' },
+  { id: '7', name: 'India', description: 'Highly skilled doctors, complex surgeries' },
+];
 
 interface DoctorsPageProps {
   onBack: () => void;
@@ -13,16 +23,47 @@ interface DoctorsPageProps {
 }
 
 export const DoctorsPage: React.FC<DoctorsPageProps> = ({ onBack, onNavigateToHospitals, onNavigateToDoctors, onViewDoctor }) => {
+  // Search State
   const [specialtyInput, setSpecialtyInput] = useState('');
-  const [locationInput, setLocationInput] = useState('');
+  const [selectedSpecialties, setSelectedSpecialties] = useState<string[]>([]);
+  const [isSpecialtyOpen, setIsSpecialtyOpen] = useState(false);
+  
+  // Location State
+  const [selectedLocations, setSelectedLocations] = useState<string[]>([]);
+  const [isNearbyActive, setIsNearbyActive] = useState(false);
+  const [flightOrigin, setFlightOrigin] = useState('Jakarta');
+  const [isLoadingNearby, setIsLoadingNearby] = useState(false);
   
   // Filters
   const [selectedGenders, setSelectedGenders] = useState<string[]>([]);
   const [selectedLanguages, setSelectedLanguages] = useState<string[]>([]);
   const [minExperience, setMinExperience] = useState<number | null>(null);
 
+  // Refs
+  const specialtyRef = useRef<HTMLDivElement>(null);
+
   // Pagination
   const [visibleCount, setVisibleCount] = useState(6);
+
+  // Click outside handler
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (specialtyRef.current && !specialtyRef.current.contains(event.target as Node)) {
+        setIsSpecialtyOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const toggleSpecialty = (name: string) => {
+    setSelectedSpecialties(prev => {
+      if (prev.includes(name)) {
+        return prev.filter(s => s !== name);
+      }
+      return [...prev, name];
+    });
+  };
 
   const toggleGender = (gender: string) => {
       setSelectedGenders(prev => prev.includes(gender) ? prev.filter(g => g !== gender) : [...prev, gender]);
@@ -33,14 +74,42 @@ export const DoctorsPage: React.FC<DoctorsPageProps> = ({ onBack, onNavigateToHo
   };
 
   const filteredDoctors = useMemo(() => {
+    // Pre-calculate matched specialties for semantic search
+    let matchedSpecialtiesFromInput: string[] = [];
+    if (specialtyInput.trim()) {
+        const inputLower = specialtyInput.toLowerCase().trim();
+        matchedSpecialtiesFromInput = SPECIALIZATIONS.filter(spec => {
+            if (spec.name.toLowerCase().includes(inputLower)) return true;
+            const keywords = SEMANTIC_SPECIALTY_MAP[spec.name] || [];
+            return keywords.some(k => inputLower.includes(k) || k.includes(inputLower));
+        }).map(s => s.name);
+    }
+
     return DOCTORS.filter(doc => {
-        const matchesSearch = !specialtyInput || 
-            doc.specialty.toLowerCase().includes(specialtyInput.toLowerCase()) || 
-            doc.name.toLowerCase().includes(specialtyInput.toLowerCase());
+        // Specialty Match
+        let matchesSearch = true;
+        if (selectedSpecialties.length > 0) {
+            matchesSearch = selectedSpecialties.some(s => doc.specialty.toLowerCase() === s.toLowerCase());
+        } else if (specialtyInput.trim()) {
+             if (matchedSpecialtiesFromInput.length > 0) {
+                matchesSearch = matchedSpecialtiesFromInput.some(s => doc.specialty.toLowerCase().includes(s.toLowerCase()));
+             } else {
+                // Fallback match on name or direct specialty text
+                matchesSearch = doc.specialty.toLowerCase().includes(specialtyInput.toLowerCase()) || 
+                                doc.name.toLowerCase().includes(specialtyInput.toLowerCase());
+             }
+        }
         
-        const matchesLocation = !locationInput || 
-            doc.hospitalCountry.toLowerCase().includes(locationInput.toLowerCase()) ||
-            doc.hospitalName.toLowerCase().includes(locationInput.toLowerCase());
+        // Location Match
+        let matchesLocation = true;
+        if (isNearbyActive) {
+            matchesLocation = true; // Simulating nearby
+        } else if (selectedLocations.length > 0) {
+            matchesLocation = selectedLocations.some(loc => 
+                doc.hospitalCountry.toLowerCase() === loc.toLowerCase() ||
+                doc.hospitalName.toLowerCase().includes(loc.toLowerCase())
+            );
+        }
 
         const matchesGender = selectedGenders.length === 0 || selectedGenders.includes(doc.gender);
         const matchesLanguage = selectedLanguages.length === 0 || selectedLanguages.some(l => doc.languages.includes(l));
@@ -48,7 +117,7 @@ export const DoctorsPage: React.FC<DoctorsPageProps> = ({ onBack, onNavigateToHo
 
         return matchesSearch && matchesLocation && matchesGender && matchesLanguage && matchesExperience;
     });
-  }, [specialtyInput, locationInput, selectedGenders, selectedLanguages, minExperience]);
+  }, [specialtyInput, selectedSpecialties, selectedLocations, isNearbyActive, selectedGenders, selectedLanguages, minExperience]);
 
   const displayedDoctors = filteredDoctors.slice(0, visibleCount);
 
@@ -56,10 +125,38 @@ export const DoctorsPage: React.FC<DoctorsPageProps> = ({ onBack, onNavigateToHo
       setSelectedGenders([]);
       setSelectedLanguages([]);
       setMinExperience(null);
+      setSelectedLocations([]);
+      setIsNearbyActive(false);
+      setSelectedSpecialties([]);
+      setSpecialtyInput('');
   };
 
   const loadMore = () => {
       setVisibleCount(prev => prev + 6);
+  };
+
+  const handleGeolocation = () => {
+      setIsLoadingNearby(true);
+      if (navigator.geolocation) {
+          navigator.geolocation.getCurrentPosition(
+              (position) => {
+                  setIsLoadingNearby(false);
+                  setIsNearbyActive(true);
+                  setSelectedLocations([]); // Exclusive
+              },
+              () => {
+                  console.log('Location access denied');
+                  setIsLoadingNearby(false);
+              }
+          );
+      } else {
+          setIsLoadingNearby(false);
+      }
+  };
+
+  const handleCountriesChange = (countries: string[]) => {
+      setSelectedLocations(countries);
+      if (countries.length > 0) setIsNearbyActive(false);
   };
 
   return (
@@ -67,7 +164,7 @@ export const DoctorsPage: React.FC<DoctorsPageProps> = ({ onBack, onNavigateToHo
         {/* Main Content Layout */}
         <div className="flex-1 max-w-[1400px] mx-auto w-full px-6 py-8 flex gap-12 relative">
             
-            {/* Sidebar Filters - Sticky with Fixed Chat Widget */}
+            {/* Sidebar Filters */}
             <aside className="w-64 flex-shrink-0 hidden lg:flex lg:flex-col pt-2 sticky top-24 h-[calc(100vh-8rem)]">
                 
                 {/* Scrollable Filters */}
@@ -141,7 +238,7 @@ export const DoctorsPage: React.FC<DoctorsPageProps> = ({ onBack, onNavigateToHo
                     </div>
 
                     {/* Experience Filter */}
-                    <div className="mb-8 border-b border-gray-100 pb-8">
+                    {/* <div className="mb-8 border-b border-gray-100 pb-8">
                         <h3 className="text-base font-medium mb-4 text-gray-900">Experience</h3>
                         <div className="space-y-3">
                             <label className="flex items-center gap-3 cursor-pointer group">
@@ -157,7 +254,7 @@ export const DoctorsPage: React.FC<DoctorsPageProps> = ({ onBack, onNavigateToHo
                                 <span className={`text-sm font-medium group-hover:text-gray-900 ${minExperience === 10 ? 'text-gray-900' : 'text-gray-600'}`}>10+ years experience</span>
                             </label>
                         </div>
-                    </div>
+                    </div> */}
                 </div>
 
                 {/* Fixed Chat Widget */}
@@ -185,38 +282,108 @@ export const DoctorsPage: React.FC<DoctorsPageProps> = ({ onBack, onNavigateToHo
                 {/* Search Bar */}
                 <div className="flex flex-col md:flex-row gap-4 mb-8">
                     <div className="flex-1 flex flex-col md:flex-row gap-4">
-                        {/* Input 1 */}
-                        <div className="flex-1 border border-gray-200 rounded-lg p-3 flex items-start gap-3 shadow-sm hover:border-gray-300 transition-colors cursor-text group bg-white">
-                            <div className="mt-1 text-gray-400 group-focus-within:text-[#3395FF]">
-                                <BriefcaseMedical className="w-5 h-5" />
-                            </div>
-                            <div className="flex-1 min-w-0">
-                                <label className="block text-xs text-gray-500 mb-0.5">What are you looking for?</label>
-                                <input 
-                                    type="text" 
-                                    value={specialtyInput}
-                                    onChange={(e) => setSpecialtyInput(e.target.value)}
-                                    placeholder="e.g. Cardiology"
-                                    className="w-full outline-none text-base text-gray-900 font-medium bg-transparent placeholder-gray-400" 
-                                />
-                            </div>
+                        
+                        {/* Specialization Dropdown */}
+                        <div ref={specialtyRef} className="relative flex-grow w-full md:w-[45%]">
+                            <button
+                                onClick={() => setIsSpecialtyOpen(!isSpecialtyOpen)}
+                                className={`min-h-[56px] flex hover:border-slate-300 transition-all duration-200 focus:outline-none text-left bg-white w-full h-auto border rounded-xl py-2.5 px-4 shadow-[0_1px_2px_rgba(0,0,0,0.02)] gap-x-3 items-center ${
+                                    isSpecialtyOpen ? 'border-slate-400 ring-2 ring-slate-50' : 'border-slate-200'
+                                }`}
+                            >
+                                <div className="flex-shrink-0 text-slate-400">
+                                    <BriefcaseMedical className="w-5 h-5" strokeWidth={1.5} />
+                                </div>
+                                <div className="flex flex-col justify-center w-full overflow-hidden">
+                                    <span className="text-xs font-medium text-slate-500 mb-0.5 leading-tight truncate">What are you searching for?</span>
+                                    {selectedSpecialties.length > 0 ? (
+                                        <div className="flex items-center justify-between w-full">
+                                            <span className="text-sm font-medium leading-tight truncate text-slate-900">
+                                                {selectedSpecialties.join(', ')}
+                                            </span>
+                                            <button 
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    setSelectedSpecialties([]);
+                                                    setSpecialtyInput('');
+                                                }}
+                                                className="p-0.5 hover:bg-slate-100 rounded-full"
+                                            >
+                                                <X className="w-3 h-3 text-slate-400" />
+                                            </button>
+                                        </div>
+                                    ) : (
+                                        <input 
+                                            type="text"
+                                            value={specialtyInput}
+                                            onChange={(e) => setSpecialtyInput(e.target.value)}
+                                            onClick={(e) => e.stopPropagation()}
+                                            onFocus={() => setIsSpecialtyOpen(true)}
+                                            placeholder="Select specialization or treatment"
+                                            className="text-sm font-medium leading-tight truncate text-slate-900 placeholder:text-slate-400 w-full outline-none bg-transparent"
+                                        />
+                                    )}
+                                </div>
+                            </button>
+
+                            {/* Specialization Dropdown Menu */}
+                            {isSpecialtyOpen && (
+                                <div className="absolute top-full left-0 w-full mt-1.5 bg-white rounded-lg border border-slate-200 shadow-lg overflow-hidden z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+                                    <div className="pt-3 px-3 pb-1.5">
+                                        <h3 className="text-xs font-medium text-slate-400 pl-1">Core Treatment</h3>
+                                    </div>
+                                    <div className="max-h-[320px] overflow-y-auto p-2 pt-0 flex flex-col gap-1.5 custom-scrollbar">
+                                        {SPECIALIZATIONS.filter(s => 
+                                            !specialtyInput || 
+                                            s.name.toLowerCase().includes(specialtyInput.toLowerCase()) ||
+                                            (SEMANTIC_SPECIALTY_MAP[s.name] || []).some(k => k.includes(specialtyInput.toLowerCase()))
+                                        ).map(spec => {
+                                            const isSelected = selectedSpecialties.includes(spec.name);
+                                            return (
+                                                <button
+                                                    key={spec.name}
+                                                    onClick={() => {
+                                                        toggleSpecialty(spec.name);
+                                                        setSpecialtyInput('');
+                                                        setIsSpecialtyOpen(false);
+                                                    }}
+                                                    className={`group relative w-full text-left rounded-lg px-3 py-2.5 transition-all duration-200 focus:outline-none border ${
+                                                        isSelected
+                                                            ? 'border-slate-900 bg-slate-50'
+                                                            : 'border-slate-100 bg-white hover:border-slate-200 hover:bg-slate-50'
+                                                    }`}
+                                                >
+                                                    <div className="flex flex-col gap-0.5">
+                                                        <span className="text-sm font-medium text-slate-900 group-hover:text-black">{spec.name}</span>
+                                                        <span className="text-xs text-slate-500 font-normal leading-snug">{spec.description}</span>
+                                                    </div>
+                                                    {isSelected && (
+                                                        <div className="absolute top-2.5 right-2.5">
+                                                            <Check className="w-4 h-4 text-slate-900" />
+                                                        </div>
+                                                    )}
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            )}
                         </div>
-                        {/* Input 2 */}
-                        <div className="flex-1 border border-gray-200 rounded-lg p-3 flex items-start gap-3 shadow-sm hover:border-gray-300 transition-colors cursor-text group bg-white">
-                            <div className="mt-1 text-gray-400 group-focus-within:text-[#3395FF]">
-                                <MapPin className="w-5 h-5" />
-                            </div>
-                            <div className="flex-1 min-w-0">
-                                <label className="block text-xs text-gray-500 mb-0.5">Where to?</label>
-                                <input 
-                                    type="text" 
-                                    value={locationInput}
-                                    onChange={(e) => setLocationInput(e.target.value)}
-                                    placeholder="e.g. Singapore"
-                                    className="w-full outline-none text-base text-gray-900 font-medium bg-transparent placeholder-gray-400" 
-                                />
-                            </div>
-                        </div>
+                        
+                        {/* Reusable Location Filter */}
+                        <LocationFilter 
+                            className="relative flex-grow w-full md:w-[45%]"
+                            selectedCountries={selectedLocations}
+                            isNearbyActive={isNearbyActive}
+                            userOrigin={flightOrigin}
+                            countries={COUNTRIES}
+                            isLoadingNearby={isLoadingNearby}
+                            onCountriesChange={handleCountriesChange}
+                            onNearbyChange={setIsNearbyActive}
+                            onOriginChange={setFlightOrigin}
+                            onGeolocationRequest={handleGeolocation}
+                            placeholder="Select countries"
+                        />
                     </div>
                     {/* Search Button */}
                     <button className="w-full md:w-14 h-14 bg-[#1C1C1E] rounded-lg flex items-center justify-center text-white hover:bg-black transition-colors shrink-0 shadow-md">
@@ -230,6 +397,28 @@ export const DoctorsPage: React.FC<DoctorsPageProps> = ({ onBack, onNavigateToHo
                     
                     <div className="flex flex-wrap items-center gap-3">
                         <div className="flex flex-wrap items-center gap-2">
+                             {/* Active Filters Pills */}
+                            {isNearbyActive && (
+                                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-blue-200 bg-blue-50 text-xs font-medium text-blue-700 animate-in fade-in zoom-in-95">
+                                    <MapPin className="w-3 h-3" />
+                                    Nearby
+                                    <button onClick={() => setIsNearbyActive(false)} className="text-blue-400 hover:text-blue-600"><X className="w-3 h-3" /></button>
+                                </span>
+                            )}
+                            {selectedLocations.map(loc => (
+                                <span key={loc} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-blue-200 bg-blue-50 text-xs font-medium text-blue-700 animate-in fade-in zoom-in-95">
+                                    <MapPin className="w-3 h-3" />
+                                    {loc}
+                                    <button onClick={() => setSelectedLocations(prev => prev.filter(l => l !== loc))} className="text-blue-400 hover:text-blue-600"><X className="w-3 h-3" /></button>
+                                </span>
+                            ))}
+                            {selectedSpecialties.map(spec => (
+                                <span key={spec} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-emerald-200 bg-emerald-50 text-xs font-medium text-emerald-700 animate-in fade-in zoom-in-95">
+                                    <BriefcaseMedical className="w-3 h-3" />
+                                    {spec}
+                                    <button onClick={() => toggleSpecialty(spec)} className="text-emerald-400 hover:text-emerald-600"><X className="w-3 h-3" /></button>
+                                </span>
+                            ))}
                             {minExperience && (
                                 <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-gray-200 bg-white text-xs font-medium text-gray-700 animate-in fade-in zoom-in-95">
                                     10+ years experience
@@ -249,7 +438,7 @@ export const DoctorsPage: React.FC<DoctorsPageProps> = ({ onBack, onNavigateToHo
                                 </span>
                             ))}
                         </div>
-                        {(minExperience || selectedLanguages.length > 0 || selectedGenders.length > 0) && (
+                        {(minExperience || selectedLanguages.length > 0 || selectedGenders.length > 0 || selectedLocations.length > 0 || isNearbyActive || selectedSpecialties.length > 0) && (
                             <>
                                 <div className="hidden sm:block w-px h-6 bg-gray-200 mx-2"></div>
                                 <button onClick={clearFilters} className="text-xs font-medium text-gray-600 hover:text-gray-900 underline decoration-gray-300 underline-offset-4">Reset Filter</button>

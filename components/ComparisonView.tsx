@@ -91,19 +91,7 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({ hospitals, onRem
                     </div>
                 ))}
 
-                {/* 5. Accreditations Row */}
-                <div className="py-4 text-sm font-medium text-slate-500 border-b border-slate-50 flex items-center">Accreditation</div>
-                {hospitals.map(h => (
-                    <div key={h.id} className="p-4 border-b border-slate-50">
-                        <div className="flex flex-wrap gap-1">
-                            {h.accreditation.length > 0 ? h.accreditation.map(acc => (
-                                <span key={acc} className="inline-flex items-center gap-1 px-2 py-1 border border-blue-100 bg-blue-50 text-blue-700 rounded text-[10px] font-medium">
-                                    <ShieldCheck className="w-3 h-3" /> {acc}
-                                </span>
-                            )) : <span className="text-xs text-slate-400">-</span>}
-                        </div>
-                    </div>
-                ))}
+                
 
                 {/* 6. Specialties Row */}
                 <div className="py-4 text-sm font-medium text-slate-500 border-b border-slate-50 flex items-center">Top Specialties</div>
@@ -119,6 +107,20 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({ hospitals, onRem
                                 <li className="text-slate-400 pl-2.5">+{h.specialties.length - 3} more</li>
                             )}
                         </ul>
+                    </div>
+                ))}
+
+                {/* 5. Accreditations Row */}
+                <div className="py-4 text-sm font-medium text-slate-500 border-b border-slate-50 flex items-center">Accreditation</div>
+                {hospitals.map(h => (
+                    <div key={h.id} className="p-4 border-b border-slate-50">
+                        <div className="flex flex-wrap gap-1">
+                            {h.accreditation.length > 0 ? h.accreditation.map(acc => (
+                                <span key={acc} className="inline-flex items-center gap-1 px-2 py-1 border border-blue-100 bg-blue-50 text-blue-700 rounded text-[10px] font-medium">
+                                    <ShieldCheck className="w-3 h-3" /> {acc}
+                                </span>
+                            )) : <span className="text-xs text-slate-400">-</span>}
+                        </div>
                     </div>
                 ))}
 

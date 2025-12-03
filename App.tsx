@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Hero } from './components/Hero';
 import { ChatInterface } from './components/ChatInterface';
@@ -11,7 +10,7 @@ import { DoctorsPage } from './components/DoctorsPage';
 import { DoctorDetailsPage } from './components/DoctorDetailsPage';
 import { PackageDetailsPage } from './components/PackageDetailsPage';
 import { SpecializationDetailsPage } from './components/SpecializationDetailsPage'; 
-import { HospitalInsightsPage } from './components/HospitalInsightsPage'; 
+// import { HospitalInsightsPage } from './components/HospitalInsightsPage'; 
 import { ArticleDetailsPage } from './components/ArticleDetailsPage';
 import { ResearchDetailsPage } from './components/ResearchDetailsPage'; 
 import { TreatmentDetailsPage } from './components/TreatmentDetailsPage'; // Import
@@ -26,7 +25,19 @@ import { MedicalTeam } from './components/MedicalTeam';
 import { ExploreHospitals } from './components/ExploreHospitals';
 import { Mission } from './components/Mission';
 import { TranslationProvider, useTranslation } from './contexts/TranslationContext';
-import { AITranslationOverlay } from './components/ui/AITranslationOverlay';
+import { AITranslationOverlay } from './components/ui/AiTranslationOverlay';
+import { HospitalInsightsPage } from './components/HospitalInsights';
+// import { AITranslationOverlay } from './components/ui/AITranslationOverlay';
+
+// Helper to safely update URL without crashing in sandboxed environments
+const safePushState = (url: string) => {
+  try {
+    window.history.pushState(null, '', url);
+  } catch (e) {
+    // Ignore security errors in preview environments
+    console.debug('URL update skipped due to environment restriction:', e);
+  }
+};
 
 // Inner App to access translation context if needed
 const MainApp: React.FC = () => {
@@ -52,7 +63,7 @@ const MainApp: React.FC = () => {
   const [viewedSpecializationName, setViewedSpecializationName] = useState<string | null>(null);
   const [viewedArticleTitle, setViewedArticleTitle] = useState<string | null>(null);
   const [viewedResearchTitle, setViewedResearchTitle] = useState<string | null>(null);
-  const [viewedTreatmentName, setViewedTreatmentName] = useState<string | null>(null); // New state
+  const [viewedTreatmentName, setViewedTreatmentName] = useState<string | null>(null);
 
   // Load Sessions from LocalStorage on Mount
   useEffect(() => {
@@ -257,7 +268,7 @@ const MainApp: React.FC = () => {
     setViewedHospital(hospital);
     setPage('hospital-page');
     setIsChatOpen(false); // Auto-hide chat sidebar
-    window.history.pushState(null, '', `/hospitals/${createSlug(hospital.name)}`);
+    safePushState(`/hospitals/${createSlug(hospital.name)}`);
   };
 
   const handleNavigateToHospitalById = (hospitalId: string) => {
@@ -269,33 +280,39 @@ const MainApp: React.FC = () => {
 
   const handleBackFromHospital = () => {
       // If we have history, go back, otherwise reset to marketplace
-      if (window.history.state !== null) {
-          window.history.back();
-      } else {
-          setPage('marketplace');
-          setViewedHospital(null);
-          window.history.pushState(null, '', '/');
+      try {
+        if (window.history.state !== null) {
+            window.history.back();
+        } else {
+            setPage('marketplace');
+            setViewedHospital(null);
+            safePushState('/');
+        }
+      } catch (e) {
+        // Fallback for sandboxed environments where history.back() might fail
+        setPage('marketplace');
+        setViewedHospital(null);
       }
   };
 
   const handleNavigateToGallery = () => {
       if (viewedHospital) {
         setPage('gallery');
-        window.history.pushState(null, '', `/hospitals/${createSlug(viewedHospital.name)}/tour`);
+        safePushState(`/hospitals/${createSlug(viewedHospital.name)}/tour`);
       }
   };
 
   const handleBackFromGallery = () => {
       if (viewedHospital) {
         setPage('hospital-page');
-        window.history.pushState(null, '', `/hospitals/${createSlug(viewedHospital.name)}`);
+        safePushState(`/hospitals/${createSlug(viewedHospital.name)}`);
       }
   };
 
   const handleNavigateToFacilities = () => {
       if (viewedHospital) {
         setPage('facilities');
-        window.history.pushState(null, '', `/hospitals/${createSlug(viewedHospital.name)}/facilities`);
+        safePushState(`/hospitals/${createSlug(viewedHospital.name)}/facilities`);
       }
   };
 
@@ -304,21 +321,21 @@ const MainApp: React.FC = () => {
           setViewedFacilityName(facilityName);
           setPage('facility-details');
           const facilitySlug = createSlug(facilityName);
-          window.history.pushState(null, '', `/hospitals/${createSlug(viewedHospital.name)}/facilities/${facilitySlug}`);
+          safePushState(`/hospitals/${createSlug(viewedHospital.name)}/facilities/${facilitySlug}`);
       }
   }
 
   const handleBackFromFacilities = () => {
       if (viewedHospital) {
         setPage('hospital-page');
-        window.history.pushState(null, '', `/hospitals/${createSlug(viewedHospital.name)}`);
+        safePushState(`/hospitals/${createSlug(viewedHospital.name)}`);
       }
   };
 
   const handleBackFromFacilityDetails = () => {
       if (viewedHospital) {
           setPage('facilities');
-          window.history.pushState(null, '', `/hospitals/${createSlug(viewedHospital.name)}/facilities`);
+          safePushState(`/hospitals/${createSlug(viewedHospital.name)}/facilities`);
       }
   }
 
@@ -327,14 +344,14 @@ const MainApp: React.FC = () => {
           setViewedSpecializationName(specName);
           setPage('specialization-details');
           const specSlug = createSlug(specName);
-          window.history.pushState(null, '', `/hospitals/${createSlug(viewedHospital.name)}/${specSlug}`);
+          safePushState(`/hospitals/${createSlug(viewedHospital.name)}/${specSlug}`);
       }
   }
 
   const handleBackFromSpecialization = () => {
       if (viewedHospital) {
           setPage('hospital-page');
-          window.history.pushState(null, '', `/hospitals/${createSlug(viewedHospital.name)}`);
+          safePushState(`/hospitals/${createSlug(viewedHospital.name)}`);
       }
   }
 
@@ -344,7 +361,7 @@ const MainApp: React.FC = () => {
           setPage('treatment-details');
           const specSlug = createSlug(viewedSpecializationName);
           const treatmentSlug = createSlug(treatmentName);
-          window.history.pushState(null, '', `/hospitals/${createSlug(viewedHospital.name)}/${specSlug}/${treatmentSlug}`);
+          safePushState(`/hospitals/${createSlug(viewedHospital.name)}/${specSlug}/${treatmentSlug}`);
       }
   }
 
@@ -352,21 +369,21 @@ const MainApp: React.FC = () => {
       if (viewedHospital && viewedSpecializationName) {
           setPage('specialization-details');
           const specSlug = createSlug(viewedSpecializationName);
-          window.history.pushState(null, '', `/hospitals/${createSlug(viewedHospital.name)}/${specSlug}`);
+          safePushState(`/hospitals/${createSlug(viewedHospital.name)}/${specSlug}`);
       }
   }
 
   const handleNavigateToInsights = () => {
       if (viewedHospital) {
           setPage('hospital-insights');
-          window.history.pushState(null, '', `/hospitals/${createSlug(viewedHospital.name)}/insights`);
+          safePushState(`/hospitals/${createSlug(viewedHospital.name)}/insights`);
       }
   }
 
   const handleBackFromInsights = () => {
       if (viewedHospital) {
           setPage('hospital-page');
-          window.history.pushState(null, '', `/hospitals/${createSlug(viewedHospital.name)}`);
+          safePushState(`/hospitals/${createSlug(viewedHospital.name)}`);
       }
   }
 
@@ -375,7 +392,7 @@ const MainApp: React.FC = () => {
           setViewedArticleTitle(articleTitle);
           setPage('article-details');
           const articleSlug = createSlug(articleTitle);
-          window.history.pushState(null, '', `/hospitals/${createSlug(viewedHospital.name)}/articles/${articleSlug}`);
+          safePushState(`/hospitals/${createSlug(viewedHospital.name)}/articles/${articleSlug}`);
       }
   }
 
@@ -384,21 +401,21 @@ const MainApp: React.FC = () => {
           setViewedResearchTitle(researchTitle);
           setPage('research-details');
           const researchSlug = createSlug(researchTitle);
-          window.history.pushState(null, '', `/hospitals/${createSlug(viewedHospital.name)}/research/${researchSlug}`);
+          safePushState(`/hospitals/${createSlug(viewedHospital.name)}/research/${researchSlug}`);
       }
   }
 
   const handleBackFromArticle = () => {
       if (viewedHospital) {
           setPage('hospital-insights');
-          window.history.pushState(null, '', `/hospitals/${createSlug(viewedHospital.name)}/insights`);
+          safePushState(`/hospitals/${createSlug(viewedHospital.name)}/insights`);
       }
   }
 
   const handleBackFromResearch = () => {
       if (viewedHospital) {
           setPage('hospital-insights');
-          window.history.pushState(null, '', `/hospitals/${createSlug(viewedHospital.name)}/insights`);
+          safePushState(`/hospitals/${createSlug(viewedHospital.name)}/insights`);
       }
   }
 
@@ -406,24 +423,24 @@ const MainApp: React.FC = () => {
       setViewedDoctor(doctor);
       setPage('doctor-details');
       setIsChatOpen(false);
-      window.history.pushState(null, '', `/doctors/${createSlug(doctor.name)}`);
+      safePushState(`/doctors/${createSlug(doctor.name)}`);
   };
 
   const handleBackFromDoctor = () => {
       setPage('doctors');
-      window.history.pushState(null, '', '/doctors');
+      safePushState('/doctors');
   };
 
   const handleNavigateToPackage = (pkg: MedicalPackage) => {
       setViewedPackage(pkg);
       setPage('package-details');
       setIsChatOpen(false);
-      window.history.pushState(null, '', `/packages/${createSlug(pkg.title)}`);
+      safePushState(`/packages/${createSlug(pkg.title)}`);
   };
 
   const handleBackFromPackage = () => {
       setPage('packages');
-      window.history.pushState(null, '', '/packages');
+      safePushState('/packages');
   };
 
   const [initialQuery, setInitialQuery] = useState<string>('');
@@ -441,7 +458,7 @@ const MainApp: React.FC = () => {
     }
     setIsChatOpen(true);
     if (page !== 'hospital-page') {
-        window.history.pushState(null, '', '/');
+        safePushState('/');
     }
   };
   
@@ -459,7 +476,7 @@ const MainApp: React.FC = () => {
         return s;
     }));
     setPage('marketplace'); 
-    window.history.pushState(null, '', '/');
+    safePushState('/');
   };
 
   const handleClearFilters = () => {
@@ -482,22 +499,22 @@ const MainApp: React.FC = () => {
   const navigateToMarketplace = () => {
       setPage('marketplace');
       setFilters({ searchQuery: '' });
-      window.history.pushState(null, '', '/');
+      safePushState('/');
   };
 
   const navigateToDoctors = () => {
       setPage('doctors');
-      window.history.pushState(null, '', '/doctors');
+      safePushState('/doctors');
   }
 
   const navigateToPackages = () => {
       setPage('packages');
-      window.history.pushState(null, '', '/packages');
+      safePushState('/packages');
   }
 
   const navigateToHome = () => {
       setPage('home');
-      window.history.pushState(null, '', '/');
+      safePushState('/');
   }
 
   const layoutProps = {
@@ -602,6 +619,7 @@ const MainApp: React.FC = () => {
                     onViewFacilities={handleNavigateToFacilities}
                     onAskAria={handleQuickSearch}
                     onViewSpecialization={handleNavigateToSpecialization}
+                    onNavigateToHospital={handleNavigateToHospital}
                 />
             )}
 
@@ -638,7 +656,7 @@ const MainApp: React.FC = () => {
                     onNavigateToDoctor={handleNavigateToDoctor}
                     onViewAllInsights={handleNavigateToInsights}
                     onNavigateToArticle={handleNavigateToArticle}
-                    onNavigateToTreatment={handleNavigateToTreatment} // Pass prop
+                    onNavigateToTreatment={handleNavigateToTreatment}
                 />
             )}
 

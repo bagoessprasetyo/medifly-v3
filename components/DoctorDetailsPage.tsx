@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Doctor } from '../types';
 import { User, Stethoscope, GraduationCap, Calendar, Building2, MapPin, ChevronDown, ChevronUp, Languages, MessageSquare, Info, Check, ArrowLeft, ChevronRight } from 'lucide-react';
@@ -15,6 +14,16 @@ interface DoctorDetailsPageProps {
 export const DoctorDetailsPage: React.FC<DoctorDetailsPageProps> = ({ doctor, onBack, onNavigateToHospital, onViewDoctor }) => {
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(0);
   const [showStickyHeader, setShowStickyHeader] = useState(false);
+
+  // Scroll to top on mount or doctor change
+  useEffect(() => {
+    const mainContainer = document.getElementById('main-content-area');
+    if (mainContainer) {
+        mainContainer.scrollTo(0, 0);
+    } else {
+        window.scrollTo(0, 0);
+    }
+  }, [doctor.id]);
 
   useEffect(() => {
     const handleScroll = () => {

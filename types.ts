@@ -1,4 +1,3 @@
-
 export interface Hospital {
   id: string;
   name: string;
@@ -135,7 +134,8 @@ export interface Message {
 
 export interface FilterState {
   searchQuery: string;
-  country?: string;
+  country?: string; // Deprecated: Single country selection
+  countries?: string[]; // New: Multiple country selection
   specialty?: string;
   aiListName?: string;
   // Advanced Filters
@@ -171,4 +171,11 @@ export interface MedicalEntity {
   text: string;
   category: 'Problem' | 'Treatment' | 'Test' | 'Anatomy' | 'Drug';
   confidenceScore?: number;
+}
+
+export interface CountryOption {
+  id: string;
+  name: string;
+  description: string;
+  icon?: string;
 }

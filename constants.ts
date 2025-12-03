@@ -56,6 +56,35 @@ export const CITY_COORDINATES: Record<string, { lat: number; lng: number }> = {
   'auckland': { lat: -36.8485, lng: 174.7633 },
 };
 
+export const SPECIALIZATIONS = [
+  { name: 'Cardiology', description: 'Heart checkup, angioplasty, heart valve surgery, etc.' },
+  { name: 'Orthopedics', description: 'Knee replacement, spine surgery, sports injury care, etc.' },
+  { name: 'Neurology', description: 'Stroke care, brain scan, nerve disorder treatment, etc.' },
+  { name: 'Oncology', description: 'Cancer screening, chemo programs, tumor surgery, etc.' },
+  { name: 'Gastroenterology', description: 'Endoscopy, liver care, digestive disorder treatment, etc.' },
+  { name: 'Urology', description: 'Kidney stone removal, prostate care, bladder issues, etc.' },
+  { name: 'Dermatology', description: 'Skin conditions, laser therapy, cosmetic dermatology, etc.' },
+  { name: 'Fertility', description: 'IVF, egg freezing, fertility assessment, etc.' },
+  { name: 'Dental', description: 'Dental implants, cosmetic dentistry, oral surgery, etc.' },
+  { name: 'Cosmetic Surgery', description: 'Rhinoplasty, liposuction, facelifts, etc.' },
+];
+
+// Semantic Mapping for "Smart Search"
+export const SEMANTIC_SPECIALTY_MAP: Record<string, string[]> = {
+  'Cardiology': ['heart', 'cardiac', 'pulse', 'blood pressure', 'arrhythmia', 'bypass', 'attack', 'chest pain'],
+  'Orthopedics': ['bone', 'joint', 'knee', 'spine', 'back', 'hip', 'fracture', 'sports injury', 'arthritis', 'acl', 'muscle'],
+  'Neurology': ['brain', 'nerve', 'stroke', 'headache', 'migraine', 'seizure', 'paralysis', 'epilepsy', 'neuro'],
+  'Oncology': ['cancer', 'tumor', 'chemo', 'radiation', 'malignant', 'leukemia', 'lymphoma', 'cyst', 'biopsy'],
+  'Gastroenterology': ['stomach', 'gut', 'liver', 'digestive', 'bowel', 'intestine', 'colon', 'acid', 'endoscopy', 'gerd', 'abdomen'],
+  'Urology': ['kidney', 'bladder', 'prostate', 'urinary', 'stone', 'uti'],
+  'Dermatology': ['skin', 'acne', 'rash', 'mole', 'eczema', 'psoriasis', 'hair', 'derma'],
+  'Fertility': ['ivf', 'baby', 'pregnancy', 'egg', 'sperm', 'conception', 'reproductive', 'infertility', 'family planning'],
+  'Dental': ['tooth', 'teeth', 'gum', 'root canal', 'implant', 'braces', 'cavity', 'smile', 'dentist'],
+  'Cosmetic Surgery': ['plastic', 'nose', 'rhinoplasty', 'face', 'breast', 'liposuction', 'tummy tuck', 'botox', 'filler', 'aesthetic'],
+  'Pediatrics': ['child', 'baby', 'kid', 'infant', 'adolescent'],
+  'Ophthalmology': ['eye', 'vision', 'cataract', 'lasik', 'glaucoma'],
+};
+
 export const getCoordinatesForCity = (city: string) => {
     if (!city) return null;
     const key = city.toLowerCase().trim();

@@ -1,5 +1,4 @@
-
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Hospital, Doctor } from '../types';
 import { DOCTORS } from '../constants';
 import { 
@@ -28,6 +27,16 @@ export const SpecializationDetailsPage: React.FC<SpecializationDetailsPageProps>
   onNavigateToArticle,
   onNavigateToTreatment
 }) => {
+  
+  // Scroll to top on mount or specialization change
+  useEffect(() => {
+      const mainContainer = document.getElementById('main-content-area');
+      if (mainContainer) {
+          mainContainer.scrollTo(0, 0);
+      } else {
+          window.scrollTo(0, 0);
+      }
+  }, [specializationName]);
   
   // Filter doctors for this specialization and hospital (or generic fallback for demo)
   const specialists = DOCTORS.filter(d => 
