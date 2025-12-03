@@ -617,6 +617,7 @@ const MainApp: React.FC = () => {
                     onNavigateToDoctors={navigateToDoctors}
                     onViewGallery={handleNavigateToGallery}
                     onViewFacilities={handleNavigateToFacilities}
+                    onNavigateToPackages={navigateToPackages}
                     onAskAria={handleQuickSearch}
                     onViewSpecialization={handleNavigateToSpecialization}
                     onNavigateToHospital={handleNavigateToHospital}

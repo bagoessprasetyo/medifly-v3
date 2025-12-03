@@ -16,6 +16,7 @@ interface HospitalPageProps {
   onBack: () => void;
   onNavigateToHospitals: () => void;
   onNavigateToDoctors: () => void;
+  onNavigateToPackages?: () => void; // Added
   onViewGallery: () => void;
   onViewFacilities: () => void;
   onAskAria: (query: string) => void;
@@ -27,7 +28,8 @@ export const HospitalPage: React.FC<HospitalPageProps> = ({
   hospital, 
   onBack, 
   onNavigateToHospitals, 
-  onNavigateToDoctors, 
+  onNavigateToDoctors,
+  onNavigateToPackages,
   onViewGallery, 
   onViewFacilities,
   onAskAria,
@@ -105,33 +107,29 @@ export const HospitalPage: React.FC<HospitalPageProps> = ({
       return HOSPITALS.filter(h => h.id !== hospital.id && h.country === hospital.country).slice(0, 4);
   }, [hospital]);
 
-  // Explore More Hospitals Logic:
-  // 1. Similar Price Range (or within 1 tier)
-  // 2. Similar Expertise (specialties overlap)
-  // 3. Different Country (to promote exploration) or fall back to any
+  // Explore More Hospitals Logic
   const exploreMoreHospitals = useMemo(() => {
       return HOSPITALS.filter(h => {
           if (h.id === hospital.id) return false;
-          if (h.country === hospital.country) return false; // Prefer international alternatives
+          if (h.country === hospital.country) return false; 
 
           const priceMatch = h.priceRange === hospital.priceRange || 
                              (h.priceRange.length >= 2 && hospital.priceRange.length >= 2);
           
           const specialtyOverlap = h.specialties.some(s => hospital.specialties.includes(s));
           
-          // Similar scale proxy
-          const isLarge = hospital.reviewCount > 500;
-          const targetIsLarge = h.reviewCount > 500;
-          const scaleMatch = isLarge === targetIsLarge;
+          const isHighVolume = hospital.reviewCount > 1000;
+          const targetHighVolume = h.reviewCount > 1000;
+          const volumeMatch = isHighVolume === targetHighVolume;
 
-          return priceMatch && specialtyOverlap && scaleMatch;
+          return priceMatch && specialtyOverlap && volumeMatch;
       })
+      .sort((a, b) => b.reviewCount - a.reviewCount)
       .slice(0, 4);
   }, [hospital]);
 
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(2);
 
-  // Helper to safely get images or fallback
   const getImages = (count: number) => {
       const sourceImages = hospital.images || [];
       const imgs = sourceImages.length > 0 ? [...sourceImages] : [hospital.imageUrl];
@@ -161,7 +159,7 @@ export const HospitalPage: React.FC<HospitalPageProps> = ({
       { year: "2021", title: "Gold Seal of Approval®", org: "Joint Commission International (JCI)" },
   ];
 
-  const visibleAwards = showAllAwards ? awardsList : awardsList.slice(0, 2);
+  const visibleAwards = showAllAwards ? awardsList : awardsList.slice(0, 6);
 
   return (
     <div className="bg-white text-[#1C1C1C] font-sans antialiased w-full min-h-full pb-20">
@@ -263,19 +261,16 @@ export const HospitalPage: React.FC<HospitalPageProps> = ({
 
       {/* Main Content Split - ID: overview */}
       <div id="overview" className="max-w-7xl mx-auto px-4 md:px-6 py-8 grid grid-cols-1 lg:grid-cols-3 gap-12 scroll-mt-20">
-          
-          {/* Left Column: Hospital Info */}
+          {/* ... Left Column: Hospital Info ... */}
           <div className="lg:col-span-2 space-y-8">
-              
-              {/* 1. Header Title & Action */}
-              <div className="flex flex-col md:flex-row justify-between items-start gap-4">
+               {/* ... Header Title, Badges, Language, Accreditations, Description ... */}
+               <div className="flex flex-col md:flex-row justify-between items-start gap-4">
                   <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-[#1C1C1C] leading-tight">
                       {hospital.name}
                   </h1>
                   <button className="hidden md:block bg-[#1C1C1C] text-white px-6 py-3 rounded-lg font-medium text-sm hover:bg-black transition-colors shadow-lg shadow-black/5 whitespace-nowrap">
                       Book a Consultation
                   </button>
-                  {/* Mobile Ask Aria */}
                   <button 
                     onClick={() => onAskAria(`Info about ${hospital.name}`)}
                     className="w-full md:hidden bg-[#1C1C1C] hover:bg-zinc-800 text-white px-6 py-3 rounded-lg text-sm font-medium transition-all shadow-lg"
@@ -284,7 +279,6 @@ export const HospitalPage: React.FC<HospitalPageProps> = ({
                   </button>
               </div>
 
-              {/* 2. Badges Row */}
               <div className="flex flex-wrap gap-x-6 gap-y-2 text-xs font-semibold text-slate-800">
                   <div className="flex items-center gap-1.5">
                       <Crown className="w-4 h-4" /> VIP Patient Support
@@ -297,7 +291,6 @@ export const HospitalPage: React.FC<HospitalPageProps> = ({
                   </div>
               </div>
 
-              {/* 3. Language Support */}
               <div>
                   <span className="inline-flex items-center gap-2 bg-[#F1FCA7] px-3 py-1.5 rounded text-xs font-semibold text-slate-900">
                       <Languages className="w-3.5 h-3.5" />
@@ -305,9 +298,7 @@ export const HospitalPage: React.FC<HospitalPageProps> = ({
                   </span>
               </div>
 
-              {/* 4. Accreditations Row */}
               <div className="flex flex-col sm:flex-row gap-6 p-5 bg-[#FAFAFA] rounded-xl border border-slate-100">
-                  {/* JCI */}
                   <div className="flex gap-3 items-center">
                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-yellow-400 to-yellow-600 shadow-sm flex items-center justify-center text-white font-bold text-[10px] border-2 border-white ring-1 ring-yellow-100">
                         JCI
@@ -317,7 +308,6 @@ export const HospitalPage: React.FC<HospitalPageProps> = ({
                          <div className="text-xs text-slate-500">International healthcare standards</div>
                      </div>
                   </div>
-                  {/* ACCME (Mock) */}
                   <div className="flex gap-3 items-center">
                      <div className="w-10 h-10 bg-[#008080] text-white font-bold flex items-center justify-center rounded-lg shadow-sm text-sm">
                         A
@@ -329,13 +319,12 @@ export const HospitalPage: React.FC<HospitalPageProps> = ({
                   </div>
               </div>
 
-              {/* 5. Description */}
               <div className="text-slate-600 text-sm leading-relaxed space-y-4">
                   <p>{hospital.description}</p>
-                  <p>{hospital.name} is a JCI and MSQH accredited facility and will remain one of the leading medical centres that cater to the growing number of local population in Penang, Northern region and neighbouring countries.</p>
+                  <p>{hospital.name} is a JCI and MSQH accredited facility...</p>
               </div>
 
-              {/* 6. Stats Grid */}
+              {/* Stats Grid */}
               <div className="grid grid-cols-2 md:grid-cols-2 gap-y-6 gap-x-12 border-y border-slate-100 py-8">
                   <div className="flex items-center gap-3">
                       <Stethoscope className="w-5 h-5 text-slate-900" strokeWidth={1.5} />
@@ -355,7 +344,7 @@ export const HospitalPage: React.FC<HospitalPageProps> = ({
                   </div>
               </div>
 
-              {/* 7. Awards */}
+              {/* Awards */}
               <div className="space-y-4">
                   <h3 className="font-bold text-lg flex items-center gap-2 text-slate-900">
                       <Trophy className="w-5 h-5" /> Awards & Accreditations
@@ -382,15 +371,14 @@ export const HospitalPage: React.FC<HospitalPageProps> = ({
               </div>
           </div>
 
-          {/* Right Column: Widgets */}
+          {/* Right Column: Widgets (Concierge, Getting Here, Around Area) */}
           <div className="space-y-6">
-              
-              {/* AI Concierge Widget */}
+              {/* ... (Keep existing widgets) ... */}
               <div className="border border-slate-200 bg-gradient-to-br from-white to-slate-50 rounded-xl p-6 shadow-sm relative overflow-hidden group">
+                  {/* ... Concierge Content ... */}
                   <div className="absolute top-0 right-0 p-3 opacity-5 group-hover:opacity-10 transition-opacity">
                       <Bot className="w-24 h-24 text-slate-900" />
                   </div>
-                  
                   <div className="relative z-10">
                       <div className="flex items-center gap-2 mb-3">
                           <div className="p-2 bg-[#1C1C1C] rounded-lg text-[#F1FCA7] shadow-lg shadow-slate-200">
@@ -401,11 +389,9 @@ export const HospitalPage: React.FC<HospitalPageProps> = ({
                               <p className="text-[10px] text-slate-500 font-medium">Powered by Aria AI</p>
                           </div>
                       </div>
-                      
                       <p className="text-xs text-slate-600 mb-4 leading-relaxed">
                           I can analyze <strong>{hospital.name}</strong>'s pricing, insurance coverage, and specialist availability instantly.
                       </p>
-
                       <div className="grid grid-cols-2 gap-2 mb-4">
                           {["Pricing", "Insurance", "Doctors", "Booking"].map((item, i) => (
                               <button 
@@ -417,7 +403,6 @@ export const HospitalPage: React.FC<HospitalPageProps> = ({
                               </button>
                           ))}
                       </div>
-
                       <button 
                           onClick={() => onAskAria(`I have general questions about ${hospital.name}`)}
                           className="w-full bg-white border border-slate-200 text-slate-400 text-xs py-3 px-4 rounded-xl text-left flex justify-between items-center hover:border-slate-900 hover:text-slate-600 transition-colors shadow-sm group/input"
@@ -430,9 +415,10 @@ export const HospitalPage: React.FC<HospitalPageProps> = ({
                   </div>
               </div>
 
-              {/* Getting Here Widget */}
+              {/* Getting Here */}
               <div className="border border-zinc-200 rounded-xl p-6 shadow-sm bg-white">
-                  <div className="flex items-center justify-between mb-6">
+                   {/* ... Content ... */}
+                   <div className="flex items-center justify-between mb-6">
                       <div className="flex items-center gap-2 font-bold text-[#1C1C1C]">
                           <div className="p-1.5 bg-slate-100 rounded-full"><Navigation className="w-4 h-4" /></div>
                           Getting Here
@@ -444,7 +430,6 @@ export const HospitalPage: React.FC<HospitalPageProps> = ({
                         </div>
                       </div>
                   </div>
-                  
                   <div className="flex items-center gap-4 pt-2">
                       <div className="w-12 h-12 bg-[#E4F28A] rounded-full flex items-center justify-center text-[#1C1C1C] border-4 border-white shadow-sm ring-1 ring-slate-100">
                           <Plane className="w-5 h-5 rotate-[-45deg]" strokeWidth={2} />
@@ -456,19 +441,17 @@ export const HospitalPage: React.FC<HospitalPageProps> = ({
                   </div>
               </div>
 
-              {/* Around the Area Widget */}
+              {/* Around the Area */}
               <div className="border border-zinc-200 rounded-xl p-6 shadow-sm bg-white">
+                  {/* ... Content ... */}
                   <div className="flex items-center gap-2 font-bold text-[#1C1C1C] mb-4">
                       <div className="p-1.5 bg-slate-100 rounded-full"><Scan className="w-4 h-4" /></div>
                       Around the Area
                   </div>
-
                   <div className="flex items-center gap-2 mb-5 cursor-pointer hover:opacity-80 transition-opacity">
                        <MapPin className="w-4 h-4 text-slate-500" />
                        <span className="font-semibold text-slate-900 text-sm">Map</span>
                   </div>
-
-                  {/* Map Placeholder */}
                   <div className="w-full h-32 bg-slate-100 rounded-xl mb-5 overflow-hidden relative border border-slate-200 group cursor-pointer">
                       <img 
                         src="https://api.mapbox.com/styles/v1/mapbox/light-v10/static/100.3,5.4,13,0/400x200?access_token=pk.eyJ1IjoibWVkaWZseSIsImEiOiJjbTdtbnh5aXYwMHFyMmtzY3Z3Z3l3c3d6In0.99999999999" 
@@ -480,15 +463,12 @@ export const HospitalPage: React.FC<HospitalPageProps> = ({
                           <div className="bg-white/90 backdrop-blur px-3 py-1.5 rounded-full text-xs font-bold text-slate-900 shadow-sm border border-slate-200">View Map</div>
                       </div>
                   </div>
-
-                  {/* Address */}
                   <div className="flex gap-3 mb-6 text-xs text-slate-600 items-start leading-relaxed bg-slate-50 p-3 rounded-lg border border-slate-100">
                       <div className="w-5 h-5 rounded-full bg-white border border-slate-200 flex items-center justify-center shrink-0 mt-0.5 shadow-sm">
                          <span className="text-[10px]">🇲🇾</span>
                       </div>
                       <p>1, Jalan Pangkor, 10050 George Town, Pulau Pinang, Malaysia</p>
                   </div>
-
                   <div className="space-y-5">
                       <div>
                           <div className="flex items-center gap-2 text-sm font-bold text-[#1C1C1C] mb-2">
@@ -518,7 +498,6 @@ export const HospitalPage: React.FC<HospitalPageProps> = ({
                       </div>
                   </div>
               </div>
-
           </div>
       </div>
 
@@ -527,7 +506,6 @@ export const HospitalPage: React.FC<HospitalPageProps> = ({
       {/* 1. Top Expertise - ID: specialization */}
       <section id="specialization" className="max-w-7xl mx-auto px-6 py-16 scroll-mt-40">
         <h2 className="text-3xl font-semibold text-center tracking-tight mb-12">Our Top Expertise</h2>
-        
         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6">
             {[
                 { icon: Wind, title: "Pulmonology", desc: "Advanced care for lungs with leading specialists and integrated treatments." },
@@ -549,8 +527,6 @@ export const HospitalPage: React.FC<HospitalPageProps> = ({
                 </div>
             ))}
         </div>
-
-        {/* Other Specializations Grid */}
         <div className="mt-20 bg-[#FAFAFA] rounded-2xl p-8 md:p-12">
             <h4 className="text-center text-xl font-medium text-gray-900 mb-10">Other Specializations Available</h4>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 max-w-5xl mx-auto">
@@ -580,13 +556,10 @@ export const HospitalPage: React.FC<HospitalPageProps> = ({
 
       {/* 2. Explore Specialists - ID: doctors */}
       <section id="doctors" className="max-w-7xl mx-auto px-6 py-12 scroll-mt-40">
-        {/* ... (Same as previous, abbreviated for brevity) ... */}
         <div className="flex flex-col md:flex-row md:items-center justify-between mb-8">
             <h2 className="text-2xl font-semibold tracking-tight text-gray-900">Explore Specialists</h2>
         </div>
-        {/* ... (Grid code remains) ... */}
          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-             {/* ... (Doctor cards loop - keeping existing logic) ... */}
              {[
                 { name: "Dr. Khoo Eng Huei", role: "Nephrology", img: "https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?auto=format&fit=crop&q=80&w=400", time: "Mon, Wed, Fri" },
                 { name: "Dr. Tan Wei Ching", role: "Cardiology", img: "https://images.unsplash.com/photo-1537368910025-700350fe46c7?auto=format&fit=crop&q=80&w=400", time: "Tue, Thu" },
@@ -618,13 +591,20 @@ export const HospitalPage: React.FC<HospitalPageProps> = ({
                 </div>
             ))}
          </div>
+         <div className="flex justify-center mt-10">
+            <button 
+                onClick={onNavigateToDoctors}
+                className="border border-gray-200 bg-white text-slate-900 px-8 py-3 rounded-lg font-medium text-sm hover:bg-gray-50 transition-colors shadow-sm hover:shadow-md"
+            >
+                View More Specialists
+            </button>
+        </div>
       </section>
 
       {/* 3. Facilities - ID: facilities */}
       <section id="facilities" className="max-w-7xl mx-auto px-6 py-16 bg-white scroll-mt-40">
         <h2 className="text-2xl font-semibold text-center tracking-tight mb-12">Facilities</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-             {/* ... (Keeping facilities grid logic) ... */}
              {[
                 { title: "Medical & Treatment Centres", img: "https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?auto=format&fit=crop&q=80&w=400", items: ["Accident & Emergency (A&E)", "Intensive Care Unit (ICU)", "Blood/Stem Cell Bio", "Cardiology Clinic"] },
                 { title: "Treatment Technology", img: "https://images.unsplash.com/photo-1581594693702-fbdc51b2763b?auto=format&fit=crop&q=80&w=400", items: ["Robotic Surgery System", "Varian TrueBeam Linear", "3T MRI Scan", "1024-Slice CT Scan"] },
@@ -647,12 +627,18 @@ export const HospitalPage: React.FC<HospitalPageProps> = ({
                 </div>
             ))}
         </div>
-        {/* ... */}
+        <div className="flex justify-center mt-10">
+            <button 
+                onClick={onViewFacilities}
+                className="border border-gray-200 bg-white text-slate-900 px-8 py-3 rounded-lg font-medium text-sm hover:bg-gray-50 transition-colors shadow-sm hover:shadow-md"
+            >
+                View All Facilities
+            </button>
+        </div>
       </section>
 
       {/* 4. Treatment Package - ID: packages */}
       <section id="packages" className="max-w-7xl mx-auto px-6 py-16 bg-gray-50/50 scroll-mt-40">
-          {/* ... (Packages grid - abbreviated) ... */}
            <div className="text-center max-w-2xl mx-auto mb-12">
              <h2 className="text-2xl font-semibold tracking-tight text-gray-900 mb-3">Treatment Package</h2>
              <p className="text-sm text-gray-500">Discover our curated medical packages with world-class supervision, advanced technology, and personalized treatments.</p>
@@ -681,11 +667,18 @@ export const HospitalPage: React.FC<HospitalPageProps> = ({
                 </div>
             ))}
         </div>
+        <div className="flex justify-center mt-10">
+            <button 
+                onClick={onNavigateToPackages}
+                className="border border-gray-200 bg-white text-slate-900 px-8 py-3 rounded-lg font-medium text-sm hover:bg-gray-50 transition-colors shadow-sm hover:shadow-md"
+            >
+                View All Packages
+            </button>
+        </div>
       </section>
 
       {/* 5. Backed by experts */}
       <section className="max-w-7xl mx-auto px-6 py-20">
-          {/* ... (Experts section - abbreviated) ... */}
            <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
             <div className="col-span-1 py-4">
                 <h2 className="text-3xl font-semibold tracking-tight text-gray-900 mb-6 leading-tight">Backed by the country's leading health experts</h2>
@@ -722,7 +715,6 @@ export const HospitalPage: React.FC<HospitalPageProps> = ({
 
       {/* 6. FAQ */}
       <section className="max-w-7xl mx-auto px-6 py-12 border-t border-gray-100">
-        {/* ... (FAQ section - abbreviated) ... */}
         <h2 className="text-2xl font-semibold tracking-tight text-gray-900 mb-8">Frequently Asked Question</h2>
         <div className="space-y-4">
             {[
@@ -780,7 +772,7 @@ export const HospitalPage: React.FC<HospitalPageProps> = ({
         <div className="flex justify-center mt-8">
             <button 
                 onClick={onNavigateToHospitals}
-                className="border border-gray-200 bg-white text-slate-900 px-8 py-3 rounded-lg font-medium text-sm hover:bg-gray-50 transition-colors"
+                className="border border-gray-200 bg-white text-slate-900 px-8 py-3 rounded-lg font-medium text-sm hover:bg-gray-50 transition-colors shadow-sm hover:shadow-md"
             >
                 Discover More Hospitals
             </button>
@@ -865,7 +857,7 @@ export const HospitalPage: React.FC<HospitalPageProps> = ({
         <div className="flex justify-center mt-8">
             <button 
                 onClick={onNavigateToHospitals}
-                className="border border-gray-200 bg-white text-slate-900 px-8 py-3 rounded-lg font-medium text-sm hover:bg-gray-50 transition-colors"
+                className="border border-gray-200 bg-white text-slate-900 px-8 py-3 rounded-lg font-medium text-sm hover:bg-gray-50 transition-colors shadow-sm hover:shadow-md"
             >
                 Discover More Hospitals
             </button>
@@ -873,7 +865,7 @@ export const HospitalPage: React.FC<HospitalPageProps> = ({
       </section>
 
       {/* Floating Action Button (Concierge) */}
-      {/* <div className="fixed bottom-6 right-6 z-50 animate-in slide-in-from-bottom-10 fade-in duration-500">
+      <div className="fixed bottom-6 right-6 z-50 animate-in slide-in-from-bottom-10 fade-in duration-500">
         <button 
             onClick={() => onAskAria(`Start a concierge session for ${hospital.name}. I need help with...`)}
             className="group flex items-center gap-3 bg-[#1C1C1C] text-white p-2 pr-6 rounded-full shadow-2xl hover:scale-105 transition-all border border-gray-800"
@@ -886,7 +878,7 @@ export const HospitalPage: React.FC<HospitalPageProps> = ({
                 <p className="text-sm font-bold leading-none">Ask Aria</p>
             </div>
         </button>
-      </div> */}
+      </div>
       
     </div>
   );

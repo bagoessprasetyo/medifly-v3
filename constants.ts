@@ -664,6 +664,23 @@ export const HOSPITALS: Hospital[] = [
     languages: ['English', 'Mandarin', 'Bahasa Melayu', 'Tamil', 'Indonesian'],
   },
   {
+    id: '999',
+    name: 'Avisena Healthcare Malaysia',
+    location: 'Kuala Lumpur',
+    country: 'Malaysia',
+    coordinates: { lat: 3.0738, lng: 101.5183 },
+    // specialties: ['Fertility', 'Orthopedics', 'Pediatrics'],
+    specialties: ['Cardiology', 'Paediatrics', 'Obstetrics & Gynaecology', 'Gastroenterology'],
+    rating: 4.7,
+    reviewCount: 850,
+    imageUrl: 'https://picsum.photos/800/600?random=34',
+    images: ['https://picsum.photos/800/600?random=34', 'https://picsum.photos/800/600?random=3401'],
+    priceRange: '$$',
+    description: 'A leading specialist hospital known for personalised care, women’s health, and advanced medical services in Shah Alam.',
+    accreditation: ['MSQH', 'Healthcare Asia Awards'],
+    languages: ['English', 'Malay'],
+  },
+  {
     id: '35',
     name: 'Prince Court Medical Centre',
     location: 'Kuala Lumpur',
@@ -2173,6 +2190,7 @@ export const HOSPITALS: Hospital[] = [
     accreditation: ['MOH PNG'],
     languages: ['English', 'Tok Pisin'],
   },
+  
   {
     id: '128',
     name: 'Pacific International Hospital',
@@ -2286,6 +2304,7 @@ export const DOCTORS: Doctor[] = [
         rating: 4.7,
         reviewCount: 86
     },
+    
     {
         id: '5',
         name: 'Dr. Kim Min-jun',
@@ -2405,7 +2424,83 @@ export const DOCTORS: Doctor[] = [
         gender: 'Female',
         rating: 4.9,
         reviewCount: 130
-    }
+    },
+    {
+      id: '101',
+      name: 'Dr. Adrian Santoso',
+      specialty: 'Cardiology',
+      hospitalId: '12',
+      hospitalName: 'Siloam Hospitals Lippo Village',
+      hospitalCountry: 'Indonesia',
+      imageUrl: 'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?auto=format&fit=crop&q=80&w=800',
+      languages: ['English', 'Indonesian'],
+      experienceYears: 12,
+      procedures: ['Echocardiography', 'Coronary Angiography', 'Heart Failure Management'],
+      gender: 'Male',
+      rating: 4.8,
+      reviewCount: 132
+  },
+  {
+      id: '102',
+      name: 'Dr. Melia Hartanto',
+      specialty: 'Cardiology',
+      hospitalId: '12',
+      hospitalName: 'Siloam Hospitals Lippo Village',
+      hospitalCountry: 'Indonesia',
+      imageUrl: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&q=80&w=800',
+      languages: ['English', 'Indonesian'],
+      experienceYears: 9,
+      procedures: ['Cardiac Stress Test', 'Holter Monitoring', 'Arrhythmia Treatment'],
+      gender: 'Female',
+      rating: 4.6,
+      reviewCount: 89
+  },
+  {
+      id: '103',
+      name: 'Dr. Fadli Wirawan',
+      specialty: 'Cardiology',
+      hospitalId: '12',
+      hospitalName: 'Siloam Hospitals Lippo Village',
+      hospitalCountry: 'Indonesia',
+      imageUrl: 'https://images.unsplash.com/photo-1544723795-3fb6469f5b39?auto=format&fit=crop&q=80&w=800',
+      languages: ['English', 'Indonesian'],
+      experienceYears: 15,
+      procedures: ['Pacemaker Implantation', 'Cardiac CT Scan', 'Hypertension Management'],
+      gender: 'Male',
+      rating: 4.9,
+      reviewCount: 174
+  },
+  {
+      id: '104',
+      name: 'Dr. Regina Larasati',
+      specialty: 'Cardiology',
+      hospitalId: '12',
+      hospitalName: 'Siloam Hospitals Lippo Village',
+      hospitalCountry: 'Indonesia',
+      imageUrl: 'https://images.unsplash.com/photo-1520813792240-56fc4a3765a7?auto=format&fit=crop&q=80&w=800',
+      languages: ['English', 'Indonesian'],
+      experienceYears: 11,
+      procedures: ['Cardiac MRI', 'Valve Disease Management', 'Preventive Cardiology'],
+      gender: 'Female',
+      rating: 4.7,
+      reviewCount: 121
+  },
+  {
+      id: '105',
+      name: 'Dr. Yosef Mahendra',
+      specialty: 'Cardiology',
+      hospitalId: '12',
+      hospitalName: 'Siloam Hospitals Lippo Village',
+      hospitalCountry: 'Indonesia',
+      imageUrl: 'https://images.unsplash.com/photo-1503023345310-bd7c1de61c7d?auto=format&fit=crop&q=80&w=800',
+      languages: ['English', 'Indonesian'],
+      experienceYears: 8,
+      procedures: ['Electrocardiogram (ECG)', 'Cardiac Rehabilitation', 'Cholesterol Management'],
+      gender: 'Male',
+      rating: 4.5,
+      reviewCount: 76
+  }
+
 ];
 
 // export const PACKAGES: MedicalPackage[] = [

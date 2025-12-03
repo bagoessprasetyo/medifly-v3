@@ -169,7 +169,7 @@ export const PackagesPage: React.FC<PackagesPageProps> = ({ onBack, onViewPackag
                 <div className="mb-12 bg-slate-50/50 p-6 rounded-2xl border border-slate-100">
                     <h2 className="text-lg font-bold text-slate-900 mb-6">Find the Right Care for You</h2>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        {/* Highlights Cards (Keep existing) */}
+                        {/* Card 1 */}
                         <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-all cursor-pointer">
                             <div className="w-12 h-12 bg-[#F1FCA7] rounded-full flex items-center justify-center mb-4">
                                 <Activity className="w-6 h-6 text-slate-900" />
@@ -177,7 +177,22 @@ export const PackagesPage: React.FC<PackagesPageProps> = ({ onBack, onViewPackag
                             <h3 className="font-semibold text-slate-900 mb-2">Check-up & Diagnostic</h3>
                             <p className="text-xs text-slate-500 leading-relaxed">Comprehensive health screenings and essential diagnostic tests.</p>
                         </div>
-                        {/* ... other highlight cards ... */}
+                        {/* Card 2 */}
+                        <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-all cursor-pointer">
+                            <div className="w-12 h-12 bg-[#F1FCA7] rounded-full flex items-center justify-center mb-4">
+                                <Heart className="w-6 h-6 text-slate-900" />
+                            </div>
+                            <h3 className="font-semibold text-slate-900 mb-2">Recovery & Physiotherapy</h3>
+                            <p className="text-xs text-slate-500 leading-relaxed">Comprehensive recovery support from physio to post-surgery care.</p>
+                        </div>
+                        {/* Card 3 */}
+                        <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-all cursor-pointer">
+                            <div className="w-12 h-12 bg-[#F1FCA7] rounded-full flex items-center justify-center mb-4">
+                                <Sparkles className="w-6 h-6 text-slate-900" />
+                            </div>
+                            <h3 className="font-semibold text-slate-900 mb-2">Beauty & Wellness</h3>
+                            <p className="text-xs text-slate-500 leading-relaxed">Aesthetic care for skin, face, and body to elevate your beauty.</p>
+                        </div>
                     </div>
                 </div>
                 )}
