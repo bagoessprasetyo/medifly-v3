@@ -673,8 +673,13 @@ export const HOSPITALS: Hospital[] = [
     specialties: ['Cardiology', 'Paediatrics', 'Obstetrics & Gynaecology', 'Gastroenterology'],
     rating: 4.7,
     reviewCount: 850,
-    imageUrl: 'https://picsum.photos/800/600?random=34',
-    images: ['https://picsum.photos/800/600?random=34', 'https://picsum.photos/800/600?random=3401'],
+    imageUrl: 'https://shahalam.avisena.com.my/wp-content/uploads/2023/01/facilities-intro.jpg',
+    images: [
+      'https://shahalam.avisena.com.my/wp-content/uploads/2023/01/facilities-intro.jpg', 
+      'https://shahalam.avisena.com.my/wp-content/uploads/2023/02/avisena-concierge-valet.jpg',
+      'https://shahalam.avisena.com.my/wp-content/uploads/2023/01/sutera-intro-img.jpg',
+      'https://shahalam.avisena.com.my/wp-content/uploads/2023/01/sutera-lounge-1.jpg'
+    ],
     priceRange: '$$',
     description: 'A leading specialist hospital known for personalised care, women’s health, and advanced medical services in Shah Alam.',
     accreditation: ['MSQH', 'Healthcare Asia Awards'],
