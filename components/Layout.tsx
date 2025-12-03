@@ -25,12 +25,13 @@ export const Layout: React.FC<LayoutProps> = ({
   return (
     <div className="min-h-full flex flex-col bg-white font-sans text-slate-900 relative">
       <div className="sticky top-0 z-50 w-full bg-white/80 backdrop-blur-md border-b border-slate-100">
-          <Navbar 
+          <Navbar
             onNavigateToHome={onNavigateToHome}
             onNavigateToMarketplace={onNavigateToMarketplace}
             onNavigateToDoctors={onNavigateToDoctors}
             onNavigateToPackages={onNavigateToPackages}
             onStartTour={onStartTour}
+            isHomePage={isHomePage}
           />
       </div>
       <main className="flex-1 w-full">

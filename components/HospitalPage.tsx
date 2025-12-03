@@ -1,16 +1,17 @@
 import React, { useEffect, useState, useMemo } from 'react';
-import { 
-  Activity, Building2, Stethoscope, Package, Users, MapPin, Languages, 
-  Award, Bed, Trophy, ChevronDown, ChevronRight, Navigation, Plane, 
-  Bus, Flag, Wind, Heart, Link, Brain, Droplet, HeartPulse, Bone, Dna, 
+import {
+  Activity, Building2, Stethoscope, Package, Users, MapPin, Languages,
+  Award, Bed, Trophy, ChevronDown, ChevronRight, Navigation, Plane,
+  Bus, Flag, Wind, Heart, Link, Brain, Droplet, HeartPulse, Bone, Dna,
   BrainCircuit, Baby, Utensils, Eye, Ear, ChevronUp, Star, LayoutGrid,
   CheckCircle2, ArrowLeft, ArrowRight, Microscope, Filter, Clock, ChevronLeft,
   GraduationCap, Scan, CheckCircle, Scissors, Sparkles, Bot, MessageSquare,
   Crown, Globe, Target, Car, Mountain, BriefcaseMedical, Smile, Stethoscope as StethIcon,
-  ShieldCheck, FileCheck
+  ShieldCheck, FileCheck, Loader2
 } from 'lucide-react';
 import { Hospital, Doctor } from '../types';
 import { HOSPITALS, DOCTORS } from '../constants';
+import { generateLocationInfo, LocationInfo } from '../services/geminiService';
 
 interface HospitalPageProps {
   hospital: Hospital;
@@ -26,24 +27,26 @@ interface HospitalPageProps {
   onNavigateToDoctor?: (doctor: Doctor) => void;
 }
 
-export const HospitalPage: React.FC<HospitalPageProps> = ({ 
-  hospital, 
-  onBack, 
-  onNavigateToHospitals, 
+export const HospitalPage: React.FC<HospitalPageProps> = ({
+  hospital,
+  onBack,
+  onNavigateToHospitals,
   onNavigateToDoctors,
   onNavigateToPackages,
-  onViewGallery, 
+  onViewGallery,
   onViewFacilities,
   onAskAria,
   onViewSpecialization,
   onNavigateToHospital,
   onNavigateToDoctor
 }) => {
-  
+
   const [activeTab, setActiveTab] = useState('overview');
   const [showAllAwards, setShowAllAwards] = useState(false);
   const [selectedSpecialistFilter, setSelectedSpecialistFilter] = useState('All Doctors');
   const [isScrolled, setIsScrolled] = useState(false);
+  const [locationInfo, setLocationInfo] = useState<LocationInfo | null>(null);
+  const [isLoadingLocation, setIsLoadingLocation] = useState(true);
 
   // Scroll to top on mount
   useEffect(() => {
@@ -55,6 +58,29 @@ export const HospitalPage: React.FC<HospitalPageProps> = ({
     }
   }, [hospital.id]);
 
+  // Fetch AI-generated location info
+  useEffect(() => {
+    const fetchLocationInfo = async () => {
+      setIsLoadingLocation(true);
+      try {
+        const info = await generateLocationInfo(
+          hospital.name,
+          hospital.location,
+          hospital.country,
+          hospital.coordinates,
+          'Jakarta, Indonesia' // Default user origin - could be made dynamic from user settings
+        );
+        setLocationInfo(info);
+      } catch (error) {
+        console.error('Failed to fetch location info:', error);
+      } finally {
+        setIsLoadingLocation(false);
+      }
+    };
+
+    fetchLocationInfo();
+  }, [hospital.id, hospital.name, hospital.location, hospital.country, hospital.coordinates]);
+
   // Scroll Spy Logic and Sticky Header
   useEffect(() => {
     const handleScrollSpy = () => {
@@ -65,11 +91,11 @@ export const HospitalPage: React.FC<HospitalPageProps> = ({
         // We use a slightly lower threshold to trigger the transition earlier
         setIsScrolled(mainContainer.scrollTop > 450);
 
-        const headerOffset = 180; 
+        const headerOffset = 180;
         const scrollPosition = mainContainer.scrollTop + headerOffset;
 
         const sections = ['overview', 'specialization', 'doctors', 'facilities', 'packages'];
-        
+
         for (const sectionId of sections) {
             const element = document.getElementById(sectionId);
             if (element) {
@@ -99,8 +125,8 @@ export const HospitalPage: React.FC<HospitalPageProps> = ({
     setActiveTab(id);
     const element = document.getElementById(id);
     // Navbar (80px) + Sticky Header (72px) + visual breathing room (~30px)
-    const offset = 180; 
-    
+    const offset = 180;
+
     if (element) {
         const mainContainer = document.getElementById('main-content-area');
         if (mainContainer) {
@@ -121,13 +147,13 @@ export const HospitalPage: React.FC<HospitalPageProps> = ({
   const exploreMoreHospitals = useMemo(() => {
       return HOSPITALS.filter(h => {
           if (h.id === hospital.id) return false;
-          if (h.country === hospital.country) return false; 
+          if (h.country === hospital.country) return false;
 
-          const priceMatch = h.priceRange === hospital.priceRange || 
+          const priceMatch = h.priceRange === hospital.priceRange ||
                              (h.priceRange.length >= 2 && hospital.priceRange.length >= 2);
-          
+
           const specialtyOverlap = h.specialties.some(s => hospital.specialties.includes(s));
-          
+
           const isHighVolume = hospital.reviewCount > 1000;
           const targetHighVolume = h.reviewCount > 1000;
           const volumeMatch = isHighVolume === targetHighVolume;
@@ -220,6 +246,15 @@ export const HospitalPage: React.FC<HospitalPageProps> = ({
     { name: 'Tokio Marine', domain: 'tokiomarine.com' },
   ];
 
+  // Get country flag
+  const getCountryFlag = () => {
+    if (locationInfo?.countryFlag) return locationInfo.countryFlag;
+    return hospital.country === 'Thailand' ? '🇹🇭' :
+           hospital.country === 'Singapore' ? '🇸🇬' :
+           hospital.country === 'Malaysia' ? '🇲🇾' :
+           hospital.country === 'Indonesia' ? '🇮🇩' : '🏳️';
+  };
+
   return (
     <div className="bg-white text-[#1C1C1C] font-sans antialiased w-full min-h-full pb-20 overflow-x-hidden">
       <style>{`@keyframes scroll-horizontal { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } } .animate-scroll-horizontal { animation: scroll-horizontal 40s linear infinite; } .animate-scroll-horizontal:hover { animation-play-state: paused; }`}</style>
@@ -245,51 +280,99 @@ export const HospitalPage: React.FC<HospitalPageProps> = ({
           </div>
       </div>
 
-      {/* Hero Gallery */}
-      <div className="max-w-7xl mx-auto px-4 md:px-6 py-8">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 h-[400px] md:h-[500px]">
-              <div className="md:col-span-2 relative rounded-2xl overflow-hidden group h-full cursor-pointer" onClick={onViewGallery}>
+      {/* Hero Gallery - Traveloka Style */}
+      <div className="max-w-7xl mx-auto px-4 md:px-6 pt-4 pb-6">
+          {/* Breadcrumb-style info bar */}
+          
+
+          {/* Gallery Grid */}
+          <div className="grid grid-cols-4 grid-rows-2 gap-2 h-[280px] md:h-[420px] rounded-xl overflow-hidden">
+              {/* Main large image - spans 2 columns and 2 rows */}
+              <div className="col-span-2 row-span-2 relative cursor-pointer group" onClick={onViewGallery}>
                   <img src={galleryImages[0]} alt={hospital.name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
-                  <div className="absolute bottom-4 right-4 bg-[#1C1C1C]/90 backdrop-blur text-white text-xs px-3 py-1.5 rounded-full flex items-center gap-1.5 font-medium">
-                      <Star className="w-3 h-3 fill-[#F1FCA7] text-[#F1FCA7]" />
-                      {hospital.rating}/5 ({hospital.reviewCount} reviews)
+              </div>
+
+              {/* Top right images - 2 images */}
+              <div className="relative cursor-pointer group" onClick={onViewGallery}>
+                  <img src={galleryImages[1]} alt={`${hospital.name} room`} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+              </div>
+              <div className="relative cursor-pointer group" onClick={onViewGallery}>
+                  <img src={galleryImages[2]} alt={`${hospital.name} facility`} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+              </div>
+
+              {/* Bottom right images - 2 images, last one with "See All Photos" */}
+              <div className="relative cursor-pointer group" onClick={onViewGallery}>
+                  <img src={galleryImages[3]} alt={`${hospital.name} exterior`} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+              </div>
+              <div className="relative cursor-pointer group" onClick={onViewGallery}>
+                  <img src={galleryImages[4]} alt={`${hospital.name} area`} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                  {/* See All Photos overlay */}
+                  <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-100 group-hover:bg-black/50 transition-all">
+                      <button
+                        onClick={(e) => { e.stopPropagation(); onViewGallery(); }}
+                        className="flex items-center gap-2 text-white text-sm font-medium"
+                      >
+                          <LayoutGrid className="w-4 h-4" /> See All Photos
+                      </button>
                   </div>
               </div>
-              <div className="grid grid-cols-2 gap-4 h-full">
-                  {galleryImages.slice(1, 5).map((img, idx) => (
-                      <div key={idx} className="rounded-2xl overflow-hidden relative h-full cursor-pointer group" onClick={onViewGallery}>
-                          <img src={img} alt={`Facility ${idx}`} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
-                          {idx === 3 && (
-                              <button 
-                                onClick={(e) => { e.stopPropagation(); onViewGallery(); }}
-                                className="absolute bottom-4 right-4 bg-white/90 hover:bg-white text-[#1C1C1C] text-xs font-medium px-3 py-1.5 rounded-md shadow-sm flex items-center gap-1.5 transition-colors z-10"
-                              >
-                                  <LayoutGrid className="w-3.5 h-3.5" /> Show All
-                              </button>
-                          )}
+          </div>
+      </div>
+
+      {/* Hospital Info Header - Below Gallery */}
+      <div className="max-w-7xl mx-auto px-4 md:px-6 ">
+          <div className="flex flex-col items-end md:flex-row md:justify-between gap-4">
+              <div className="flex-1">
+                  <h1 className="text-2xl md:text-3xl font-bold text-slate-900 mb-2">{hospital.name}</h1>
+                  <div className="flex flex-wrap items-center gap-2 text-sm">
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-slate-100 rounded text-slate-700 font-medium text-xs">Hospital</span>
+                      <div className="flex items-center gap-1">
+                          {[...Array(Math.floor(hospital.rating))].map((_, i) => (
+                              <Star key={i} className="w-4 h-4 fill-amber-400 text-amber-400" />
+                          ))}
+                          {hospital.rating % 1 !== 0 && <Star className="w-4 h-4 fill-amber-400/50 text-amber-400" />}
                       </div>
-                  ))}
+                      {hospital.accreditation && hospital.accreditation.length > 0 && (
+                          <span className="flex items-center gap-1 text-sky-600 text-sm">
+                              <CheckCircle className="w-4 h-4" /> Preferred Partner
+                          </span>
+                      )}
+                      <span className="flex items-center gap-1 text-slate-600 text-sm">
+                          <ShieldCheck className="w-4 h-4 text-sky-500" /> {hospital.accreditation?.[0] || 'Accredited'}
+                      </span>
+                  </div>
+              </div>
+
+              {/* Price and CTA */}
+              <div className="flex flex-row items-end space-x-3 shrink-0">
+                  <div className="text-right ">
+                      <p className="text-xs text-slate-500">Price range</p>
+                      <p className="text-xl md:text-2xl font-bold text-[#1E293B]">{hospital.priceRange}</p>
+                  </div>
+                  <button
+                    className="bg-black text-white px-6 py-3 rounded-lg font-semibold text-sm transition-all "
+                  >
+                      Book a Consultation
+                  </button>
               </div>
           </div>
       </div>
 
       {/* Sticky Info Header - Conditionally Rendered/Styled */}
-      <div 
-        className={`sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b transition-all duration-300 
+      {/* <div
+        className={`sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b transition-all duration-300
         ${isScrolled ? 'border-gray-200 shadow-md translate-y-0 opacity-100' : 'border-transparent -translate-y-full opacity-0 pointer-events-none hidden md:block'}`}
       >
           <div className="max-w-7xl mx-auto px-6 h-[72px] relative flex items-center justify-center">
               <div className="absolute left-6 flex items-center gap-3">
                   <div className="w-8 h-8 rounded-full overflow-hidden border border-gray-200 shadow-sm flex items-center justify-center bg-gray-50 text-lg">
-                      {hospital.country === 'Thailand' ? '🇹🇭' : 
-                       hospital.country === 'Singapore' ? '🇸🇬' : 
-                       hospital.country === 'Malaysia' ? '🇲🇾' : '🏳️'}
+                      {getCountryFlag()}
                   </div>
                   <span className="font-semibold text-slate-900 line-clamp-1 max-w-[200px]">{hospital.name}</span>
               </div>
               <div className="flex items-center gap-8 h-full">
                   {tabs.map(tab => (
-                      <button 
+                      <button
                         key={tab.id}
                         onClick={() => scrollToSection(tab.id)}
                         className={`
@@ -302,26 +385,20 @@ export const HospitalPage: React.FC<HospitalPageProps> = ({
                   ))}
               </div>
               <div className="absolute right-6">
-                  <button 
+                  <button
                     className="bg-[#1C1C1C] text-white px-5 py-2.5 rounded-lg text-sm font-semibold hover:bg-black transition-all shadow-sm shadow-slate-200 flex items-center gap-2 active:scale-95"
                   >
                       Book a Consultation
                   </button>
               </div>
           </div>
-      </div>
+      </div> */}
 
       {/* Main Content Split - ID: overview */}
-      <div id="overview" className="max-w-7xl mx-auto px-4 md:px-6 py-8 grid grid-cols-1 lg:grid-cols-3 gap-12 scroll-mt-20">
+      <div id="overview" className="max-w-7xl mx-auto px-4 md:px-6 py-4 grid grid-cols-1 lg:grid-cols-3 gap-12 scroll-mt-20">
           {/* Left Column */}
           <div className="lg:col-span-2 space-y-8">
-              {/* Header */}
-              <div className="flex flex-col md:flex-row justify-between items-start gap-4">
-                  <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-[#1C1C1C] leading-tight">{hospital.name}</h1>
-                  <button className="hidden md:block bg-[#1C1C1C] text-white px-6 py-3 rounded-lg font-medium text-sm hover:bg-black transition-colors shadow-lg shadow-black/5 whitespace-nowrap">Book a Consultation</button>
-                  <button onClick={() => onAskAria(`Info about ${hospital.name}`)} className="w-full md:hidden bg-[#1C1C1C] hover:bg-zinc-800 text-white px-6 py-3 rounded-lg text-sm font-medium transition-all shadow-lg">Ask Aria</button>
-              </div>
-
+              {/* Key features */}
               <div className="flex flex-wrap gap-x-6 gap-y-2 text-xs font-semibold text-slate-800">
                   <div className="flex items-center gap-1.5"><Crown className="w-4 h-4" /> VIP Patient Support</div>
                   <div className="flex items-center gap-1.5"><Plane className="w-4 h-4" /> Easy Airport Access</div>
@@ -383,7 +460,7 @@ export const HospitalPage: React.FC<HospitalPageProps> = ({
                       </h3>
                       <span className="bg-emerald-100 text-emerald-700 text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wider">Direct Billing</span>
                   </div>
-                  
+
                   <p className="text-sm text-slate-500 mb-6 leading-relaxed">
                       {hospital.name} accepts direct billing from major international insurance providers. We handle the paperwork so you can focus on recovery.
                   </p>
@@ -391,9 +468,9 @@ export const HospitalPage: React.FC<HospitalPageProps> = ({
                   <div className="grid grid-cols-4 gap-3 mb-6">
                       {insurancePartners.map((partner, i) => (
                           <div key={i} className="aspect-[3/2] bg-white rounded-lg border border-slate-100 flex items-center justify-center p-3 shadow-sm hover:shadow-md transition-all group cursor-pointer" title={partner.name}>
-                              <img 
-                                  src={`https://logo.clearbit.com/${partner.domain}`} 
-                                  alt={partner.name} 
+                              <img
+                                  src={`https://logo.clearbit.com/${partner.domain}`}
+                                  alt={partner.name}
                                   className="max-w-full max-h-full object-contain grayscale opacity-60 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-500"
                                   onError={(e) => {
                                       e.currentTarget.style.display = 'none';
@@ -412,7 +489,7 @@ export const HospitalPage: React.FC<HospitalPageProps> = ({
                           <div className="flex items-center gap-1.5"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" /> Cashless Admission</div>
                           <div className="flex items-center gap-1.5"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" /> Claims Assistance</div>
                       </div>
-                      <button 
+                      <button
                           onClick={() => onAskAria(`Check insurance coverage for ${hospital.name}. I have [Your Insurance Name].`)}
                           className="text-xs font-semibold text-slate-900 underline decoration-slate-300 underline-offset-4 hover:decoration-slate-900 hover:text-black transition-all flex items-center gap-1"
                       >
@@ -424,8 +501,8 @@ export const HospitalPage: React.FC<HospitalPageProps> = ({
 
           {/* Right Column */}
           <div className="space-y-6">
-              {/* ... (Keep Concierge, Getting Here, Around Area widgets) ... */}
-              <div className="border border-slate-200 bg-gradient-to-br from-white to-slate-50 rounded-xl p-6 shadow-sm relative overflow-hidden group">
+              {/* Concierge Widget */}
+              <div className="border border-slate-200 bg-gradient-to-br mt-10 from-white to-slate-50 rounded-xl p-6 shadow-sm relative overflow-hidden group">
                   <div className="absolute top-0 right-0 p-3 opacity-5 group-hover:opacity-10 transition-opacity"><Bot className="w-24 h-24 text-slate-900" /></div>
                   <div className="relative z-10">
                       <div className="flex items-center gap-2 mb-3">
@@ -444,37 +521,141 @@ export const HospitalPage: React.FC<HospitalPageProps> = ({
                   </div>
               </div>
 
+              {/* Getting Here - Dynamic */}
               <div className="border border-zinc-200 rounded-xl p-6 shadow-sm bg-white">
                   <div className="flex items-center justify-between mb-6">
-                      <div className="flex items-center gap-2 font-bold text-[#1C1C1C]"><div className="p-1.5 bg-slate-100 rounded-full"><Navigation className="w-4 h-4" /></div> Getting Here</div>
-                      <div className="text-right"><div className="text-[10px] text-slate-400 font-medium uppercase tracking-wide mb-0.5">From your Location</div><div className="text-sm font-bold text-slate-900 flex items-center justify-end gap-1.5"><Target className="w-3.5 h-3.5" /> Jakarta</div></div>
+                      <div className="flex items-center gap-2 font-bold text-[#1C1C1C]">
+                          <div className="p-1.5 bg-slate-100 rounded-full"><Navigation className="w-4 h-4" /></div>
+                          Getting Here
+                      </div>
+                      <div className="text-right">
+                          <div className="text-[10px] text-slate-400 font-medium uppercase tracking-wide mb-0.5">From your Location</div>
+                          <div className="text-sm font-bold text-slate-900 flex items-center justify-end gap-1.5">
+                              <Target className="w-3.5 h-3.5" />
+                              {isLoadingLocation ? (
+                                <span className="animate-pulse bg-slate-200 rounded w-16 h-4"></span>
+                              ) : (
+                                locationInfo?.travelInfo.fromLocation || 'Jakarta'
+                              )}
+                          </div>
+                      </div>
                   </div>
+
+                  {/* Departure Airport (from user's location) */}
+                  <div className="mb-4 pb-4 border-b border-slate-100">
+                      <div className="text-[10px] text-slate-400 font-medium uppercase tracking-wide mb-2">Departure</div>
+                      {isLoadingLocation ? (
+                        <div className="animate-pulse bg-slate-200 rounded w-full h-5"></div>
+                      ) : (
+                        <div className="text-sm font-medium text-slate-700">
+                          {locationInfo?.travelInfo.departureAirport || 'Soekarno-Hatta International Airport (CGK)'}
+                        </div>
+                      )}
+                  </div>
+
+                  {/* Flight Duration */}
                   <div className="flex items-center gap-4 pt-2">
-                      <div className="w-12 h-12 bg-[#E4F28A] rounded-full flex items-center justify-center text-[#1C1C1C] border-4 border-white shadow-sm ring-1 ring-slate-100"><Plane className="w-5 h-5 rotate-[-45deg]" strokeWidth={2} /></div>
-                      <div><div className="text-xs text-zinc-500 font-medium mb-0.5">By Air</div><div className="text-sm font-bold text-[#1C1C1C]">Less than 3 hour Away</div></div>
+                      <div className="w-12 h-12 bg-[#E4F28A] rounded-full flex items-center justify-center text-[#1C1C1C] border-4 border-white shadow-sm ring-1 ring-slate-100">
+                          <Plane className="w-5 h-5 rotate-[-45deg]" strokeWidth={2} />
+                      </div>
+                      <div>
+                          <div className="text-xs text-zinc-500 font-medium mb-0.5">By Air</div>
+                          {isLoadingLocation ? (
+                            <div className="animate-pulse bg-slate-200 rounded w-32 h-5"></div>
+                          ) : (
+                            <div className="text-sm font-bold text-[#1C1C1C]">{locationInfo?.travelInfo.byAir || 'Calculating...'}</div>
+                          )}
+                      </div>
                   </div>
               </div>
 
+              {/* Around the Area - Dynamic */}
               <div className="border border-zinc-200 rounded-xl p-6 shadow-sm bg-white">
-                  <div className="flex items-center gap-2 font-bold text-[#1C1C1C] mb-4"><div className="p-1.5 bg-slate-100 rounded-full"><Scan className="w-4 h-4" /></div> Around the Area</div>
-                  <div className="flex items-center gap-2 mb-5 cursor-pointer hover:opacity-80 transition-opacity"><MapPin className="w-4 h-4 text-slate-500" /><span className="font-semibold text-slate-900 text-sm">Map</span></div>
+                  <div className="flex items-center gap-2 font-bold text-[#1C1C1C] mb-4">
+                      <div className="p-1.5 bg-slate-100 rounded-full"><Scan className="w-4 h-4" /></div>
+                      Around the Area
+                  </div>
+                  <div className="flex items-center gap-2 mb-5 cursor-pointer hover:opacity-80 transition-opacity">
+                      <MapPin className="w-4 h-4 text-slate-500" />
+                      <span className="font-semibold text-slate-900 text-sm">Map</span>
+                  </div>
                   <div className="w-full h-32 bg-slate-100 rounded-xl mb-5 overflow-hidden relative border border-slate-200 group cursor-pointer">
-                      <img src="https://api.mapbox.com/styles/v1/mapbox/light-v10/static/100.3,5.4,13,0/400x200?access_token=pk.eyJ1IjoibWVkaWZseSIsImEiOiJjbTdtbnh5aXYwMHFyMmtzY3Z3Z3l3c3d6In0.99999999999" alt="Map" className="w-full h-full object-cover grayscale opacity-60 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-500" onError={(e) => (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1524661135-423995f22d0b?auto=format&fit=crop&q=80&w=400'} />
-                      <div className="absolute inset-0 flex items-center justify-center pointer-events-none"><div className="bg-white/90 backdrop-blur px-3 py-1.5 rounded-full text-xs font-bold text-slate-900 shadow-sm border border-slate-200">View Map</div></div>
+                      <img
+                        src={`https://api.mapbox.com/styles/v1/mapbox/light-v10/static/pin-s+1C1C1C(${hospital.coordinates.lng},${hospital.coordinates.lat})/${hospital.coordinates.lng},${hospital.coordinates.lat},14,0/400x200@2x?access_token=pk.eyJ1IjoibWVkaWZseSIsImEiOiJjbTdtbnh5aXYwMHFyMmtzY3Z3Z3l3c3d6In0.vCgD0jPLKH5xhYqJxJnLYA`}
+                        alt="Map"
+                        className="w-full h-full object-cover grayscale opacity-60 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-500"
+                        onError={(e) => (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1524661135-423995f22d0b?auto=format&fit=crop&q=80&w=400'}
+                      />
+                      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                          <div className="bg-white/90 backdrop-blur px-3 py-1.5 rounded-full text-xs font-bold text-slate-900 shadow-sm border border-slate-200">View Map</div>
+                      </div>
                   </div>
+
+                  {/* Address */}
                   <div className="flex gap-3 mb-6 text-xs text-slate-600 items-start leading-relaxed bg-slate-50 p-3 rounded-lg border border-slate-100">
-                      <div className="w-5 h-5 rounded-full bg-white border border-slate-200 flex items-center justify-center shrink-0 mt-0.5 shadow-sm"><span className="text-[10px]">🇲🇾</span></div>
-                      <p>1, Jalan Pangkor, 10050 George Town, Pulau Pinang, Malaysia</p>
+                      <div className="w-5 h-5 rounded-full bg-white border border-slate-200 flex items-center justify-center shrink-0 mt-0.5 shadow-sm">
+                          <span className="text-[10px]">{getCountryFlag()}</span>
+                      </div>
+                      {isLoadingLocation ? (
+                        <div className="animate-pulse bg-slate-200 rounded w-full h-4"></div>
+                      ) : (
+                        <p>{locationInfo?.address || `${hospital.location}, ${hospital.country}`}</p>
+                      )}
                   </div>
-                  <div className="space-y-5">
-                      <div><div className="flex items-center gap-2 text-sm font-bold text-[#1C1C1C] mb-2"><Plane className="w-4 h-4 text-slate-400" /> Airports</div><ul className="pl-8 space-y-2 text-xs text-slate-600 list-disc marker:text-slate-300"><li>Penang International Airport (PEN) | 5.8 km away</li></ul></div>
-                      <div><div className="flex items-center gap-2 text-sm font-bold text-[#1C1C1C] mb-2"><Bus className="w-4 h-4 text-slate-400" /> Transportations</div><ul className="pl-8 space-y-2 text-xs text-slate-600 list-disc marker:text-slate-300"><li>Rapid Penang Bus line 102 | 5.8 km away</li></ul></div>
-                      <div><div className="flex items-center gap-2 text-sm font-bold text-[#1C1C1C] mb-2"><Flag className="w-4 h-4 text-slate-400" /> Landmarks</div><ul className="pl-8 space-y-2 text-xs text-slate-600 list-disc marker:text-slate-300"><li>Buddhist Temple Wat Buppharam | 5.8 km away</li><li>Giant Penang Plaza | 5.8 km away</li><li>Ivy’s Nyonya Cuisine | 5.8 km away</li></ul></div>
-                  </div>
+
+                  {/* Location Details */}
+                  {isLoadingLocation ? (
+                    <div className="flex items-center justify-center py-8">
+                      <Loader2 className="w-5 h-5 animate-spin text-slate-400" />
+                      <span className="ml-2 text-xs text-slate-500">Loading location info...</span>
+                    </div>
+                  ) : (
+                    <div className="space-y-5">
+                      {/* Arrival Airport (near hospital) */}
+                      {locationInfo?.nearbyAirport && (
+                        <div>
+                            <div className="flex items-center gap-2 text-sm font-bold text-[#1C1C1C] mb-2">
+                                <Plane className="w-4 h-4 text-slate-400" /> Arrival Airport
+                            </div>
+                            <ul className="pl-8 space-y-2 text-xs text-slate-600 list-disc marker:text-slate-300">
+                                <li>{locationInfo.nearbyAirport.name} | {locationInfo.nearbyAirport.distance}</li>
+                            </ul>
+                        </div>
+                      )}
+
+                      {/* Transportations */}
+                      {locationInfo?.transportations && locationInfo.transportations.length > 0 && (
+                        <div>
+                            <div className="flex items-center gap-2 text-sm font-bold text-[#1C1C1C] mb-2">
+                                <Bus className="w-4 h-4 text-slate-400" /> Transportations
+                            </div>
+                            <ul className="pl-8 space-y-2 text-xs text-slate-600 list-disc marker:text-slate-300">
+                                {locationInfo.transportations.map((transport, idx) => (
+                                  <li key={idx}>{transport.name} | {transport.distance}</li>
+                                ))}
+                            </ul>
+                        </div>
+                      )}
+
+                      {/* Landmarks */}
+                      {locationInfo?.landmarks && locationInfo.landmarks.length > 0 && (
+                        <div>
+                            <div className="flex items-center gap-2 text-sm font-bold text-[#1C1C1C] mb-2">
+                                <Flag className="w-4 h-4 text-slate-400" /> Landmarks
+                            </div>
+                            <ul className="pl-8 space-y-2 text-xs text-slate-600 list-disc marker:text-slate-300">
+                                {locationInfo.landmarks.map((landmark, idx) => (
+                                  <li key={idx}>{landmark.name} | {landmark.distance}</li>
+                                ))}
+                            </ul>
+                        </div>
+                      )}
+                    </div>
+                  )}
               </div>
           </div>
       </div>
-      
+
       {/* 1. Top Expertise */}
       <section id="specialization" className="max-w-7xl mx-auto px-6 py-16 scroll-mt-40">
         <h2 className="text-3xl font-semibold text-center tracking-tight mb-12">Our Top Expertise</h2>
@@ -502,8 +683,8 @@ export const HospitalPage: React.FC<HospitalPageProps> = ({
             </div>
         </div>
       </section>
-      
-      {/* ... (Rest of components) ... */}
+
+      {/* 2. Doctors Section */}
       <section id="doctors" className="max-w-full mx-auto px-6 py-16 scroll-mt-40 bg-white border-t border-gray-100 overflow-hidden">
           <div className="max-w-7xl mx-auto mb-12">
             <div className="flex flex-col gap-4">
@@ -520,7 +701,7 @@ export const HospitalPage: React.FC<HospitalPageProps> = ({
                         className={`
                             flex items-center gap-2 px-4 py-2.5 rounded-lg border text-xs font-medium transition-all
                             ${selectedSpecialistFilter === filter.label
-                                ? 'bg-slate-100 border-slate-900 text-slate-900 ring-1 ring-slate-900' 
+                                ? 'bg-slate-100 border-slate-900 text-slate-900 ring-1 ring-slate-900'
                                 : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300 hover:bg-slate-50'}
                         `}
                     >
@@ -541,9 +722,7 @@ export const HospitalPage: React.FC<HospitalPageProps> = ({
                         <div className="p-5 flex flex-col">
                             <h3 className="text-lg font-bold text-slate-900 mb-1">{doc.name}</h3>
                             <div className="flex items-center gap-1.5 text-xs text-slate-500 mb-3 font-medium">
-                                <span className="text-base">
-                                    {hospital.country === 'Thailand' ? '🇹🇭' : hospital.country === 'Malaysia' ? '🇲🇾' : '🏳️'}
-                                </span>
+                                <span className="text-base">{getCountryFlag()}</span>
                                 <span className="truncate">{hospital.name}, {hospital.country}</span>
                             </div>
                             <div className="mb-4 space-y-1">
@@ -565,7 +744,8 @@ export const HospitalPage: React.FC<HospitalPageProps> = ({
              </div>
         </div>
       </section>
-      
+
+      {/* 3. Facilities */}
       <section id="facilities" className="max-w-7xl mx-auto px-6 py-16 bg-white scroll-mt-40 border-t border-gray-100">
         <h2 className="text-2xl font-semibold text-center tracking-tight mb-12">Facilities</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
@@ -596,49 +776,42 @@ export const HospitalPage: React.FC<HospitalPageProps> = ({
         </div>
       </section>
 
+      {/* 4. Packages */}
       <section id="packages" className="w-full py-16 scroll-mt-40" style={{ backgroundColor: '#FAF8F7' }}>
           <div className="max-w-7xl mx-auto px-6">
            <div className="text-center max-w-3xl mx-auto mb-12">
              <h2 className="text-3xl md:text-4xl font-semibold tracking-tight text-[#1C1C1C] mb-4">Packages Available</h2>
              <p className="text-sm text-gray-500 leading-relaxed">Discover our curated medical packages that combine expert care, advanced technology, and personalized attention</p>
         </div>
-        
+
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-             {/* Mock data for packages, repeated to match the image grid (8 items) */}
              {Array(8).fill(null).map((_, i) => (
                 <div key={i} className="bg-white rounded-xl overflow-hidden border border-gray-100 hover:shadow-md transition-all duration-300 flex flex-col h-full group cursor-pointer">
-                    {/* Image */}
                     <div className="aspect-[4/3] bg-gray-100 relative overflow-hidden">
-                        <img 
-                            src={`https://images.unsplash.com/photo-1579684385127-1ef15d508118?auto=format&fit=crop&q=80&w=400&random=${i}`} 
-                            alt="Medical Package" 
-                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
+                        <img
+                            src={`https://images.unsplash.com/photo-1579684385127-1ef15d508118?auto=format&fit=crop&q=80&w=400&random=${i}`}
+                            alt="Medical Package"
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                         />
                     </div>
-                    
                     <div className="p-5 flex flex-col flex-1">
                         <h3 className="text-base font-bold text-[#1C1C1C] mb-1">Basic Medical Check-Up</h3>
                         <p className="text-xs text-gray-500 mb-3">Medical Check-Up</p>
-                        
                         <div className="flex items-center gap-2 mb-4">
                              <div className="w-5 h-5 rounded-full bg-[#F1FCA7] flex items-center justify-center shrink-0">
                                 <Building2 className="w-3 h-3 text-[#1C1C1C]" />
                              </div>
                              <span className="text-xs text-gray-500 truncate">{hospital.name}</span>
                         </div>
-                        
                         <p className="text-sm font-bold text-[#1C1C1C] mb-5">Rp 400.000</p>
-                        
-                        <button className="w-full py-2.5 rounded-lg border border-gray-200 text-xs font-medium text-[#1C1C1C] hover:bg-gray-50 transition-colors mt-auto">
-                            Overview
-                        </button>
+                        <button className="w-full py-2.5 rounded-lg border border-gray-200 text-xs font-medium text-[#1C1C1C] hover:bg-gray-50 transition-colors mt-auto">Overview</button>
                     </div>
                 </div>
              ))}
         </div>
 
         <div className="flex justify-center mt-12">
-            <button 
+            <button
                 onClick={onNavigateToPackages}
                 className="bg-[#1C1C1C] text-white px-8 py-3 rounded-lg font-medium text-sm hover:bg-black transition-colors shadow-lg shadow-black/10"
             >
@@ -647,8 +820,8 @@ export const HospitalPage: React.FC<HospitalPageProps> = ({
         </div>
         </div>
       </section>
-      
-      {/* ... Experts, FAQ, Related, Explore (unchanged) */}
+
+      {/* 5. Experts */}
       <section className="max-w-7xl mx-auto px-6 py-20">
            <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
             <div className="col-span-1 py-4">
@@ -684,6 +857,7 @@ export const HospitalPage: React.FC<HospitalPageProps> = ({
         </div>
       </section>
 
+      {/* 6. FAQ */}
       <section className="max-w-7xl mx-auto px-6 py-12 border-t border-gray-100">
         <h2 className="text-2xl font-semibold tracking-tight text-gray-900 mb-8">Frequently Asked Question</h2>
         <div className="space-y-4">
@@ -699,6 +873,7 @@ export const HospitalPage: React.FC<HospitalPageProps> = ({
         </div>
       </section>
 
+      {/* 7. Related Hospitals */}
       <section className="max-w-7xl mx-auto px-6 py-16">
           <h2 className="text-2xl font-semibold text-center tracking-tight mb-12">Hospitals in the Area</h2>
            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -731,6 +906,7 @@ export const HospitalPage: React.FC<HospitalPageProps> = ({
         </div>
       </section>
 
+      {/* 8. Explore More Hospitals */}
       <section className="max-w-7xl mx-auto px-6 py-16 border-t border-gray-100">
         <h2 className="text-2xl font-semibold text-center tracking-tight mb-12">Explore More Hospital</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -759,15 +935,7 @@ export const HospitalPage: React.FC<HospitalPageProps> = ({
             <button onClick={onNavigateToHospitals} className="border border-gray-200 bg-white text-slate-900 px-8 py-3 rounded-lg font-medium text-sm hover:bg-gray-50 transition-colors shadow-sm hover:shadow-md">Discover More Hospitals</button>
         </div>
       </section>
-      
-      {/* Floating Action Button (Concierge) */}
-      {/* <div className="fixed bottom-6 right-6 z-50 animate-in slide-in-from-bottom-10 fade-in duration-500">
-        <button onClick={() => onAskAria(`Start a concierge session for ${hospital.name}. I need help with...`)} className="group flex items-center gap-3 bg-[#1C1C1C] text-white p-2 pr-6 rounded-full shadow-2xl hover:scale-105 transition-all border border-gray-800">
-            <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center overflow-hidden border-2 border-[#1C1C1C]"><img src={hospital.imageUrl} alt="Logo" className="w-full h-full object-cover opacity-80" /></div>
-            <div className="text-left"><p className="text-[10px] text-gray-400 font-medium uppercase tracking-wider">Concierge</p><p className="text-sm font-bold leading-none">Ask Aria</p></div>
-        </button>
-      </div> */}
-      
+
     </div>
   );
 };

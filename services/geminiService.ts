@@ -300,3 +300,132 @@ export const translateBatch = async (
     return texts.reduce((acc, text) => ({ ...acc, [text]: text }), {});
   }
 };
+
+// Type definitions for location info
+export interface LocationInfo {
+  address: string;
+  countryFlag: string;
+  travelInfo: {
+    fromLocation: string;
+    departureAirport: string; // Airport near user's location
+    byAir: string;
+  };
+  nearbyAirport: { name: string; distance: string }; // Airport near hospital
+  transportations: { name: string; distance: string }[];
+  landmarks: { name: string; distance: string }[];
+  mapUrl: string;
+}
+
+// Cache for location info to avoid repeated API calls
+const locationInfoCache = new Map<string, LocationInfo>();
+
+export const generateLocationInfo = async (
+  hospitalName: string,
+  hospitalLocation: string,
+  country: string,
+  coordinates: { lat: number; lng: number },
+  userOrigin: string = 'Jakarta, Indonesia'
+): Promise<LocationInfo> => {
+  // Check cache first (include userOrigin in cache key since it affects results)
+  const cacheKey = `${hospitalName}-${coordinates.lat}-${coordinates.lng}-${userOrigin}`;
+  if (locationInfoCache.has(cacheKey)) {
+    return locationInfoCache.get(cacheKey)!;
+  }
+
+  try {
+    const model = 'gemini-2.5-flash';
+
+    const prompt = `You are a travel information assistant for a medical tourism platform.
+
+Given a hospital location and user's origin, generate accurate travel and nearby location information.
+
+Hospital: ${hospitalName}
+Hospital Location: ${hospitalLocation}, ${country}
+Hospital Coordinates: Latitude ${coordinates.lat}, Longitude ${coordinates.lng}
+User's Origin: ${userOrigin}
+
+Generate a JSON response with the following structure:
+{
+  "address": "Full street address of the hospital (use the actual/realistic address based on the hospital name and location)",
+  "countryFlag": "The emoji flag for the hospital's country (e.g., 🇹🇭 for Thailand, 🇲🇾 for Malaysia, 🇸🇬 for Singapore, 🇮🇩 for Indonesia)",
+  "travelInfo": {
+    "fromLocation": "The user's origin city name only (e.g., 'Jakarta')",
+    "departureAirport": "The main international airport near the USER'S ORIGIN with code (e.g., 'Soekarno-Hatta International Airport (CGK)' for Jakarta)",
+    "byAir": "Estimated direct flight duration from user's origin to hospital destination (e.g., 'Less than 2 hours', 'About 3 hours')"
+  },
+  "nearbyAirport": {
+    "name": "The main international airport NEAR THE HOSPITAL with code (e.g., 'Suvarnabhumi Airport (BKK)' for Bangkok hospitals)",
+    "distance": "Distance from hospital to this airport (e.g., '25 km away')"
+  },
+  "transportations": [
+    { "name": "Nearest metro/MRT/BTS station or main bus terminal near the hospital", "distance": "X.X km away" },
+    { "name": "Another transport option if available", "distance": "X.X km away" }
+  ],
+  "landmarks": [
+    { "name": "Famous nearby landmark, temple, or tourist attraction", "distance": "X.X km away" },
+    { "name": "Popular shopping mall or commercial area nearby", "distance": "X.X km away" },
+    { "name": "Well-known restaurant, market, or cultural site nearby", "distance": "X.X km away" }
+  ]
+}
+
+Requirements:
+1. Use REAL and ACCURATE information:
+   - Use the actual departure airport from the user's origin city
+   - Use the actual arrival airport near the hospital
+   - Use real metro/BTS/MRT stations, bus routes near the hospital coordinates
+   - Use real landmarks, malls, and restaurants near the hospital
+2. Provide accurate estimated distances based on the hospital coordinates
+3. Include 1-2 transportation options and 2-3 landmarks
+4. Make the address realistic and specific to that hospital
+5. Base flight time on actual typical flight durations between the two cities
+
+Return ONLY valid JSON, no markdown or explanation.`;
+
+    const response = await ai.models.generateContent({
+      model: model,
+      contents: prompt,
+      config: {
+        responseMimeType: "application/json",
+        temperature: 0.2, // Lower temperature for more consistent factual output
+      }
+    });
+
+    const jsonStr = response.text;
+    if (!jsonStr) {
+      throw new Error("Empty response from AI");
+    }
+
+    const locationInfo: LocationInfo = JSON.parse(jsonStr);
+
+    // Generate dynamic map URL using the coordinates
+    locationInfo.mapUrl = `https://api.mapbox.com/styles/v1/mapbox/light-v10/static/pin-s+1C1C1C(${coordinates.lng},${coordinates.lat})/${coordinates.lng},${coordinates.lat},14,0/400x200@2x?access_token=pk.eyJ1IjoibWVkaWZseSIsImEiOiJjbTdtbnh5aXYwMHFyMmtzY3Z3Z3l3c3d6In0.vCgD0jPLKH5xhYqJxJnLYA`;
+
+    // Cache the result
+    locationInfoCache.set(cacheKey, locationInfo);
+
+    return locationInfo;
+  } catch (error) {
+    console.error("Error generating location info:", error);
+
+    // Return fallback data
+    const originCity = userOrigin.split(',')[0]?.trim() || 'Jakarta';
+    const fallback: LocationInfo = {
+      address: `${hospitalLocation}, ${country}`,
+      countryFlag: country === 'Thailand' ? '🇹🇭' : country === 'Malaysia' ? '🇲🇾' : country === 'Singapore' ? '🇸🇬' : country === 'Indonesia' ? '🇮🇩' : '🏳️',
+      travelInfo: {
+        fromLocation: originCity,
+        departureAirport: originCity === 'Jakarta' ? 'Soekarno-Hatta International Airport (CGK)' : `${originCity} International Airport`,
+        byAir: 'About 2-3 hours'
+      },
+      nearbyAirport: { name: `${hospitalLocation} International Airport`, distance: '15 km away' },
+      transportations: [{ name: 'Local public transport available', distance: '1 km away' }],
+      landmarks: [
+        { name: 'City Center', distance: '5 km away' },
+        { name: 'Shopping Mall', distance: '3 km away' }
+      ],
+      mapUrl: `https://api.mapbox.com/styles/v1/mapbox/light-v10/static/pin-s+1C1C1C(${coordinates.lng},${coordinates.lat})/${coordinates.lng},${coordinates.lat},14,0/400x200@2x?access_token=pk.eyJ1IjoibWVkaWZseSIsImEiOiJjbTdtbnh5aXYwMHFyMmtzY3Z3Z3l3c3d6In0.vCgD0jPLKH5xhYqJxJnLYA`
+    };
+
+    return fallback;
+  }
+};

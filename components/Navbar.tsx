@@ -11,14 +11,16 @@ interface NavbarProps {
   onNavigateToDoctors: () => void;
   onNavigateToPackages?: () => void;
   onStartTour?: () => void;
+  isHomePage?: boolean;
 }
 
-export const Navbar: React.FC<NavbarProps> = ({ 
-  onNavigateToHome, 
-  onNavigateToMarketplace, 
+export const Navbar: React.FC<NavbarProps> = ({
+  onNavigateToHome,
+  onNavigateToMarketplace,
   onNavigateToDoctors,
   onNavigateToPackages,
-  onStartTour
+  onStartTour,
+  isHomePage = false
 }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { t } = useTranslation();
@@ -30,33 +32,36 @@ export const Navbar: React.FC<NavbarProps> = ({
 
   return (
     <div>
-        <nav className="w-full bg-[#FDFBF7] border-b border-[#F0EAE0] py-2 px-4 md:px-8 flex items-center justify-center md:justify-between text-[#5D5555] text-[10px] md:text-xs overflow-hidden whitespace-nowrap relative z-10">
-            <div className="flex items-center gap-8 md:w-full md:justify-center overflow-x-auto no-scrollbar mask-image-gradient">
-                <div className="flex items-center gap-2 shrink-0">
-                    <span className="font-semibold text-slate-700">{t('Why Medifly?')}</span>
-                </div>
-                <div className="flex items-center gap-2 shrink-0">
-                    <Package className="w-3.5 h-3.5" />
-                    <span>{t('Global hospital network')}</span>
-                </div>
-                <div className="flex items-center gap-2 shrink-0">
-                    <BadgeCheck className="w-3.5 h-3.5" />
-                    <span>{t('Transparent pricing estimates')}</span>
-                </div>
-                <div className="flex items-center gap-2 shrink-0">
-                    <ShieldCheck className="w-3.5 h-3.5" />
-                    <span>{t('JCI accredited partners')}</span>
-                </div>
-                <div className="flex items-center gap-2 shrink-0">
-                    <Smartphone className="w-3.5 h-3.5" />
-                    <span>{t('100% digital booking')}</span>
-                </div>
-                <div className="flex items-center gap-2 shrink-0">
-                    <MessageSquare className="w-3.5 h-3.5" />
-                    <span>{t('24/7 AI Concierge')}</span>
-                </div>
-            </div>
-        </nav>
+        {/* Why Medifly banner - Only shown on homepage */}
+        {isHomePage && (
+          <nav className="w-full bg-[#FDFBF7] border-b border-[#F0EAE0] py-2 px-4 md:px-8 flex items-center justify-center md:justify-between text-[#5D5555] text-[10px] md:text-xs overflow-hidden whitespace-nowrap relative z-10">
+              <div className="flex items-center gap-8 md:w-full md:justify-center overflow-x-auto no-scrollbar mask-image-gradient">
+                  <div className="flex items-center gap-2 shrink-0">
+                      <span className="font-semibold text-slate-700">{t('Why Medifly?')}</span>
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                      <Package className="w-3.5 h-3.5" />
+                      <span>{t('Global hospital network')}</span>
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                      <BadgeCheck className="w-3.5 h-3.5" />
+                      <span>{t('Transparent pricing estimates')}</span>
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                      <ShieldCheck className="w-3.5 h-3.5" />
+                      <span>{t('JCI accredited partners')}</span>
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                      <Smartphone className="w-3.5 h-3.5" />
+                      <span>{t('100% digital booking')}</span>
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                      <MessageSquare className="w-3.5 h-3.5" />
+                      <span>{t('24/7 AI Concierge')}</span>
+                  </div>
+              </div>
+          </nav>
+        )}
          <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-slate-100 h-20 w-full transition-all">
             <div className="max-w-7xl mx-auto px-6 h-full flex items-center justify-between">
             
