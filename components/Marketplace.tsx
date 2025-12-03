@@ -788,7 +788,7 @@ export const Marketplace: React.FC<MarketplaceProps> = ({
                 <div className="flex-1 relative">
                     {viewMode === 'grid' ? (
                         <>
-                            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 pb-28">
+                            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 pb-12">
                                 {displayedHospitals.map((hospital, index) => (
                                     <HospitalCard 
                                         key={hospital.id} 

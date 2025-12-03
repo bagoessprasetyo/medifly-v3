@@ -865,7 +865,7 @@ export const HospitalPage: React.FC<HospitalPageProps> = ({
       </section>
 
       {/* Floating Action Button (Concierge) */}
-      <div className="fixed bottom-6 right-6 z-50 animate-in slide-in-from-bottom-10 fade-in duration-500">
+      {/* <div className="fixed bottom-6 right-6 z-50 animate-in slide-in-from-bottom-10 fade-in duration-500">
         <button 
             onClick={() => onAskAria(`Start a concierge session for ${hospital.name}. I need help with...`)}
             className="group flex items-center gap-3 bg-[#1C1C1C] text-white p-2 pr-6 rounded-full shadow-2xl hover:scale-105 transition-all border border-gray-800"
@@ -878,7 +878,7 @@ export const HospitalPage: React.FC<HospitalPageProps> = ({
                 <p className="text-sm font-bold leading-none">Ask Aria</p>
             </div>
         </button>
-      </div>
+      </div> */}
       
     </div>
   );

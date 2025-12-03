@@ -242,33 +242,7 @@ export const Hero: React.FC<HeroProps> = ({ onQuickSearch }) => {
         </div> */}
 
         {/* Top Feature Banner */}
-        <nav className="w-full bg-[#FDFBF7] border-b border-[#F0EAE0] py-2 px-4 md:px-8 flex items-center justify-center md:justify-between text-[#5D5555] text-[10px] md:text-xs overflow-hidden whitespace-nowrap relative z-10">
-            <div className="flex items-center gap-8 md:w-full md:justify-center overflow-x-auto no-scrollbar mask-image-gradient">
-                <div className="flex items-center gap-2 shrink-0">
-                    <span className="font-semibold text-slate-700">{t('Why Medifly?')}</span>
-                </div>
-                <div className="flex items-center gap-2 shrink-0">
-                    <Package className="w-3.5 h-3.5" />
-                    <span>{t('Global hospital network')}</span>
-                </div>
-                <div className="flex items-center gap-2 shrink-0">
-                    <BadgeCheck className="w-3.5 h-3.5" />
-                    <span>{t('Transparent pricing estimates')}</span>
-                </div>
-                <div className="flex items-center gap-2 shrink-0">
-                    <ShieldCheck className="w-3.5 h-3.5" />
-                    <span>{t('JCI accredited partners')}</span>
-                </div>
-                <div className="flex items-center gap-2 shrink-0">
-                    <Smartphone className="w-3.5 h-3.5" />
-                    <span>{t('100% digital booking')}</span>
-                </div>
-                <div className="flex items-center gap-2 shrink-0">
-                    <MessageSquare className="w-3.5 h-3.5" />
-                    <span>{t('24/7 AI Concierge')}</span>
-                </div>
-            </div>
-        </nav>
+        
 
         {/* Main Content */}
         <main className="relative z-10 max-w-[1400px] mx-auto px-4 pt-6 md:pt-10 pb-12 flex flex-col items-center w-full">
