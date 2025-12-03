@@ -6,22 +6,24 @@ import {
   BrainCircuit, Baby, Utensils, Eye, Ear, ChevronUp, Star, LayoutGrid,
   CheckCircle2, ArrowLeft, ArrowRight, Microscope, Filter, Clock, ChevronLeft,
   GraduationCap, Scan, CheckCircle, Scissors, Sparkles, Bot, MessageSquare,
-  Crown, Globe, Target, Car, Mountain, BriefcaseMedical
+  Crown, Globe, Target, Car, Mountain, BriefcaseMedical, Smile, Stethoscope as StethIcon,
+  ShieldCheck, FileCheck
 } from 'lucide-react';
-import { Hospital } from '../types';
-import { HOSPITALS } from '../constants';
+import { Hospital, Doctor } from '../types';
+import { HOSPITALS, DOCTORS } from '../constants';
 
 interface HospitalPageProps {
   hospital: Hospital;
   onBack: () => void;
   onNavigateToHospitals: () => void;
   onNavigateToDoctors: () => void;
-  onNavigateToPackages?: () => void; // Added
+  onNavigateToPackages?: () => void;
   onViewGallery: () => void;
   onViewFacilities: () => void;
   onAskAria: (query: string) => void;
   onViewSpecialization?: (spec: string) => void;
   onNavigateToHospital?: (hospital: Hospital) => void;
+  onNavigateToDoctor?: (doctor: Doctor) => void;
 }
 
 export const HospitalPage: React.FC<HospitalPageProps> = ({ 
@@ -34,11 +36,14 @@ export const HospitalPage: React.FC<HospitalPageProps> = ({
   onViewFacilities,
   onAskAria,
   onViewSpecialization,
-  onNavigateToHospital
+  onNavigateToHospital,
+  onNavigateToDoctor
 }) => {
   
   const [activeTab, setActiveTab] = useState('overview');
   const [showAllAwards, setShowAllAwards] = useState(false);
+  const [selectedSpecialistFilter, setSelectedSpecialistFilter] = useState('All Doctors');
+  const [isScrolled, setIsScrolled] = useState(false);
 
   // Scroll to top on mount
   useEffect(() => {
@@ -50,11 +55,15 @@ export const HospitalPage: React.FC<HospitalPageProps> = ({
     }
   }, [hospital.id]);
 
-  // Scroll Spy Logic
+  // Scroll Spy Logic and Sticky Header
   useEffect(() => {
     const handleScrollSpy = () => {
         const mainContainer = document.getElementById('main-content-area');
         if (!mainContainer) return;
+
+        // Detect if scrolled past the hero section (approx 500px) to show sticky header
+        // We use a slightly lower threshold to trigger the transition earlier
+        setIsScrolled(mainContainer.scrollTop > 450);
 
         const headerOffset = 180; 
         const scrollPosition = mainContainer.scrollTop + headerOffset;
@@ -89,6 +98,7 @@ export const HospitalPage: React.FC<HospitalPageProps> = ({
   const scrollToSection = (id: string) => {
     setActiveTab(id);
     const element = document.getElementById(id);
+    // Navbar (80px) + Sticky Header (72px) + visual breathing room (~30px)
     const offset = 180; 
     
     if (element) {
@@ -161,15 +171,62 @@ export const HospitalPage: React.FC<HospitalPageProps> = ({
 
   const visibleAwards = showAllAwards ? awardsList : awardsList.slice(0, 6);
 
+  // Filter configuration for Doctors section
+  const specialistFilters = [
+    { label: "All Doctors", icon: Users },
+    { label: "Cardiology", icon: HeartPulse },
+    { label: "Orthopedics", icon: Bone },
+    { label: "Oncology", icon: Microscope },
+    { label: "Neurology", icon: Brain },
+    { label: "Fertility & IVF", icon: Baby },
+    { label: "Gastroenterology", icon: StethIcon },
+    { label: "Internal Medicine", icon: Activity },
+    { label: "ENT", icon: Ear },
+    { label: "Dermatology", icon: Scan },
+    { label: "Aesthetics", icon: Sparkles },
+    { label: "Dental Care", icon: Smile },
+    { label: "General Surgery", icon: Scissors },
+  ];
+
+  // Get doctors relevant to this hospital
+  const relevantDoctors = useMemo(() => {
+      return DOCTORS.filter(d => d.hospitalId === hospital.id || d.hospitalName === hospital.name);
+  }, [hospital]);
+
+  // Filter doctors based on selection
+  const filteredDoctors = useMemo(() => {
+      if (selectedSpecialistFilter === 'All Doctors') {
+          return relevantDoctors;
+      }
+      return relevantDoctors.filter(d => d.specialty.includes(selectedSpecialistFilter) || selectedSpecialistFilter.includes(d.specialty));
+  }, [relevantDoctors, selectedSpecialistFilter]);
+
+  const scrollDoctors = useMemo(() => {
+      if (filteredDoctors.length === 0) return [];
+      if (filteredDoctors.length < 5) {
+          return [...filteredDoctors, ...filteredDoctors, ...filteredDoctors];
+      }
+      return [...filteredDoctors, ...filteredDoctors];
+  }, [filteredDoctors]);
+
+  const insurancePartners = [
+    { name: 'AIA', domain: 'aia.com' },
+    { name: 'Allianz', domain: 'allianz.com' },
+    { name: 'Prudential', domain: 'prudential.com' },
+    { name: 'Great Eastern', domain: 'greateasternlife.com' },
+    { name: 'Cigna', domain: 'cigna.com' },
+    { name: 'AXA', domain: 'axa.com' },
+    { name: 'Manulife', domain: 'manulife.com' },
+    { name: 'Tokio Marine', domain: 'tokiomarine.com' },
+  ];
+
   return (
-    <div className="bg-white text-[#1C1C1C] font-sans antialiased w-full min-h-full pb-20">
+    <div className="bg-white text-[#1C1C1C] font-sans antialiased w-full min-h-full pb-20 overflow-x-hidden">
+      <style>{`@keyframes scroll-horizontal { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } } .animate-scroll-horizontal { animation: scroll-horizontal 40s linear infinite; } .animate-scroll-horizontal:hover { animation-play-state: paused; }`}</style>
 
       {/* Mobile Back Button */}
       <div className="md:hidden sticky top-0 z-[50] bg-white/90 backdrop-blur-sm border-b border-[#FAF8F7] px-6 h-16 flex items-center">
-          <button 
-              onClick={onBack}
-              className="p-1 hover:bg-zinc-100 rounded-full transition-colors flex items-center gap-2"
-          >
+          <button onClick={onBack} className="p-1 hover:bg-zinc-100 rounded-full transition-colors flex items-center gap-2">
               <ArrowLeft className="w-5 h-5 text-[#1C1C1C]" />
               <span className="font-semibold text-[#1C1C1C]">Back</span>
           </button>
@@ -191,7 +248,6 @@ export const HospitalPage: React.FC<HospitalPageProps> = ({
       {/* Hero Gallery */}
       <div className="max-w-7xl mx-auto px-4 md:px-6 py-8">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 h-[400px] md:h-[500px]">
-              {/* Main Image */}
               <div className="md:col-span-2 relative rounded-2xl overflow-hidden group h-full cursor-pointer" onClick={onViewGallery}>
                   <img src={galleryImages[0]} alt={hospital.name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
                   <div className="absolute bottom-4 right-4 bg-[#1C1C1C]/90 backdrop-blur text-white text-xs px-3 py-1.5 rounded-full flex items-center gap-1.5 font-medium">
@@ -199,7 +255,6 @@ export const HospitalPage: React.FC<HospitalPageProps> = ({
                       {hospital.rating}/5 ({hospital.reviewCount} reviews)
                   </div>
               </div>
-              {/* Side Images Grid */}
               <div className="grid grid-cols-2 gap-4 h-full">
                   {galleryImages.slice(1, 5).map((img, idx) => (
                       <div key={idx} className="rounded-2xl overflow-hidden relative h-full cursor-pointer group" onClick={onViewGallery}>
@@ -218,20 +273,20 @@ export const HospitalPage: React.FC<HospitalPageProps> = ({
           </div>
       </div>
 
-      {/* Sticky Info Header */}
-      <div className="sticky top-20 z-40 bg-white border-b border-gray-100 hidden md:block transition-shadow duration-300">
+      {/* Sticky Info Header - Conditionally Rendered/Styled */}
+      <div 
+        className={`sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b transition-all duration-300 
+        ${isScrolled ? 'border-gray-200 shadow-md translate-y-0 opacity-100' : 'border-transparent -translate-y-full opacity-0 pointer-events-none hidden md:block'}`}
+      >
           <div className="max-w-7xl mx-auto px-6 h-[72px] relative flex items-center justify-center">
-              {/* Left: Identity */}
               <div className="absolute left-6 flex items-center gap-3">
                   <div className="w-8 h-8 rounded-full overflow-hidden border border-gray-200 shadow-sm flex items-center justify-center bg-gray-50 text-lg">
                       {hospital.country === 'Thailand' ? '🇹🇭' : 
                        hospital.country === 'Singapore' ? '🇸🇬' : 
                        hospital.country === 'Malaysia' ? '🇲🇾' : '🏳️'}
                   </div>
-                  <span className="font-semibold text-slate-900">{hospital.name}</span>
+                  <span className="font-semibold text-slate-900 line-clamp-1 max-w-[200px]">{hospital.name}</span>
               </div>
-              
-              {/* Center: Tabs */}
               <div className="flex items-center gap-8 h-full">
                   {tabs.map(tab => (
                       <button 
@@ -246,11 +301,8 @@ export const HospitalPage: React.FC<HospitalPageProps> = ({
                       </button>
                   ))}
               </div>
-
-              {/* Right: CTA */}
               <div className="absolute right-6">
                   <button 
-                    onClick={() => onAskAria(`I have questions about ${hospital.name}`)}
                     className="bg-[#1C1C1C] text-white px-5 py-2.5 rounded-lg text-sm font-semibold hover:bg-black transition-all shadow-sm shadow-slate-200 flex items-center gap-2 active:scale-95"
                   >
                       Book a Consultation
@@ -261,34 +313,19 @@ export const HospitalPage: React.FC<HospitalPageProps> = ({
 
       {/* Main Content Split - ID: overview */}
       <div id="overview" className="max-w-7xl mx-auto px-4 md:px-6 py-8 grid grid-cols-1 lg:grid-cols-3 gap-12 scroll-mt-20">
-          {/* ... Left Column: Hospital Info ... */}
+          {/* Left Column */}
           <div className="lg:col-span-2 space-y-8">
-               {/* ... Header Title, Badges, Language, Accreditations, Description ... */}
-               <div className="flex flex-col md:flex-row justify-between items-start gap-4">
-                  <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-[#1C1C1C] leading-tight">
-                      {hospital.name}
-                  </h1>
-                  <button className="hidden md:block bg-[#1C1C1C] text-white px-6 py-3 rounded-lg font-medium text-sm hover:bg-black transition-colors shadow-lg shadow-black/5 whitespace-nowrap">
-                      Book a Consultation
-                  </button>
-                  <button 
-                    onClick={() => onAskAria(`Info about ${hospital.name}`)}
-                    className="w-full md:hidden bg-[#1C1C1C] hover:bg-zinc-800 text-white px-6 py-3 rounded-lg text-sm font-medium transition-all shadow-lg"
-                  >
-                    Ask Aria
-                  </button>
+              {/* Header */}
+              <div className="flex flex-col md:flex-row justify-between items-start gap-4">
+                  <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-[#1C1C1C] leading-tight">{hospital.name}</h1>
+                  <button className="hidden md:block bg-[#1C1C1C] text-white px-6 py-3 rounded-lg font-medium text-sm hover:bg-black transition-colors shadow-lg shadow-black/5 whitespace-nowrap">Book a Consultation</button>
+                  <button onClick={() => onAskAria(`Info about ${hospital.name}`)} className="w-full md:hidden bg-[#1C1C1C] hover:bg-zinc-800 text-white px-6 py-3 rounded-lg text-sm font-medium transition-all shadow-lg">Ask Aria</button>
               </div>
 
               <div className="flex flex-wrap gap-x-6 gap-y-2 text-xs font-semibold text-slate-800">
-                  <div className="flex items-center gap-1.5">
-                      <Crown className="w-4 h-4" /> VIP Patient Support
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                      <Plane className="w-4 h-4" /> Easy Airport Access
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                      <Globe className="w-4 h-4" /> Popular with Foreigners
-                  </div>
+                  <div className="flex items-center gap-1.5"><Crown className="w-4 h-4" /> VIP Patient Support</div>
+                  <div className="flex items-center gap-1.5"><Plane className="w-4 h-4" /> Easy Airport Access</div>
+                  <div className="flex items-center gap-1.5"><Globe className="w-4 h-4" /> Popular with Foreigners</div>
               </div>
 
               <div>
@@ -300,210 +337,145 @@ export const HospitalPage: React.FC<HospitalPageProps> = ({
 
               <div className="flex flex-col sm:flex-row gap-6 p-5 bg-[#FAFAFA] rounded-xl border border-slate-100">
                   <div className="flex gap-3 items-center">
-                     <div className="w-10 h-10 rounded-full bg-gradient-to-br from-yellow-400 to-yellow-600 shadow-sm flex items-center justify-center text-white font-bold text-[10px] border-2 border-white ring-1 ring-yellow-100">
-                        JCI
-                     </div>
-                     <div>
-                         <div className="font-bold text-slate-900 text-sm">JCI Accredited</div>
-                         <div className="text-xs text-slate-500">International healthcare standards</div>
-                     </div>
+                     <div className="w-10 h-10 rounded-full bg-gradient-to-br from-yellow-400 to-yellow-600 shadow-sm flex items-center justify-center text-white font-bold text-[10px] border-2 border-white ring-1 ring-yellow-100">JCI</div>
+                     <div><div className="font-bold text-slate-900 text-sm">JCI Accredited</div><div className="text-xs text-slate-500">International healthcare standards</div></div>
                   </div>
                   <div className="flex gap-3 items-center">
-                     <div className="w-10 h-10 bg-[#008080] text-white font-bold flex items-center justify-center rounded-lg shadow-sm text-sm">
-                        A
-                     </div>
-                     <div>
-                         <div className="font-bold text-slate-900 text-sm">ACCME-Accredited</div>
-                         <div className="text-xs text-slate-500">Committed in medical education</div>
-                     </div>
+                     <div className="w-10 h-10 bg-[#008080] text-white font-bold flex items-center justify-center rounded-lg shadow-sm text-sm">A</div>
+                     <div><div className="font-bold text-slate-900 text-sm">ACCME-Accredited</div><div className="text-xs text-slate-500">Committed in medical education</div></div>
                   </div>
               </div>
 
               <div className="text-slate-600 text-sm leading-relaxed space-y-4">
                   <p>{hospital.description}</p>
-                  <p>{hospital.name} is a JCI and MSQH accredited facility...</p>
+                  <p>{hospital.name} is a JCI and MSQH accredited facility and will remain one of the leading medical centres that cater to the growing number of local population in Penang, Northern region and neighbouring countries.</p>
               </div>
 
-              {/* Stats Grid */}
               <div className="grid grid-cols-2 md:grid-cols-2 gap-y-6 gap-x-12 border-y border-slate-100 py-8">
-                  <div className="flex items-center gap-3">
-                      <Stethoscope className="w-5 h-5 text-slate-900" strokeWidth={1.5} />
-                      <div className="font-semibold text-[#1C1C1C] text-sm">170 specialists</div>
-                  </div>
-                  <div className="flex items-center gap-3">
-                      <Building2 className="w-5 h-5 text-slate-900" strokeWidth={1.5} />
-                      <div className="font-semibold text-[#1C1C1C] text-sm">{hospital.specialties.length} Specialties</div>
-                  </div>
-                  <div className="flex items-center gap-3">
-                      <Bed className="w-5 h-5 text-slate-900" strokeWidth={1.5} />
-                      <div className="font-semibold text-[#1C1C1C] text-sm">380 beds</div>
-                  </div>
-                  <div className="flex items-center gap-3">
-                      <Users className="w-5 h-5 text-slate-900" strokeWidth={1.5} />
-                      <div className="font-semibold text-[#1C1C1C] text-sm">333K+ patients annually</div>
-                  </div>
+                  <div className="flex items-center gap-3"><Stethoscope className="w-5 h-5 text-slate-900" strokeWidth={1.5} /><div className="font-semibold text-[#1C1C1C] text-sm">170 specialists</div></div>
+                  <div className="flex items-center gap-3"><Building2 className="w-5 h-5 text-slate-900" strokeWidth={1.5} /><div className="font-semibold text-[#1C1C1C] text-sm">{hospital.specialties.length} Specialties</div></div>
+                  <div className="flex items-center gap-3"><Bed className="w-5 h-5 text-slate-900" strokeWidth={1.5} /><div className="font-semibold text-[#1C1C1C] text-sm">380 beds</div></div>
+                  <div className="flex items-center gap-3"><Users className="w-5 h-5 text-slate-900" strokeWidth={1.5} /><div className="font-semibold text-[#1C1C1C] text-sm">333K+ patients annually</div></div>
               </div>
 
               {/* Awards */}
               <div className="space-y-4">
-                  <h3 className="font-bold text-lg flex items-center gap-2 text-slate-900">
-                      <Trophy className="w-5 h-5" /> Awards & Accreditations
-                  </h3>
+                  <h3 className="font-bold text-lg flex items-center gap-2 text-slate-900"><Trophy className="w-5 h-5" /> Awards & Accreditations</h3>
                   <div className="space-y-4 pl-2">
                       {visibleAwards.map((award, i) => (
                           <div key={i} className="flex gap-4 text-sm animate-in fade-in slide-in-from-top-1 duration-300">
                               <span className="font-bold text-[#1C1C1C] w-12 shrink-0">{award.year}</span>
                               <div className="flex-1 h-px bg-slate-200 my-auto max-w-[20px] hidden sm:block"></div>
-                              <span className="text-slate-600">
-                                <span className="underline decoration-slate-300 underline-offset-4 font-medium text-slate-800">{award.title}</span> — {award.org}
-                              </span>
+                              <span className="text-slate-600"><span className="underline decoration-slate-300 underline-offset-4 font-medium text-slate-800">{award.title}</span> — {award.org}</span>
                           </div>
                       ))}
-                      
+                      <button onClick={() => setShowAllAwards(!showAllAwards)} className="text-slate-600 text-xs font-semibold flex items-center gap-1 border border-slate-200 px-4 py-2 rounded-lg mt-2 hover:bg-slate-50 transition-colors w-fit">
+                          {showAllAwards ? 'View Less' : 'View More'} <ChevronDown className={`w-3 h-3 transition-transform ${showAllAwards ? 'rotate-180' : ''}`} />
+                      </button>
+                  </div>
+              </div>
+
+              {/* Insurance Support Section - Enhanced */}
+              <div className="bg-slate-50 rounded-2xl p-6 border border-slate-100 mt-8">
+                  <div className="flex items-center justify-between mb-4">
+                      <h3 className="font-bold text-lg flex items-center gap-2 text-slate-900">
+                          <ShieldCheck className="w-5 h-5 text-emerald-600" /> Insurance Partners
+                      </h3>
+                      <span className="bg-emerald-100 text-emerald-700 text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wider">Direct Billing</span>
+                  </div>
+                  
+                  <p className="text-sm text-slate-500 mb-6 leading-relaxed">
+                      {hospital.name} accepts direct billing from major international insurance providers. We handle the paperwork so you can focus on recovery.
+                  </p>
+
+                  <div className="grid grid-cols-4 gap-3 mb-6">
+                      {insurancePartners.map((partner, i) => (
+                          <div key={i} className="aspect-[3/2] bg-white rounded-lg border border-slate-100 flex items-center justify-center p-3 shadow-sm hover:shadow-md transition-all group cursor-pointer" title={partner.name}>
+                              <img 
+                                  src={`https://logo.clearbit.com/${partner.domain}`} 
+                                  alt={partner.name} 
+                                  className="max-w-full max-h-full object-contain grayscale opacity-60 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-500"
+                                  onError={(e) => {
+                                      e.currentTarget.style.display = 'none';
+                                      if (e.currentTarget.parentElement) {
+                                          e.currentTarget.parentElement.innerText = partner.name;
+                                          e.currentTarget.parentElement.classList.add('text-[10px]', 'font-bold', 'text-slate-400', 'text-center');
+                                      }
+                                  }}
+                              />
+                          </div>
+                      ))}
+                  </div>
+
+                  <div className="flex flex-col sm:flex-row gap-3 items-center justify-between pt-4 border-t border-slate-200/60">
+                      <div className="flex gap-4 text-xs font-medium text-slate-600">
+                          <div className="flex items-center gap-1.5"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" /> Cashless Admission</div>
+                          <div className="flex items-center gap-1.5"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" /> Claims Assistance</div>
+                      </div>
                       <button 
-                        onClick={() => setShowAllAwards(!showAllAwards)}
-                        className="text-slate-600 text-xs font-semibold flex items-center gap-1 border border-slate-200 px-4 py-2 rounded-lg mt-2 hover:bg-slate-50 transition-colors w-fit"
+                          onClick={() => onAskAria(`Check insurance coverage for ${hospital.name}. I have [Your Insurance Name].`)}
+                          className="text-xs font-semibold text-slate-900 underline decoration-slate-300 underline-offset-4 hover:decoration-slate-900 hover:text-black transition-all flex items-center gap-1"
                       >
-                          {showAllAwards ? 'View Less' : 'View More'} 
-                          <ChevronDown className={`w-3 h-3 transition-transform ${showAllAwards ? 'rotate-180' : ''}`} />
+                          <FileCheck className="w-3.5 h-3.5" /> Verify Coverage
                       </button>
                   </div>
               </div>
           </div>
 
-          {/* Right Column: Widgets (Concierge, Getting Here, Around Area) */}
+          {/* Right Column */}
           <div className="space-y-6">
-              {/* ... (Keep existing widgets) ... */}
+              {/* ... (Keep Concierge, Getting Here, Around Area widgets) ... */}
               <div className="border border-slate-200 bg-gradient-to-br from-white to-slate-50 rounded-xl p-6 shadow-sm relative overflow-hidden group">
-                  {/* ... Concierge Content ... */}
-                  <div className="absolute top-0 right-0 p-3 opacity-5 group-hover:opacity-10 transition-opacity">
-                      <Bot className="w-24 h-24 text-slate-900" />
-                  </div>
+                  <div className="absolute top-0 right-0 p-3 opacity-5 group-hover:opacity-10 transition-opacity"><Bot className="w-24 h-24 text-slate-900" /></div>
                   <div className="relative z-10">
                       <div className="flex items-center gap-2 mb-3">
-                          <div className="p-2 bg-[#1C1C1C] rounded-lg text-[#F1FCA7] shadow-lg shadow-slate-200">
-                              <Sparkles className="w-4 h-4" />
-                          </div>
-                          <div>
-                              <h3 className="font-bold text-gray-900 text-sm">Hospital Concierge</h3>
-                              <p className="text-[10px] text-slate-500 font-medium">Powered by Aria AI</p>
-                          </div>
+                          <div className="p-2 bg-[#1C1C1C] rounded-lg text-[#F1FCA7] shadow-lg shadow-slate-200"><Sparkles className="w-4 h-4" /></div>
+                          <div><h3 className="font-bold text-gray-900 text-sm">Hospital Concierge</h3><p className="text-[10px] text-slate-500 font-medium">Powered by Aria AI</p></div>
                       </div>
-                      <p className="text-xs text-slate-600 mb-4 leading-relaxed">
-                          I can analyze <strong>{hospital.name}</strong>'s pricing, insurance coverage, and specialist availability instantly.
-                      </p>
+                      <p className="text-xs text-slate-600 mb-4 leading-relaxed">I can analyze <strong>{hospital.name}</strong>'s pricing, insurance coverage, and specialist availability instantly.</p>
                       <div className="grid grid-cols-2 gap-2 mb-4">
                           {["Pricing", "Insurance", "Doctors", "Booking"].map((item, i) => (
-                              <button 
-                                key={i}
-                                onClick={() => onAskAria(`Tell me about ${item.toLowerCase()} at ${hospital.name}`)}
-                                className="text-xs font-medium bg-white border border-slate-200 text-slate-700 py-2 px-3 rounded-lg hover:border-slate-900 hover:text-slate-900 transition-all text-left hover:shadow-sm"
-                              >
+                              <button key={i} onClick={() => onAskAria(`Tell me about ${item.toLowerCase()} at ${hospital.name}`)} className="text-xs font-medium bg-white border border-slate-200 text-slate-700 py-2 px-3 rounded-lg hover:border-slate-900 hover:text-slate-900 transition-all text-left hover:shadow-sm">
                                   {item === "Pricing" ? "💰" : item === "Insurance" ? "🛡️" : item === "Doctors" ? "👨‍⚕️" : "📅"} {item}
                               </button>
                           ))}
                       </div>
-                      <button 
-                          onClick={() => onAskAria(`I have general questions about ${hospital.name}`)}
-                          className="w-full bg-white border border-slate-200 text-slate-400 text-xs py-3 px-4 rounded-xl text-left flex justify-between items-center hover:border-slate-900 hover:text-slate-600 transition-colors shadow-sm group/input"
-                      >
-                          <span>Ask anything...</span>
-                          <div className="w-6 h-6 bg-slate-100 rounded-lg flex items-center justify-center group-hover/input:bg-[#1C1C1C] transition-colors">
-                              <ArrowRight className="w-3 h-3 text-slate-400 group-hover/input:text-[#F1FCA7] transition-colors" />
-                          </div>
-                      </button>
+                      <button onClick={() => onAskAria(`I have general questions about ${hospital.name}`)} className="w-full bg-white border border-slate-200 text-slate-400 text-xs py-3 px-4 rounded-xl text-left flex justify-between items-center hover:border-slate-900 hover:text-slate-600 transition-colors shadow-sm group/input"><span>Ask anything...</span><div className="w-6 h-6 bg-slate-100 rounded-lg flex items-center justify-center group-hover/input:bg-[#1C1C1C] transition-colors"><ArrowRight className="w-3 h-3 text-slate-400 group-hover/input:text-[#F1FCA7] transition-colors" /></div></button>
                   </div>
               </div>
 
-              {/* Getting Here */}
               <div className="border border-zinc-200 rounded-xl p-6 shadow-sm bg-white">
-                   {/* ... Content ... */}
-                   <div className="flex items-center justify-between mb-6">
-                      <div className="flex items-center gap-2 font-bold text-[#1C1C1C]">
-                          <div className="p-1.5 bg-slate-100 rounded-full"><Navigation className="w-4 h-4" /></div>
-                          Getting Here
-                      </div>
-                      <div className="text-right">
-                        <div className="text-[10px] text-slate-400 font-medium uppercase tracking-wide mb-0.5">From your Location</div>
-                        <div className="text-sm font-bold text-slate-900 flex items-center justify-end gap-1.5">
-                            <Target className="w-3.5 h-3.5" /> Jakarta
-                        </div>
-                      </div>
+                  <div className="flex items-center justify-between mb-6">
+                      <div className="flex items-center gap-2 font-bold text-[#1C1C1C]"><div className="p-1.5 bg-slate-100 rounded-full"><Navigation className="w-4 h-4" /></div> Getting Here</div>
+                      <div className="text-right"><div className="text-[10px] text-slate-400 font-medium uppercase tracking-wide mb-0.5">From your Location</div><div className="text-sm font-bold text-slate-900 flex items-center justify-end gap-1.5"><Target className="w-3.5 h-3.5" /> Jakarta</div></div>
                   </div>
                   <div className="flex items-center gap-4 pt-2">
-                      <div className="w-12 h-12 bg-[#E4F28A] rounded-full flex items-center justify-center text-[#1C1C1C] border-4 border-white shadow-sm ring-1 ring-slate-100">
-                          <Plane className="w-5 h-5 rotate-[-45deg]" strokeWidth={2} />
-                      </div>
-                      <div>
-                          <div className="text-xs text-zinc-500 font-medium mb-0.5">By Air</div>
-                          <div className="text-sm font-bold text-[#1C1C1C]">Less than 3 hour Away</div>
-                      </div>
+                      <div className="w-12 h-12 bg-[#E4F28A] rounded-full flex items-center justify-center text-[#1C1C1C] border-4 border-white shadow-sm ring-1 ring-slate-100"><Plane className="w-5 h-5 rotate-[-45deg]" strokeWidth={2} /></div>
+                      <div><div className="text-xs text-zinc-500 font-medium mb-0.5">By Air</div><div className="text-sm font-bold text-[#1C1C1C]">Less than 3 hour Away</div></div>
                   </div>
               </div>
 
-              {/* Around the Area */}
               <div className="border border-zinc-200 rounded-xl p-6 shadow-sm bg-white">
-                  {/* ... Content ... */}
-                  <div className="flex items-center gap-2 font-bold text-[#1C1C1C] mb-4">
-                      <div className="p-1.5 bg-slate-100 rounded-full"><Scan className="w-4 h-4" /></div>
-                      Around the Area
-                  </div>
-                  <div className="flex items-center gap-2 mb-5 cursor-pointer hover:opacity-80 transition-opacity">
-                       <MapPin className="w-4 h-4 text-slate-500" />
-                       <span className="font-semibold text-slate-900 text-sm">Map</span>
-                  </div>
+                  <div className="flex items-center gap-2 font-bold text-[#1C1C1C] mb-4"><div className="p-1.5 bg-slate-100 rounded-full"><Scan className="w-4 h-4" /></div> Around the Area</div>
+                  <div className="flex items-center gap-2 mb-5 cursor-pointer hover:opacity-80 transition-opacity"><MapPin className="w-4 h-4 text-slate-500" /><span className="font-semibold text-slate-900 text-sm">Map</span></div>
                   <div className="w-full h-32 bg-slate-100 rounded-xl mb-5 overflow-hidden relative border border-slate-200 group cursor-pointer">
-                      <img 
-                        src="https://api.mapbox.com/styles/v1/mapbox/light-v10/static/100.3,5.4,13,0/400x200?access_token=pk.eyJ1IjoibWVkaWZseSIsImEiOiJjbTdtbnh5aXYwMHFyMmtzY3Z3Z3l3c3d6In0.99999999999" 
-                        alt="Map" 
-                        className="w-full h-full object-cover grayscale opacity-60 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-500"
-                        onError={(e) => (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1524661135-423995f22d0b?auto=format&fit=crop&q=80&w=400'}
-                      />
-                      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                          <div className="bg-white/90 backdrop-blur px-3 py-1.5 rounded-full text-xs font-bold text-slate-900 shadow-sm border border-slate-200">View Map</div>
-                      </div>
+                      <img src="https://api.mapbox.com/styles/v1/mapbox/light-v10/static/100.3,5.4,13,0/400x200?access_token=pk.eyJ1IjoibWVkaWZseSIsImEiOiJjbTdtbnh5aXYwMHFyMmtzY3Z3Z3l3c3d6In0.99999999999" alt="Map" className="w-full h-full object-cover grayscale opacity-60 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-500" onError={(e) => (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1524661135-423995f22d0b?auto=format&fit=crop&q=80&w=400'} />
+                      <div className="absolute inset-0 flex items-center justify-center pointer-events-none"><div className="bg-white/90 backdrop-blur px-3 py-1.5 rounded-full text-xs font-bold text-slate-900 shadow-sm border border-slate-200">View Map</div></div>
                   </div>
                   <div className="flex gap-3 mb-6 text-xs text-slate-600 items-start leading-relaxed bg-slate-50 p-3 rounded-lg border border-slate-100">
-                      <div className="w-5 h-5 rounded-full bg-white border border-slate-200 flex items-center justify-center shrink-0 mt-0.5 shadow-sm">
-                         <span className="text-[10px]">🇲🇾</span>
-                      </div>
+                      <div className="w-5 h-5 rounded-full bg-white border border-slate-200 flex items-center justify-center shrink-0 mt-0.5 shadow-sm"><span className="text-[10px]">🇲🇾</span></div>
                       <p>1, Jalan Pangkor, 10050 George Town, Pulau Pinang, Malaysia</p>
                   </div>
                   <div className="space-y-5">
-                      <div>
-                          <div className="flex items-center gap-2 text-sm font-bold text-[#1C1C1C] mb-2">
-                              <Plane className="w-4 h-4 text-slate-400" /> Airports
-                          </div>
-                          <ul className="pl-8 space-y-2 text-xs text-slate-600 list-disc marker:text-slate-300">
-                              <li>Penang International Airport (PEN) | 5.8 km away</li>
-                          </ul>
-                      </div>
-                      <div>
-                          <div className="flex items-center gap-2 text-sm font-bold text-[#1C1C1C] mb-2">
-                              <Bus className="w-4 h-4 text-slate-400" /> Transportations
-                          </div>
-                          <ul className="pl-8 space-y-2 text-xs text-slate-600 list-disc marker:text-slate-300">
-                              <li>Rapid Penang Bus line 102 | 5.8 km away</li>
-                          </ul>
-                      </div>
-                      <div>
-                          <div className="flex items-center gap-2 text-sm font-bold text-[#1C1C1C] mb-2">
-                              <Flag className="w-4 h-4 text-slate-400" /> Landmarks
-                          </div>
-                          <ul className="pl-8 space-y-2 text-xs text-slate-600 list-disc marker:text-slate-300">
-                              <li>Buddhist Temple Wat Buppharam | 5.8 km away</li>
-                              <li>Giant Penang Plaza | 5.8 km away</li>
-                              <li>Ivy’s Nyonya Cuisine | 5.8 km away</li>
-                          </ul>
-                      </div>
+                      <div><div className="flex items-center gap-2 text-sm font-bold text-[#1C1C1C] mb-2"><Plane className="w-4 h-4 text-slate-400" /> Airports</div><ul className="pl-8 space-y-2 text-xs text-slate-600 list-disc marker:text-slate-300"><li>Penang International Airport (PEN) | 5.8 km away</li></ul></div>
+                      <div><div className="flex items-center gap-2 text-sm font-bold text-[#1C1C1C] mb-2"><Bus className="w-4 h-4 text-slate-400" /> Transportations</div><ul className="pl-8 space-y-2 text-xs text-slate-600 list-disc marker:text-slate-300"><li>Rapid Penang Bus line 102 | 5.8 km away</li></ul></div>
+                      <div><div className="flex items-center gap-2 text-sm font-bold text-[#1C1C1C] mb-2"><Flag className="w-4 h-4 text-slate-400" /> Landmarks</div><ul className="pl-8 space-y-2 text-xs text-slate-600 list-disc marker:text-slate-300"><li>Buddhist Temple Wat Buppharam | 5.8 km away</li><li>Giant Penang Plaza | 5.8 km away</li><li>Ivy’s Nyonya Cuisine | 5.8 km away</li></ul></div>
                   </div>
               </div>
           </div>
       </div>
-
-      {/* --- Appended Details Sections --- */}
-
-      {/* 1. Top Expertise - ID: specialization */}
+      
+      {/* 1. Top Expertise */}
       <section id="specialization" className="max-w-7xl mx-auto px-6 py-16 scroll-mt-40">
         <h2 className="text-3xl font-semibold text-center tracking-tight mb-12">Our Top Expertise</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6">
@@ -514,14 +486,8 @@ export const HospitalPage: React.FC<HospitalPageProps> = ({
                 { icon: BrainCircuit, title: "Neurology", desc: "Specialized brain & nerve care with precise diagnosis tools." },
                 { icon: Droplet, title: "Hematology", desc: "State-of-the-art care, diagnosis and concerns for blood-related issues." },
             ].map((item, idx) => (
-                <div 
-                    key={idx} 
-                    className="group p-6 rounded-xl border border-gray-100 bg-white hover:shadow-lg hover:border-gray-200 transition-all duration-300 cursor-pointer"
-                    onClick={() => onViewSpecialization?.(item.title)}
-                >
-                    <div className="w-10 h-10 rounded-full bg-lime-100 flex items-center justify-center mb-4 text-lime-700">
-                        <item.icon strokeWidth={1.5} className="w-5 h-5" />
-                    </div>
+                <div key={idx} className="group p-6 rounded-xl border border-gray-100 bg-white hover:shadow-lg hover:border-gray-200 transition-all duration-300 cursor-pointer" onClick={() => onViewSpecialization?.(item.title)}>
+                    <div className="w-10 h-10 rounded-full bg-lime-100 flex items-center justify-center mb-4 text-lime-700"><item.icon strokeWidth={1.5} className="w-5 h-5" /></div>
                     <h3 className="text-lg font-medium mb-2 tracking-tight group-hover:text-[#1C1C1C] transition-colors">{item.title}</h3>
                     <p className="text-sm text-gray-500 leading-relaxed">{item.desc}</p>
                 </div>
@@ -530,79 +496,77 @@ export const HospitalPage: React.FC<HospitalPageProps> = ({
         <div className="mt-20 bg-[#FAFAFA] rounded-2xl p-8 md:p-12">
             <h4 className="text-center text-xl font-medium text-gray-900 mb-10">Other Specializations Available</h4>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 max-w-5xl mx-auto">
-                {[
-                    "Fertility & IVF",
-                    "Gastroenterology",
-                    "Internal Medicine",
-                    "Aesthetics",
-                    "Dermatology",
-                    "General Surgery",
-                    "Dental Care",
-                    "Diabetes & Chronic Diseases Care",
-                    "ENT"
-                ].map((spec, i) => (
-                    <div 
-                        key={i} 
-                        onClick={() => onViewSpecialization?.(spec)}
-                        className="bg-white px-6 py-4 rounded-xl border border-gray-100 text-sm font-medium text-gray-800 shadow-sm hover:shadow-md transition-all cursor-pointer hover:border-gray-300 hover:text-black flex justify-between items-center group"
-                    >
-                        {spec}
-                        <ArrowRight className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity text-gray-400" />
-                    </div>
+                {["Fertility & IVF", "Gastroenterology", "Internal Medicine", "Aesthetics", "Dermatology", "General Surgery", "Dental Care", "Diabetes & Chronic Diseases Care", "ENT"].map((spec, i) => (
+                    <div key={i} onClick={() => onViewSpecialization?.(spec)} className="bg-white px-6 py-4 rounded-xl border border-gray-100 text-sm font-medium text-gray-800 shadow-sm hover:shadow-md transition-all cursor-pointer hover:border-gray-300 hover:text-black flex justify-between items-center group">{spec}<ArrowRight className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity text-gray-400" /></div>
                 ))}
             </div>
         </div>
       </section>
-
-      {/* 2. Explore Specialists - ID: doctors */}
-      <section id="doctors" className="max-w-7xl mx-auto px-6 py-12 scroll-mt-40">
-        <div className="flex flex-col md:flex-row md:items-center justify-between mb-8">
-            <h2 className="text-2xl font-semibold tracking-tight text-gray-900">Explore Specialists</h2>
+      
+      {/* ... (Rest of components) ... */}
+      <section id="doctors" className="max-w-full mx-auto px-6 py-16 scroll-mt-40 bg-white border-t border-gray-100 overflow-hidden">
+          <div className="max-w-7xl mx-auto mb-12">
+            <div className="flex flex-col gap-4">
+                <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-slate-900">World-Class Care, Led by Top Specialists</h2>
+                <p className="text-slate-500 max-w-3xl text-sm">
+                    Access expert care from 50+ trusted specialists across multiple medical fields, all delivering global-standard treatment you can trust.
+                </p>
+            </div>
+            <div className="mt-8 flex flex-wrap gap-3">
+                {specialistFilters.map((filter, idx) => (
+                    <button
+                        key={idx}
+                        onClick={() => setSelectedSpecialistFilter(filter.label)}
+                        className={`
+                            flex items-center gap-2 px-4 py-2.5 rounded-lg border text-xs font-medium transition-all
+                            ${selectedSpecialistFilter === filter.label
+                                ? 'bg-slate-100 border-slate-900 text-slate-900 ring-1 ring-slate-900' 
+                                : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300 hover:bg-slate-50'}
+                        `}
+                    >
+                        <filter.icon className="w-3.5 h-3.5" strokeWidth={1.5} />
+                        {filter.label}
+                    </button>
+                ))}
+            </div>
         </div>
-         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-             {[
-                { name: "Dr. Khoo Eng Huei", role: "Nephrology", img: "https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?auto=format&fit=crop&q=80&w=400", time: "Mon, Wed, Fri" },
-                { name: "Dr. Tan Wei Ching", role: "Cardiology", img: "https://images.unsplash.com/photo-1537368910025-700350fe46c7?auto=format&fit=crop&q=80&w=400", time: "Tue, Thu" },
-                { name: "Dr. Lim Chee Yeong", role: "Oncology", img: "https://images.unsplash.com/photo-1622253692010-333f2da6031d?auto=format&fit=crop&q=80&w=400", time: "Mon-Fri" },
-                { name: "Dr. Sarah Lee", role: "Pediatrics", img: "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?auto=format&fit=crop&q=80&w=400", time: "Sat" }
-            ].map((doc, i) => (
-                <div key={i} className="group border border-gray-200 rounded-xl overflow-hidden hover:shadow-md transition-all">
-                    <div className="bg-gray-50 aspect-[4/3] relative">
-                        <img src={doc.img} alt="Doctor" className="w-full h-full object-cover object-top mix-blend-multiply opacity-90 group-hover:scale-105 transition-transform duration-500" />
+        {/* Infinite Scroll Carousel */}
+        <div className="w-full relative">
+             <div className="flex gap-6 w-max animate-scroll-horizontal hover:pause">
+                 {scrollDoctors.map((doc, i) => (
+                    <div key={i} className="w-[300px] flex-shrink-0 bg-white border border-slate-100 rounded-xl overflow-hidden hover:shadow-lg transition-all group">
+                        <div className="h-[220px] bg-slate-50 relative overflow-hidden">
+                            <img src={doc.imageUrl} alt={doc.name} className="w-full h-full object-cover object-top mix-blend-multiply opacity-95 group-hover:scale-105 transition-transform duration-700" />
+                        </div>
+                        <div className="p-5 flex flex-col">
+                            <h3 className="text-lg font-bold text-slate-900 mb-1">{doc.name}</h3>
+                            <div className="flex items-center gap-1.5 text-xs text-slate-500 mb-3 font-medium">
+                                <span className="text-base">
+                                    {hospital.country === 'Thailand' ? '🇹🇭' : hospital.country === 'Malaysia' ? '🇲🇾' : '🏳️'}
+                                </span>
+                                <span className="truncate">{hospital.name}, {hospital.country}</span>
+                            </div>
+                            <div className="mb-4 space-y-1">
+                                <p className="text-sm font-medium text-slate-800">{doc.specialty}</p>
+                                <p className="text-xs text-slate-400 line-clamp-1">{doc.procedures.join(' • ')}</p>
+                                <div className="inline-flex items-center gap-1.5 mt-2 px-2 py-1 bg-slate-50 border border-slate-100 rounded text-[10px] font-medium text-slate-600">
+                                    <BriefcaseMedical className="w-3 h-3" />
+                                    200+ robotic joint procedures
+                                </div>
+                            </div>
+                            <div className="flex items-center gap-2 text-[10px] text-slate-500 mb-5 pt-3 border-t border-slate-50">
+                                <Languages className="w-3.5 h-3.5" />
+                                <span>English, Bahasa Indonesia</span>
+                            </div>
+                            <button onClick={() => onNavigateToDoctor?.(doc)} className="w-full py-2.5 border border-slate-200 rounded-lg text-xs font-bold text-slate-700 hover:bg-slate-900 hover:text-white hover:border-slate-900 transition-all">Overview</button>
+                        </div>
                     </div>
-                    <div className="p-5">
-                        <h3 className="text-base font-semibold text-gray-900 mb-1">{doc.name}</h3>
-                        <div className="flex items-center text-xs text-gray-500 mb-3">
-                            <span className="w-2 h-2 rounded-full bg-red-50 mr-2"></span>
-                            {hospital.name}, {hospital.country}
-                        </div>
-                        <p className="text-xs font-medium text-gray-900 mb-1">{doc.role}</p>
-                        <p className="text-xs text-gray-400 mb-4 line-clamp-1">{doc.role}, Internal Medicine, Surgery</p>
-                        
-                        <div className="flex gap-2 text-xs text-gray-500 mb-2">
-                            <Clock className="w-3 h-3 mt-0.5" /> {doc.time} (09:00 - 16:00)
-                        </div>
-                        <div className="flex gap-2 text-xs text-gray-500 mb-4">
-                            <Languages className="w-3 h-3 mt-0.5" /> English, Local
-                        </div>
-
-                        <button className="w-full py-2.5 rounded-lg border border-gray-200 text-xs font-medium text-gray-700 hover:bg-gray-50 transition-colors">Overview</button>
-                    </div>
-                </div>
-            ))}
-         </div>
-         <div className="flex justify-center mt-10">
-            <button 
-                onClick={onNavigateToDoctors}
-                className="border border-gray-200 bg-white text-slate-900 px-8 py-3 rounded-lg font-medium text-sm hover:bg-gray-50 transition-colors shadow-sm hover:shadow-md"
-            >
-                View More Specialists
-            </button>
+                 ))}
+             </div>
         </div>
       </section>
-
-      {/* 3. Facilities - ID: facilities */}
-      <section id="facilities" className="max-w-7xl mx-auto px-6 py-16 bg-white scroll-mt-40">
+      
+      <section id="facilities" className="max-w-7xl mx-auto px-6 py-16 bg-white scroll-mt-40 border-t border-gray-100">
         <h2 className="text-2xl font-semibold text-center tracking-tight mb-12">Facilities</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
              {[
@@ -628,56 +592,63 @@ export const HospitalPage: React.FC<HospitalPageProps> = ({
             ))}
         </div>
         <div className="flex justify-center mt-10">
-            <button 
-                onClick={onViewFacilities}
-                className="border border-gray-200 bg-white text-slate-900 px-8 py-3 rounded-lg font-medium text-sm hover:bg-gray-50 transition-colors shadow-sm hover:shadow-md"
-            >
-                View All Facilities
-            </button>
+            <button onClick={onViewFacilities} className="border border-gray-200 bg-white text-slate-900 px-8 py-3 rounded-lg font-medium text-sm hover:bg-gray-50 transition-colors shadow-sm hover:shadow-md">View All Facilities</button>
         </div>
       </section>
 
-      {/* 4. Treatment Package - ID: packages */}
-      <section id="packages" className="max-w-7xl mx-auto px-6 py-16 bg-gray-50/50 scroll-mt-40">
-           <div className="text-center max-w-2xl mx-auto mb-12">
-             <h2 className="text-2xl font-semibold tracking-tight text-gray-900 mb-3">Treatment Package</h2>
-             <p className="text-sm text-gray-500">Discover our curated medical packages with world-class supervision, advanced technology, and personalized treatments.</p>
+      <section id="packages" className="w-full py-16 scroll-mt-40" style={{ backgroundColor: '#FAF8F7' }}>
+          <div className="max-w-7xl mx-auto px-6">
+           <div className="text-center max-w-3xl mx-auto mb-12">
+             <h2 className="text-3xl md:text-4xl font-semibold tracking-tight text-[#1C1C1C] mb-4">Packages Available</h2>
+             <p className="text-sm text-gray-500 leading-relaxed">Discover our curated medical packages that combine expert care, advanced technology, and personalized attention</p>
         </div>
+        
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {[
-                "https://images.unsplash.com/photo-1579684385127-1ef15d508118?auto=format&fit=crop&q=80&w=400",
-                "https://images.unsplash.com/photo-1530497610245-94d3c16cda28?auto=format&fit=crop&q=80&w=400",
-                "https://images.unsplash.com/photo-1505751172876-fa1923c5c528?auto=format&fit=crop&q=80&w=400",
-                "https://images.unsplash.com/photo-1576765608535-5f04d1e3f289?auto=format&fit=crop&q=80&w=400"
-            ].map((img, i) => (
-                <div key={i} className="bg-white rounded-xl overflow-hidden border border-gray-100 hover:shadow-lg transition-all duration-300 group">
-                    <div className="h-40 overflow-hidden relative">
-                        <img src={img} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+             {/* Mock data for packages, repeated to match the image grid (8 items) */}
+             {Array(8).fill(null).map((_, i) => (
+                <div key={i} className="bg-white rounded-xl overflow-hidden border border-gray-100 hover:shadow-md transition-all duration-300 flex flex-col h-full group cursor-pointer">
+                    {/* Image */}
+                    <div className="aspect-[4/3] bg-gray-100 relative overflow-hidden">
+                        <img 
+                            src={`https://images.unsplash.com/photo-1579684385127-1ef15d508118?auto=format&fit=crop&q=80&w=400&random=${i}`} 
+                            alt="Medical Package" 
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
+                        />
                     </div>
-                    <div className="p-5">
-                        <h3 className="text-sm font-semibold mb-1">Basic Medical Check-Up</h3>
+                    
+                    <div className="p-5 flex flex-col flex-1">
+                        <h3 className="text-base font-bold text-[#1C1C1C] mb-1">Basic Medical Check-Up</h3>
                         <p className="text-xs text-gray-500 mb-3">Medical Check-Up</p>
-                        <div className="flex items-center gap-2 mb-3">
-                            <div className="w-4 h-4 rounded-full bg-lime-400 flex items-center justify-center text-[8px] text-white">✓</div>
-                            <span className="text-[10px] text-gray-500 uppercase tracking-wide truncate">{hospital.name}</span>
+                        
+                        <div className="flex items-center gap-2 mb-4">
+                             <div className="w-5 h-5 rounded-full bg-[#F1FCA7] flex items-center justify-center shrink-0">
+                                <Building2 className="w-3 h-3 text-[#1C1C1C]" />
+                             </div>
+                             <span className="text-xs text-gray-500 truncate">{hospital.name}</span>
                         </div>
-                        <p className="text-sm font-medium text-gray-900 mb-4">$450</p>
-                        <button className="w-full py-2 rounded border border-gray-200 text-xs font-medium hover:bg-gray-50 transition-colors">View Detail</button>
+                        
+                        <p className="text-sm font-bold text-[#1C1C1C] mb-5">Rp 400.000</p>
+                        
+                        <button className="w-full py-2.5 rounded-lg border border-gray-200 text-xs font-medium text-[#1C1C1C] hover:bg-gray-50 transition-colors mt-auto">
+                            Overview
+                        </button>
                     </div>
                 </div>
-            ))}
+             ))}
         </div>
-        <div className="flex justify-center mt-10">
+
+        <div className="flex justify-center mt-12">
             <button 
                 onClick={onNavigateToPackages}
-                className="border border-gray-200 bg-white text-slate-900 px-8 py-3 rounded-lg font-medium text-sm hover:bg-gray-50 transition-colors shadow-sm hover:shadow-md"
+                className="bg-[#1C1C1C] text-white px-8 py-3 rounded-lg font-medium text-sm hover:bg-black transition-colors shadow-lg shadow-black/10"
             >
-                View All Packages
+                View More
             </button>
         </div>
+        </div>
       </section>
-
-      {/* 5. Backed by experts */}
+      
+      {/* ... Experts, FAQ, Related, Explore (unchanged) */}
       <section className="max-w-7xl mx-auto px-6 py-20">
            <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
             <div className="col-span-1 py-4">
@@ -713,35 +684,21 @@ export const HospitalPage: React.FC<HospitalPageProps> = ({
         </div>
       </section>
 
-      {/* 6. FAQ */}
       <section className="max-w-7xl mx-auto px-6 py-12 border-t border-gray-100">
         <h2 className="text-2xl font-semibold tracking-tight text-gray-900 mb-8">Frequently Asked Question</h2>
         <div className="space-y-4">
-            {[
-                "Is this hospital provider decent standard?",
-                "How does Medifly AI works?",
-                "Can Medifly AI help me to hire medical trip?",
-                "How do I book a for treatment?"
-            ].map((q, i) => (
+            {["Is this hospital provider decent standard?", "How does Medifly AI works?", "Can Medifly AI help me to hire medical trip?", "How do I book a for treatment?"].map((q, i) => (
                 <div key={i} className="border-b border-gray-100 pb-4">
-                    <button 
-                        onClick={() => setOpenFaqIndex(openFaqIndex === i ? null : i)}
-                        className="flex items-center justify-between w-full text-left focus:outline-none group"
-                    >
+                    <button onClick={() => setOpenFaqIndex(openFaqIndex === i ? null : i)} className="flex items-center justify-between w-full text-left focus:outline-none group">
                         <span className={`text-sm font-medium ${openFaqIndex === i ? 'text-gray-900' : 'text-gray-700 group-hover:text-gray-900'}`}>{q}</span>
                         {openFaqIndex === i ? <ChevronUp className="w-4 h-4 text-gray-400" /> : <ChevronDown className="w-4 h-4 text-gray-400" />}
                     </button>
-                    {openFaqIndex === i && (
-                        <div className="mt-3 animate-in slide-in-from-top-1 duration-200">
-                             <p className="text-sm text-gray-500 leading-relaxed pr-8">Absolutely. Medifly AI assists you through every step of your medical journey — from finding the right hospital and doctor to estimating costs, planning your stay, and arranging travel details. We create medical trips around, smarten, and stress-free.</p>
-                        </div>
-                    )}
+                    {openFaqIndex === i && (<div className="mt-3 animate-in slide-in-from-top-1 duration-200"><p className="text-sm text-gray-500 leading-relaxed pr-8">Absolutely. Medifly AI assists you through every step of your medical journey...</p></div>)}
                 </div>
             ))}
         </div>
       </section>
 
-      {/* 7. Related Hospitals */}
       <section className="max-w-7xl mx-auto px-6 py-16">
           <h2 className="text-2xl font-semibold text-center tracking-tight mb-12">Hospitals in the Area</h2>
            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -770,113 +727,44 @@ export const HospitalPage: React.FC<HospitalPageProps> = ({
             ))}
         </div>
         <div className="flex justify-center mt-8">
-            <button 
-                onClick={onNavigateToHospitals}
-                className="border border-gray-200 bg-white text-slate-900 px-8 py-3 rounded-lg font-medium text-sm hover:bg-gray-50 transition-colors shadow-sm hover:shadow-md"
-            >
-                Discover More Hospitals
-            </button>
+            <button onClick={onNavigateToHospitals} className="border border-gray-200 bg-white text-slate-900 px-8 py-3 rounded-lg font-medium text-sm hover:bg-gray-50 transition-colors shadow-sm hover:shadow-md">Discover More Hospitals</button>
         </div>
       </section>
 
-      {/* 8. Explore More Hospitals (New Section) */}
       <section className="max-w-7xl mx-auto px-6 py-16 border-t border-gray-100">
         <h2 className="text-2xl font-semibold text-center tracking-tight mb-12">Explore More Hospital</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
            {exploreMoreHospitals.map((h, i) => (
                <div key={i} className="bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-lg transition-all group cursor-pointer flex flex-col h-full" onClick={() => onNavigateToHospital?.(h)}>
-                    {/* Image Header */}
                     <div className="h-48 relative bg-gray-200 overflow-hidden">
                         <img src={h.imageUrl} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" alt={h.name} />
-                        {/* Google Rating Badge Overlay - Bottom Left */}
-                        <div className="absolute bottom-2 left-2 bg-[#1A1A1A]/90 backdrop-blur px-2 py-1 rounded flex items-center gap-1 text-white text-[10px]">
-                            <span className="font-bold">G</span>
-                            <Star className="w-2.5 h-2.5 text-yellow-400 fill-yellow-400" />
-                            <span className="font-bold">{h.rating}/5</span>
-                            <span className="text-gray-400">({h.reviewCount} reviews)</span>
-                        </div>
+                        <div className="absolute bottom-2 left-2 bg-[#1A1A1A]/90 backdrop-blur px-2 py-1 rounded flex items-center gap-1 text-white text-[10px]"><span className="font-bold">G</span><Star className="w-2.5 h-2.5 text-yellow-400 fill-yellow-400" /><span className="font-bold">{h.rating}/5</span><span className="text-gray-400">({h.reviewCount} reviews)</span></div>
                     </div>
-                    
                     <div className="p-4 flex flex-col flex-1">
-                        {/* Title & Price */}
                         <div className="flex justify-between items-start mb-1">
                             <h3 className="font-bold text-slate-900 text-base line-clamp-1 leading-tight" title={h.name}>{h.name}</h3>
-                            <span className="text-slate-400 text-sm font-medium flex shrink-0 ml-2">
-                                <span className="text-slate-900">{h.priceRange}</span>
-                                <span className="opacity-30">{Array(Math.max(0, 3 - h.priceRange.length)).fill('$').join('')}</span>
-                            </span>
+                            <span className="text-slate-400 text-sm font-medium flex shrink-0 ml-2"><span className="text-slate-900">{h.priceRange}</span><span className="opacity-30">{Array(Math.max(0, 3 - h.priceRange.length)).fill('$').join('')}</span></span>
                         </div>
-
-                        {/* Location */}
-                        <div className="flex items-center gap-1.5 text-xs text-slate-500 mb-3">
-                             <span>
-                                {h.country === 'Malaysia' ? '🇲🇾' : 
-                                 h.country === 'Singapore' ? '🇸🇬' : 
-                                 h.country === 'Thailand' ? '🇹🇭' : '🏳️'}
-                             </span>
-                             <span className="truncate">{h.location}, {h.country}</span>
-                        </div>
-
-                        {/* Travel Time */}
-                        <div className="flex items-center gap-1.5 text-xs font-medium text-slate-700 mb-4">
-                            <div className="w-5 h-5 rounded-full bg-[#E4F28A] flex items-center justify-center shrink-0">
-                                <Plane className="w-3 h-3 rotate-[-45deg]" />
-                            </div>
-                            <span>Less than 3 hour Away</span>
-                        </div>
-
-                        {/* Description */}
-                        <p className="text-xs text-slate-500 leading-relaxed mb-4 line-clamp-3 min-h-[3.5em]">
-                            Committed to patient-centered care, {h.name} ensures high-quality treatments tailored to individual needs.
-                        </p>
-
-                        {/* Language */}
-                        <div className="flex items-center gap-2 text-xs text-slate-600 mb-2">
-                            <Languages className="w-3.5 h-3.5 text-slate-400" />
-                            <span className="truncate">{h.languages?.slice(0,3).join(', ') || 'English, Local'}</span>
-                        </div>
-
-                        {/* Stats */}
-                        <div className="flex items-center justify-between text-[10px] text-slate-500 mb-4 mt-auto pt-3">
-                             <div className="flex items-center gap-1.5">
-                                 <Stethoscope className="w-3.5 h-3.5 text-slate-400" /> 170 specialists
-                             </div>
-                             <div className="flex items-center gap-1.5">
-                                 <BriefcaseMedical className="w-3.5 h-3.5 text-slate-400" /> {h.specialties.length}+ specialization
-                             </div>
-                        </div>
-
-                        {/* Button */}
-                        <button className="w-full py-2.5 rounded-lg border border-gray-200 text-xs font-bold text-slate-900 hover:bg-slate-50 transition-colors">
-                            Learn More
-                        </button>
+                        <div className="flex items-center gap-1.5 text-xs text-slate-500 mb-3"><span>{h.country === 'Malaysia' ? '🇲🇾' : h.country === 'Singapore' ? '🇸🇬' : h.country === 'Thailand' ? '🇹🇭' : '🏳️'}</span><span className="truncate">{h.location}, {h.country}</span></div>
+                        <div className="flex items-center gap-1.5 text-xs font-medium text-slate-700 mb-4"><div className="w-5 h-5 rounded-full bg-[#E4F28A] flex items-center justify-center shrink-0"><Plane className="w-3 h-3 rotate-[-45deg]" /></div><span>Less than 3 hour Away</span></div>
+                        <p className="text-xs text-slate-500 leading-relaxed mb-4 line-clamp-3 min-h-[3.5em]">Committed to patient-centered care, {h.name} ensures high-quality treatments tailored to individual needs.</p>
+                        <div className="flex items-center gap-2 text-xs text-slate-600 mb-2"><Languages className="w-3.5 h-3.5 text-slate-400" /><span className="truncate">{h.languages?.slice(0,3).join(', ') || 'English, Local'}</span></div>
+                        <div className="flex items-center justify-between text-[10px] text-slate-500 mb-4 mt-auto pt-3"><div className="flex items-center gap-1.5"><Stethoscope className="w-3.5 h-3.5 text-slate-400" /> 170 specialists</div><div className="flex items-center gap-1.5"><BriefcaseMedical className="w-3.5 h-3.5 text-slate-400" /> {h.specialties.length}+ specialization</div></div>
+                        <button className="w-full py-2.5 rounded-lg border border-gray-200 text-xs font-bold text-slate-900 hover:bg-slate-50 transition-colors">Learn More</button>
                     </div>
                 </div>
            ))}
         </div>
         <div className="flex justify-center mt-8">
-            <button 
-                onClick={onNavigateToHospitals}
-                className="border border-gray-200 bg-white text-slate-900 px-8 py-3 rounded-lg font-medium text-sm hover:bg-gray-50 transition-colors shadow-sm hover:shadow-md"
-            >
-                Discover More Hospitals
-            </button>
+            <button onClick={onNavigateToHospitals} className="border border-gray-200 bg-white text-slate-900 px-8 py-3 rounded-lg font-medium text-sm hover:bg-gray-50 transition-colors shadow-sm hover:shadow-md">Discover More Hospitals</button>
         </div>
       </section>
-
+      
       {/* Floating Action Button (Concierge) */}
       {/* <div className="fixed bottom-6 right-6 z-50 animate-in slide-in-from-bottom-10 fade-in duration-500">
-        <button 
-            onClick={() => onAskAria(`Start a concierge session for ${hospital.name}. I need help with...`)}
-            className="group flex items-center gap-3 bg-[#1C1C1C] text-white p-2 pr-6 rounded-full shadow-2xl hover:scale-105 transition-all border border-gray-800"
-        >
-            <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center overflow-hidden border-2 border-[#1C1C1C]">
-                 <img src={hospital.imageUrl} alt="Logo" className="w-full h-full object-cover opacity-80" />
-            </div>
-            <div className="text-left">
-                <p className="text-[10px] text-gray-400 font-medium uppercase tracking-wider">Concierge</p>
-                <p className="text-sm font-bold leading-none">Ask Aria</p>
-            </div>
+        <button onClick={() => onAskAria(`Start a concierge session for ${hospital.name}. I need help with...`)} className="group flex items-center gap-3 bg-[#1C1C1C] text-white p-2 pr-6 rounded-full shadow-2xl hover:scale-105 transition-all border border-gray-800">
+            <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center overflow-hidden border-2 border-[#1C1C1C]"><img src={hospital.imageUrl} alt="Logo" className="w-full h-full object-cover opacity-80" /></div>
+            <div className="text-left"><p className="text-[10px] text-gray-400 font-medium uppercase tracking-wider">Concierge</p><p className="text-sm font-bold leading-none">Ask Aria</p></div>
         </button>
       </div> */}
       

@@ -29,33 +29,27 @@ import { AITranslationOverlay } from './components/ui/AiTranslationOverlay';
 import { HospitalInsightsPage } from './components/HospitalInsights';
 // import { AITranslationOverlay } from './components/ui/AITranslationOverlay';
 
-// Helper to safely update URL without crashing in sandboxed environments
 const safePushState = (url: string) => {
   try {
     window.history.pushState(null, '', url);
   } catch (e) {
-    // Ignore security errors in preview environments
     console.debug('URL update skipped due to environment restriction:', e);
   }
 };
 
-// Inner App to access translation context if needed
 const MainApp: React.FC = () => {
   const [page, setPage] = useState<'home' | 'marketplace' | 'hospital-page' | 'doctors' | 'doctor-details' | 'gallery' | 'facilities' | 'facility-details' | 'packages' | 'package-details' | 'specialization-details' | 'hospital-insights' | 'article-details' | 'research-details' | 'treatment-details'>('home');
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [isDeepFocusMode, setIsDeepFocusMode] = useState(false); 
   const { isTranslating, language, setLanguage } = useTranslation();
   
-  // -- Session Management State --
   const [sessions, setSessions] = useState<ChatSession[]>([]);
   const [currentSessionId, setCurrentSessionId] = useState<string>('');
 
-  // Marketplace State
   const [filters, setFilters] = useState<FilterState>({
     searchQuery: '',
   });
 
-  // Detailed Page State
   const [viewedHospital, setViewedHospital] = useState<Hospital | null>(null);
   const [viewedFacilityName, setViewedFacilityName] = useState<string | null>(null);
   const [viewedDoctor, setViewedDoctor] = useState<Doctor | null>(null);
@@ -65,7 +59,6 @@ const MainApp: React.FC = () => {
   const [viewedResearchTitle, setViewedResearchTitle] = useState<string | null>(null);
   const [viewedTreatmentName, setViewedTreatmentName] = useState<string | null>(null);
 
-  // Load Sessions from LocalStorage on Mount
   useEffect(() => {
     const savedSessions = localStorage.getItem('medifly_sessions');
     if (savedSessions) {
@@ -86,29 +79,24 @@ const MainApp: React.FC = () => {
     }
   }, []);
 
-  // Save Sessions to LocalStorage whenever they change
   useEffect(() => {
     if (sessions.length > 0) {
         localStorage.setItem('medifly_sessions', JSON.stringify(sessions));
     }
   }, [sessions]);
 
-  // Restore filters when switching sessions
   useEffect(() => {
     const session = sessions.find(s => s.id === currentSessionId);
     if (session && session.lastActiveFilters) {
         setFilters(session.lastActiveFilters);
-        // If the session has filters, assume we want to see the marketplace (unless specific page)
         if (['home', 'marketplace'].includes(page)) {
            setPage('marketplace');
         }
     } else if (session && page === 'marketplace') {
-        // If switching to a session without filters, reset them but stay on marketplace
         setFilters({ searchQuery: '' });
     }
   }, [currentSessionId]);
 
-  // Create a new session
   const createNewSession = () => {
     const newSession: ChatSession = {
       id: Date.now().toString(),
@@ -124,7 +112,6 @@ const MainApp: React.FC = () => {
   const updateSessionMessages = (sessionId: string, newMessages: Message[]) => {
       setSessions(prev => prev.map(session => {
           if (session.id === sessionId) {
-              // Auto-update title if it's the first user message
               let title = session.title;
               if (session.messages.length === 0 && newMessages.length > 0) {
                   const firstUserMsg = newMessages.find(m => m.role === 'user');
@@ -146,20 +133,15 @@ const MainApp: React.FC = () => {
 
   const currentSession = sessions.find(s => s.id === currentSessionId) || sessions[0];
 
-  // -- Routing Logic --
-
-  // Handle URL routing on load and popstate (back button)
   useEffect(() => {
     const handleUrlChange = () => {
       const path = window.location.pathname;
       
-      // Check for /hospitals/:slug or subpages
       if (path.startsWith('/hospitals/')) {
           const parts = path.split('/');
-          // parts[0] = "", parts[1] = "hospitals", parts[2] = slug
           const hospitalSlug = parts[2];
-          const subPageOrSpec = parts[3]; // "tour", "facilities", "insights", "articles", "research", or specialization slug
-          const subItem = parts[4]; // Facility/Article/Research/Treatment Slug
+          const subPageOrSpec = parts[3];
+          const subItem = parts[4];
           
           const hospital = HOSPITALS.find(h => createSlug(h.name) === hospitalSlug);
           if (hospital) {
@@ -190,12 +172,10 @@ const MainApp: React.FC = () => {
                       setPage('research-details');
                   }
               } else if (subPageOrSpec) {
-                  // Specialization or Specialization -> Treatment
                   const specName = subPageOrSpec.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
                   setViewedSpecializationName(specName);
                   
                   if (subItem) {
-                      // It's a treatment page: /hospitals/:slug/:spec/:treatment
                       const treatmentName = subItem.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
                       setViewedTreatmentName(treatmentName);
                       setPage('treatment-details');
@@ -244,10 +224,8 @@ const MainApp: React.FC = () => {
           return;
       }
       
-      // Default fallback based on path
       if (path === '/') {
           if (page !== 'home') {
-             // Go back to home if user hits back to root
              setPage('home'); 
              setViewedHospital(null);
              setViewedDoctor(null);
@@ -256,10 +234,8 @@ const MainApp: React.FC = () => {
       }
     };
 
-    // Check initial
     handleUrlChange();
 
-    // Listen for back button
     window.addEventListener('popstate', handleUrlChange);
     return () => window.removeEventListener('popstate', handleUrlChange);
   }, []); 
@@ -267,7 +243,7 @@ const MainApp: React.FC = () => {
   const handleNavigateToHospital = (hospital: Hospital) => {
     setViewedHospital(hospital);
     setPage('hospital-page');
-    setIsChatOpen(false); // Auto-hide chat sidebar
+    setIsChatOpen(false);
     safePushState(`/hospitals/${createSlug(hospital.name)}`);
   };
 
@@ -279,7 +255,6 @@ const MainApp: React.FC = () => {
   };
 
   const handleBackFromHospital = () => {
-      // If we have history, go back, otherwise reset to marketplace
       try {
         if (window.history.state !== null) {
             window.history.back();
@@ -289,7 +264,6 @@ const MainApp: React.FC = () => {
             safePushState('/');
         }
       } catch (e) {
-        // Fallback for sandboxed environments where history.back() might fail
         setPage('marketplace');
         setViewedHospital(null);
       }
@@ -615,12 +589,13 @@ const MainApp: React.FC = () => {
                     onBack={handleBackFromHospital} 
                     onNavigateToHospitals={navigateToMarketplace}
                     onNavigateToDoctors={navigateToDoctors}
+                    onNavigateToPackages={navigateToPackages}
                     onViewGallery={handleNavigateToGallery}
                     onViewFacilities={handleNavigateToFacilities}
-                    onNavigateToPackages={navigateToPackages}
                     onAskAria={handleQuickSearch}
                     onViewSpecialization={handleNavigateToSpecialization}
                     onNavigateToHospital={handleNavigateToHospital}
+                    onNavigateToDoctor={handleNavigateToDoctor}
                 />
             )}
 
