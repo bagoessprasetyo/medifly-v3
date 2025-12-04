@@ -11,7 +11,7 @@ interface DoctorCardProps {
 export const DoctorCard: React.FC<DoctorCardProps> = ({ doctor, onViewDetails }) => {
   return (
     <div
-      className="group bg-white flex flex-col h-full rounded-lg overflow-hidden hover:shadow-lg transition-all duration-300 border border-transparent hover:border-slate-100 cursor-pointer"
+      className="group bg-white flex flex-col h-full rounded-lg overflow-hidden hover:shadow-lg transition-all duration-300 border border-slate-200 hover:border-slate-100 cursor-pointer"
       onClick={() => onViewDetails?.(doctor)}
     >
         <div className="h-48 bg-gray-100 overflow-hidden relative mb-4">
