@@ -276,9 +276,9 @@ export const Hero: React.FC<HeroProps> = ({ onQuickSearch }) => {
                         <div>
                             <span className="text-[10px] font-medium text-slate-500 mb-2 block uppercase tracking-wide">{t('Ask AI')}</span>
                             <h3 className="text-sm md:text-base font-medium text-slate-800 leading-snug mb-3">“{t('Hospitals in Malaysia covered by my insurance?')}”</h3>
-                            
+                            <img src="/images/hero-1.svg" alt="Hospital Search Illustration" className="w-full h-16 object-contain mb-2" />
                             {/* Visual Element */}
-                            <div className="bg-white rounded-xl p-2.5 shadow-sm border border-slate-100/50 scale-90 origin-top-left w-full">
+                            {/* <div className="bg-white rounded-xl p-2.5 shadow-sm border border-slate-100/50 scale-90 origin-top-left w-full">
                                 <div className="flex gap-2 items-center mb-2">
                                     <div className="w-2 h-2 rounded-full bg-blue-400"></div>
                                     <div className="h-1.5 w-16 bg-slate-100 rounded"></div>
@@ -298,7 +298,7 @@ export const Hero: React.FC<HeroProps> = ({ onQuickSearch }) => {
                                         </div>
                                     </div>
                                 </div>
-                            </div>
+                            </div> */}
                         </div>
                         <p className="text-[10px] md:text-xs text-[#867676] leading-relaxed">{t('Compare accredited hospitals that match your policy instantly.')}</p>
                     </div>
@@ -313,7 +313,7 @@ export const Hero: React.FC<HeroProps> = ({ onQuickSearch }) => {
                             <h3 className="text-sm md:text-base font-medium text-slate-800 leading-snug mb-3">“{t('What surgery options do I have for an ACL tear?')}”</h3>
                             
                             {/* Visual Element */}
-                            <div className="flex items-center justify-center gap-3 py-2 scale-90">
+                            {/* <div className="flex items-center justify-center gap-3 py-2 scale-90">
                                 <div className="w-10 h-12 bg-white rounded shadow-sm flex items-center justify-center flex-col gap-1 border border-slate-100">
                                     <div className="w-3.5 h-3.5 rounded bg-red-100 text-red-500 flex items-center justify-center"><FileText className="w-2 h-2" /></div>
                                     <div className="h-0.5 w-5 bg-slate-200 rounded"></div>
@@ -325,7 +325,8 @@ export const Hero: React.FC<HeroProps> = ({ onQuickSearch }) => {
                                 <div className="w-7 h-7 rounded-full bg-blue-400 text-white flex items-center justify-center shadow-md z-10 -ml-2 border-2 border-[#F2F2F2]">
                                     <Plus className="w-3.5 h-3.5" />
                                 </div>
-                            </div>
+                            </div> */}
+                            <img src="/images/hero-4.svg" alt="Hospital Search Illustration" className="w-full h-16 object-contain mb-2" />
                         </div>
                         <p className="text-[10px] md:text-xs text-[#867676] leading-relaxed">{t('See surgical types, cost ranges, and recovery timelines.')}</p>
                     </div>
@@ -338,7 +339,7 @@ export const Hero: React.FC<HeroProps> = ({ onQuickSearch }) => {
                         <div>
                             <span className="text-[10px] font-medium text-slate-500 mb-2 block uppercase tracking-wide">{t('Ask AI')}</span>
                             <h3 className="text-sm md:text-base font-medium text-slate-800 leading-snug mb-3">“{t('Show me the top 10 wellness centers in Bali.')}”</h3>
-                            <div className="bg-white/50 h-16 rounded-xl w-full border border-slate-200/50 flex items-center justify-center scale-90">
+                            {/* <div className="bg-white/50 h-16 rounded-xl w-full border border-slate-200/50 flex items-center justify-center scale-90">
                                 <div className="flex gap-1 items-end h-8">
                                     <div className="w-2 bg-slate-300 h-4 rounded-sm"></div>
                                     <div className="w-2 bg-slate-300 h-6 rounded-sm"></div>
@@ -346,7 +347,8 @@ export const Hero: React.FC<HeroProps> = ({ onQuickSearch }) => {
                                     <div className="w-2 bg-slate-300 h-5 rounded-sm"></div>
                                     <div className="w-2 bg-slate-300 h-3 rounded-sm"></div>
                                 </div>
-                            </div>
+                            </div> */}
+                            <img src="/images/hero-2.svg" alt="Hospital Search Illustration" className="w-full h-16 object-contain mb-2" />
                         </div>
                         <p className="text-[10px] md:text-xs text-[#867676] leading-relaxed">{t('See wellness packages, ratings and reviews.')}</p>
                     </div>
@@ -360,7 +362,8 @@ export const Hero: React.FC<HeroProps> = ({ onQuickSearch }) => {
                             <span className="text-[10px] font-medium text-slate-500 mb-2 block uppercase tracking-wide">{t('Ask AI')}</span>
                             <h3 className="text-sm md:text-base font-medium text-slate-800 leading-snug mb-3">“{t('Top 5 Medical checkup packages in Singapore?')}”</h3>
                             {/* Abstract List Visual */}
-                             <div className="space-y-1.5 mt-2 bg-white/50 p-2.5 rounded-xl border border-slate-200/30 scale-90">
+                            <img src="/images/hero-5.svg" alt="Hospital Search Illustration" className="w-full h-16 object-contain mb-2" />
+                             {/* <div className="space-y-1.5 mt-2 bg-white/50 p-2.5 rounded-xl border border-slate-200/30 scale-90">
                                 <div className="flex items-center gap-2">
                                     <div className="w-3.5 h-3.5 rounded-full border border-slate-300 flex items-center justify-center text-[7px] text-slate-500 font-bold">1</div>
                                     <div className="h-1.5 w-3/4 bg-slate-300 rounded-full"></div>
@@ -373,7 +376,7 @@ export const Hero: React.FC<HeroProps> = ({ onQuickSearch }) => {
                                     <div className="w-3.5 h-3.5 rounded-full border border-slate-300 flex items-center justify-center text-[7px] text-slate-500 font-bold">3</div>
                                     <div className="h-1.5 w-1/2 bg-slate-300 rounded-full"></div>
                                 </div>
-                            </div>
+                            </div> */}
                         </div>
                         <p className="text-[10px] md:text-xs text-[#867676] leading-relaxed">{t('Compare screening packages and book directly with hospitals.')}</p>
                     </div>
@@ -386,14 +389,15 @@ export const Hero: React.FC<HeroProps> = ({ onQuickSearch }) => {
                         <div>
                             <span className="text-[10px] font-medium text-slate-500 mb-2 block uppercase tracking-wide">{t('Ask AI')}</span>
                             <h3 className="text-sm md:text-base font-medium text-slate-800 leading-snug mb-3">“{t('Can I talk to a doctor before planning my trip?')}”</h3>
-                            <div className="flex justify-center mt-2">
+                            {/* <div className="flex justify-center mt-2">
                                 <div className="relative">
                                     <div className="w-10 h-10 rounded-full bg-slate-300 border-2 border-white z-0"></div>
                                     <div className="w-10 h-10 rounded-full bg-slate-800 border-4 border-[#F2F2F2] absolute top-0 left-5 z-10 flex items-center justify-center text-white shadow-md">
                                         <Video className="w-3.5 h-3.5" />
                                     </div>
                                 </div>
-                            </div>
+                            </div> */}
+                            <img src="/images/hero-3.svg" alt="Hospital Search Illustration" className="w-full h-16 object-contain mb-2" />
                         </div>
                         <p className="text-[10px] md:text-xs text-[#867676] leading-relaxed">{t('Connect directly with hospital doctors.')}</p>
                     </div>
@@ -406,7 +410,7 @@ export const Hero: React.FC<HeroProps> = ({ onQuickSearch }) => {
                         <div>
                             <span className="text-[10px] font-medium text-slate-500 mb-2 block uppercase tracking-wide">{t('Ask AI')}</span>
                             <h3 className="text-sm md:text-base font-medium text-slate-800 leading-snug mb-3">“{t('Compare IVF prices in Thailand VS Singapore')}”</h3>
-                            <div className="bg-teal-900 rounded-lg p-2.5 mt-2 w-full shadow-lg scale-95">
+                            {/* <div className="bg-teal-900 rounded-lg p-2.5 mt-2 w-full shadow-lg scale-95">
                                 <div className="flex justify-between text-[9px] text-teal-200 mb-2 border-b border-teal-800 pb-1 font-medium">
                                     <span>{t('Procedure')}</span>
                                     <span>{t('Avg Cost')}</span>
@@ -421,7 +425,8 @@ export const Hero: React.FC<HeroProps> = ({ onQuickSearch }) => {
                                         <span>$9k</span>
                                     </div>
                                 </div>
-                            </div>
+                            </div> */}
+                            <img src="/images/hero-6.svg" alt="Hospital Search Illustration" className="w-full h-16 object-contain mb-2" />
                         </div>
                         <p className="text-[10px] md:text-xs text-[#867676] leading-relaxed">{t('Compare prices directly across borders.')}</p>
                     </div>
