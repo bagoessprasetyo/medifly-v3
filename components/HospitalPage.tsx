@@ -25,6 +25,7 @@ interface HospitalPageProps {
   onViewSpecialization?: (spec: string) => void;
   onNavigateToHospital?: (hospital: Hospital) => void;
   onNavigateToDoctor?: (doctor: Doctor) => void;
+  onNavigateToInsights?: () => void;
 }
 
 export const HospitalPage: React.FC<HospitalPageProps> = ({
@@ -38,7 +39,8 @@ export const HospitalPage: React.FC<HospitalPageProps> = ({
   onAskAria,
   onViewSpecialization,
   onNavigateToHospital,
-  onNavigateToDoctor
+  onNavigateToDoctor,
+  onNavigateToInsights
 }) => {
 
   const [activeTab, setActiveTab] = useState('overview');
@@ -122,6 +124,12 @@ export const HospitalPage: React.FC<HospitalPageProps> = ({
   }, []);
 
   const scrollToSection = (id: string) => {
+    // Handle external navigation for Insights tab
+    if (id === 'insights') {
+      onNavigateToInsights?.();
+      return;
+    }
+
     setActiveTab(id);
     const element = document.getElementById(id);
     // Navbar (80px) + Sticky Header (72px) + visual breathing room (~30px)
@@ -180,9 +188,10 @@ export const HospitalPage: React.FC<HospitalPageProps> = ({
   const tabs = [
       { id: 'overview', label: 'Overview' },
       { id: 'specialization', label: 'Specialization' },
-      { id: 'doctors', label: 'Doctor List' },
+      { id: 'doctors', label: 'Doctors' },
       { id: 'facilities', label: 'Facilities' },
-      { id: 'packages', label: 'Packages' }
+      { id: 'packages', label: 'Packages' },
+      { id: 'insights', label: 'Insights', isExternal: true }
   ];
 
   // Awards Data
@@ -358,25 +367,25 @@ export const HospitalPage: React.FC<HospitalPageProps> = ({
           </div>
       </div>
 
-      {/* Sticky Info Header - Conditionally Rendered/Styled */}
-      {/* <div
-        className={`sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b transition-all duration-300
-        ${isScrolled ? 'border-gray-200 shadow-md translate-y-0 opacity-100' : 'border-transparent -translate-y-full opacity-0 pointer-events-none hidden md:block'}`}
+      {/* Fixed Info Header - Shows on scroll, positioned below navbar */}
+      <div
+        className={`fixed top-20 left-0 right-0 z-[45] bg-white/95 backdrop-blur-md border-b transition-all duration-300 hidden md:block
+        ${isScrolled ? 'border-gray-200 shadow-sm translate-y-0 opacity-100' : 'border-transparent -translate-y-full opacity-0 pointer-events-none'}`}
       >
-          <div className="max-w-7xl mx-auto px-6 h-[72px] relative flex items-center justify-center">
+          <div className="max-w-7xl mx-auto px-6 h-[56px] relative flex items-center justify-center">
               <div className="absolute left-6 flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full overflow-hidden border border-gray-200 shadow-sm flex items-center justify-center bg-gray-50 text-lg">
+                  <div className="w-7 h-7 rounded-full overflow-hidden border border-gray-200 shadow-sm flex items-center justify-center bg-gray-50 text-base">
                       {getCountryFlag()}
                   </div>
-                  <span className="font-semibold text-slate-900 line-clamp-1 max-w-[200px]">{hospital.name}</span>
+                  <span className="font-semibold text-slate-900 line-clamp-1 max-w-[180px] text-sm">{hospital.name}</span>
               </div>
-              <div className="flex items-center gap-8 h-full">
+              <div className="flex items-center gap-6 h-full">
                   {tabs.map(tab => (
                       <button
                         key={tab.id}
                         onClick={() => scrollToSection(tab.id)}
                         className={`
-                            h-full flex items-center text-sm font-medium border-b-[3px] transition-all px-1
+                            h-full flex items-center text-sm font-medium border-b-2 transition-all px-1
                             ${activeTab === tab.id ? 'border-[#1C1C1C] text-[#1C1C1C]' : 'border-transparent text-slate-500 hover:text-slate-800 hover:border-slate-200'}
                         `}
                       >
@@ -386,13 +395,13 @@ export const HospitalPage: React.FC<HospitalPageProps> = ({
               </div>
               <div className="absolute right-6">
                   <button
-                    className="bg-[#1C1C1C] text-white px-5 py-2.5 rounded-lg text-sm font-semibold hover:bg-black transition-all shadow-sm shadow-slate-200 flex items-center gap-2 active:scale-95"
+                    className="bg-[#1C1C1C] text-white px-5 py-2 rounded-lg text-sm font-semibold hover:bg-black transition-all shadow-sm shadow-slate-200 flex items-center gap-2 active:scale-95"
                   >
                       Book a Consultation
                   </button>
               </div>
           </div>
-      </div> */}
+      </div>
 
       {/* Main Content Split - ID: overview */}
       <div id="overview" className="max-w-7xl mx-auto px-4 md:px-6 py-4 grid grid-cols-1 lg:grid-cols-3 gap-12 scroll-mt-20">
@@ -657,9 +666,9 @@ export const HospitalPage: React.FC<HospitalPageProps> = ({
       </div>
 
       {/* 1. Top Expertise */}
-      <section id="specialization" className="max-w-7xl mx-auto px-6 py-16 scroll-mt-40">
+      <section id="specialization" className=" mx-auto px-24 py-16 scroll-mt-40 bg-[#FAF8F7]">
         <h2 className="text-3xl font-semibold text-center tracking-tight mb-12">Our Top Expertise</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-3">
             {[
                 { icon: Wind, title: "Pulmonology", desc: "Advanced care for lungs with leading specialists and integrated treatments." },
                 { icon: HeartPulse, title: "Cardiology", desc: "Trusted heart specialists offering preventive and corrective care." },
@@ -668,15 +677,15 @@ export const HospitalPage: React.FC<HospitalPageProps> = ({
                 { icon: Droplet, title: "Hematology", desc: "State-of-the-art care, diagnosis and concerns for blood-related issues." },
             ].map((item, idx) => (
                 <div key={idx} className="group p-6 rounded-xl border border-gray-100 bg-white hover:shadow-lg hover:border-gray-200 transition-all duration-300 cursor-pointer" onClick={() => onViewSpecialization?.(item.title)}>
-                    <div className="w-10 h-10 rounded-full bg-lime-100 flex items-center justify-center mb-4 text-lime-700"><item.icon strokeWidth={1.5} className="w-5 h-5" /></div>
+                    <div className="w-10 h-10 rounded-full bg-[#F9FFA1] flex items-center justify-center mb-4 text-lime-700"><item.icon strokeWidth={1.5} className="w-5 h-5" /></div>
                     <h3 className="text-lg font-medium mb-2 tracking-tight group-hover:text-[#1C1C1C] transition-colors">{item.title}</h3>
                     <p className="text-sm text-gray-500 leading-relaxed">{item.desc}</p>
                 </div>
             ))}
         </div>
-        <div className="mt-20 bg-[#FAFAFA] rounded-2xl p-8 md:p-12">
+        <div className="mt-20 rounded-2xl ">
             <h4 className="text-center text-xl font-medium text-gray-900 mb-10">Other Specializations Available</h4>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 max-w-5xl mx-auto">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mx-auto">
                 {["Fertility & IVF", "Gastroenterology", "Internal Medicine", "Aesthetics", "Dermatology", "General Surgery", "Dental Care", "Diabetes & Chronic Diseases Care", "ENT"].map((spec, i) => (
                     <div key={i} onClick={() => onViewSpecialization?.(spec)} className="bg-white px-6 py-4 rounded-xl border border-gray-100 text-sm font-medium text-gray-800 shadow-sm hover:shadow-md transition-all cursor-pointer hover:border-gray-300 hover:text-black flex justify-between items-center group">{spec}<ArrowRight className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity text-gray-400" /></div>
                 ))}
@@ -688,7 +697,15 @@ export const HospitalPage: React.FC<HospitalPageProps> = ({
       <section id="doctors" className="max-w-full mx-auto px-6 py-16 scroll-mt-40 bg-white border-t border-gray-100 overflow-hidden">
           <div className="max-w-7xl mx-auto mb-12">
             <div className="flex flex-col gap-4">
-                <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-slate-900">World-Class Care, Led by Top Specialists</h2>
+                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                    <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-slate-900">World-Class Care, Led by Top Specialists</h2>
+                    <button
+                        onClick={onNavigateToDoctors}
+                        className="bg-[#1C1C1C] text-white px-6 py-2.5 rounded-lg text-sm font-semibold hover:bg-black transition-all shadow-sm flex items-center gap-2 active:scale-95 shrink-0 w-fit"
+                    >
+                        View All <ArrowRight className="w-4 h-4" />
+                    </button>
+                </div>
                 <p className="text-slate-500 max-w-3xl text-sm">
                     Access expert care from 50+ trusted specialists across multiple medical fields, all delivering global-standard treatment you can trust.
                 </p>
@@ -737,7 +754,7 @@ export const HospitalPage: React.FC<HospitalPageProps> = ({
                                 <Languages className="w-3.5 h-3.5" />
                                 <span>English, Bahasa Indonesia</span>
                             </div>
-                            <button onClick={() => onNavigateToDoctor?.(doc)} className="w-full py-2.5 border border-slate-200 rounded-lg text-xs font-bold text-slate-700 hover:bg-slate-900 hover:text-white hover:border-slate-900 transition-all">Overview</button>
+                            <button onClick={() => onNavigateToDoctor?.(doc)} className="w-full py-2.5 border border-slate-200 rounded-lg text-xs font-bold text-slate-700 hover:bg-slate-900 hover:text-white hover:border-slate-900 transition-all">Learn More</button>
                         </div>
                     </div>
                  ))}
@@ -861,13 +878,13 @@ export const HospitalPage: React.FC<HospitalPageProps> = ({
       <section className="max-w-7xl mx-auto px-6 py-12 border-t border-gray-100">
         <h2 className="text-2xl font-semibold tracking-tight text-gray-900 mb-8">Frequently Asked Question</h2>
         <div className="space-y-4">
-            {["Is this hospital provider decent standard?", "How does Medifly AI works?", "Can Medifly AI help me to hire medical trip?", "How do I book a for treatment?"].map((q, i) => (
+            {["What support does this hospital provide for international patients?", "How can Medifly.Ai help me?", "Does this hospital provide virtual consultations before traveling?", "How do I schedule an appointment or treatment?","How much do treatments cost?","Can my insurance cover my treatment in this hospital?"].map((q, i) => (
                 <div key={i} className="border-b border-gray-100 pb-4">
                     <button onClick={() => setOpenFaqIndex(openFaqIndex === i ? null : i)} className="flex items-center justify-between w-full text-left focus:outline-none group">
                         <span className={`text-sm font-medium ${openFaqIndex === i ? 'text-gray-900' : 'text-gray-700 group-hover:text-gray-900'}`}>{q}</span>
                         {openFaqIndex === i ? <ChevronUp className="w-4 h-4 text-gray-400" /> : <ChevronDown className="w-4 h-4 text-gray-400" />}
                     </button>
-                    {openFaqIndex === i && (<div className="mt-3 animate-in slide-in-from-top-1 duration-200"><p className="text-sm text-gray-500 leading-relaxed pr-8">Absolutely. Medifly AI assists you through every step of your medical journey...</p></div>)}
+                    {openFaqIndex === i && (<div className="mt-3 animate-in slide-in-from-top-1 duration-200"><p className="text-sm text-gray-500 leading-relaxed pr-8">Absolutely. Medifly AI assists you through every step of your medical journey — from finding the right hospital and doctor to estimating costs, planning your stay, and arranging travel details. We make medical trips simpler, smarter, and stress-free.</p></div>)}
                 </div>
             ))}
         </div>

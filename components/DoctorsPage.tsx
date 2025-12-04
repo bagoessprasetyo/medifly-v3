@@ -27,13 +27,23 @@ export const DoctorsPage: React.FC<DoctorsPageProps> = ({ onBack, onNavigateToHo
   const [specialtyInput, setSpecialtyInput] = useState('');
   const [selectedSpecialties, setSelectedSpecialties] = useState<string[]>([]);
   const [isSpecialtyOpen, setIsSpecialtyOpen] = useState(false);
-  
+
   // Location State
   const [selectedLocations, setSelectedLocations] = useState<string[]>([]);
   const [isNearbyActive, setIsNearbyActive] = useState(false);
   const [flightOrigin, setFlightOrigin] = useState('Jakarta');
   const [isLoadingNearby, setIsLoadingNearby] = useState(false);
-  
+
+  // Scroll to top on mount
+  useEffect(() => {
+    const scrollContainer = document.getElementById('main-content-area');
+    if (scrollContainer) {
+      scrollContainer.scrollTo(0, 0);
+    } else {
+      window.scrollTo(0, 0);
+    }
+  }, []);
+
   // Filters
   const [selectedGenders, setSelectedGenders] = useState<string[]>([]);
   const [selectedLanguages, setSelectedLanguages] = useState<string[]>([]);

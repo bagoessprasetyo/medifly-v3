@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Hospital } from '../types';
 import { ArrowLeft, ChevronRight, ChevronDown, ChevronUp, MapPin, Star, ShieldCheck, Building2 } from 'lucide-react';
 
@@ -12,6 +12,16 @@ interface FacilityDetailsPageProps {
 
 export const FacilityDetailsPage: React.FC<FacilityDetailsPageProps> = ({ hospital, facilityName, onBack, onNavigateToHospital }) => {
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(0);
+
+  // Scroll to top on mount
+  useEffect(() => {
+    const scrollContainer = document.getElementById('main-content-area');
+    if (scrollContainer) {
+      scrollContainer.scrollTo(0, 0);
+    } else {
+      window.scrollTo(0, 0);
+    }
+  }, [facilityName]);
 
   // Mock content generation based on facility name
   const generateContent = (name: string) => {

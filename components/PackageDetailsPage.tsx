@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { MedicalPackage, Hospital } from '../types';
 import { HOSPITALS } from '../constants';
 import { ArrowLeft, ChevronRight, ChevronDown, ChevronUp, MapPin, Building2, Calendar, Info, FileText, Check, Smile, HelpCircle, ClipboardList } from 'lucide-react';
@@ -12,6 +12,16 @@ interface PackageDetailsPageProps {
 
 export const PackageDetailsPage: React.FC<PackageDetailsPageProps> = ({ medicalPackage, onBack, onNavigateToHospital }) => {
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(0);
+
+  // Scroll to top on mount
+  useEffect(() => {
+    const scrollContainer = document.getElementById('main-content-area');
+    if (scrollContainer) {
+      scrollContainer.scrollTo(0, 0);
+    } else {
+      window.scrollTo(0, 0);
+    }
+  }, [medicalPackage.id]);
 
   // Find associated hospital with case-insensitive robust matching
   const hospital = HOSPITALS.find(h => 

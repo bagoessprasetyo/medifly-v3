@@ -584,9 +584,9 @@ const MainApp: React.FC = () => {
             )}
 
             {page === 'hospital-page' && viewedHospital && (
-                <HospitalPage 
-                    hospital={viewedHospital} 
-                    onBack={handleBackFromHospital} 
+                <HospitalPage
+                    hospital={viewedHospital}
+                    onBack={handleBackFromHospital}
                     onNavigateToHospitals={navigateToMarketplace}
                     onNavigateToDoctors={navigateToDoctors}
                     onNavigateToPackages={navigateToPackages}
@@ -596,6 +596,7 @@ const MainApp: React.FC = () => {
                     onViewSpecialization={handleNavigateToSpecialization}
                     onNavigateToHospital={handleNavigateToHospital}
                     onNavigateToDoctor={handleNavigateToDoctor}
+                    onNavigateToInsights={handleNavigateToInsights}
                 />
             )}
 

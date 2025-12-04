@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ArrowLeft, Share, Heart, CheckCircle2, ChevronRight } from 'lucide-react';
 import { Hospital } from '../types';
 
@@ -11,7 +11,17 @@ interface FacilityGalleryPageProps {
 
 export const FacilityGalleryPage: React.FC<FacilityGalleryPageProps> = ({ hospital, onBack, onViewFacilityDetails }) => {
   const [activeTab, setActiveTab] = useState(0);
-  
+
+  // Scroll to top on mount
+  useEffect(() => {
+    const scrollContainer = document.getElementById('main-content-area');
+    if (scrollContainer) {
+      scrollContainer.scrollTo(0, 0);
+    } else {
+      window.scrollTo(0, 0);
+    }
+  }, [hospital.id]);
+
   const facilitiesData = [
     {
       title: "Medical & Treatment Centres",

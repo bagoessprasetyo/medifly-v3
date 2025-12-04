@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { ArrowLeft, Share, Heart } from 'lucide-react';
 import { Hospital } from '../types';
 
@@ -9,6 +9,16 @@ interface HospitalGalleryPageProps {
 }
 
 export const HospitalGalleryPage: React.FC<HospitalGalleryPageProps> = ({ hospital, onBack }) => {
+  // Scroll to top on mount
+  useEffect(() => {
+    const scrollContainer = document.getElementById('main-content-area');
+    if (scrollContainer) {
+      scrollContainer.scrollTo(0, 0);
+    } else {
+      window.scrollTo(0, 0);
+    }
+  }, [hospital.id]);
+
   // Mock categories to match the requested design aesthetic
   // In a real app, these would come from the backend structure
   const categories = [

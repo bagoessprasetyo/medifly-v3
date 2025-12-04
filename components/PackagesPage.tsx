@@ -21,7 +21,7 @@ interface PackagesPageProps {
 
 export const PackagesPage: React.FC<PackagesPageProps> = ({ onBack, onViewPackage }) => {
   const [packageNameInput, setPackageNameInput] = useState('');
-  
+
   // Location State
   const [selectedLocations, setSelectedLocations] = useState<string[]>([]);
   const [isNearbyActive, setIsNearbyActive] = useState(false);
@@ -30,6 +30,16 @@ export const PackagesPage: React.FC<PackagesPageProps> = ({ onBack, onViewPackag
 
   // Simple active category state for sidebar
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
+
+  // Scroll to top on mount
+  useEffect(() => {
+    const scrollContainer = document.getElementById('main-content-area');
+    if (scrollContainer) {
+      scrollContainer.scrollTo(0, 0);
+    } else {
+      window.scrollTo(0, 0);
+    }
+  }, []);
 
   const categories = [
     "Check-up & Screening",
