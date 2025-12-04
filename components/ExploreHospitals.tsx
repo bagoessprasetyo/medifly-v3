@@ -83,12 +83,12 @@ export const ExploreHospitals: React.FC = () => {
   ];
 
   return (
-    <section className="max-w-[1400px] mx-auto px-6 py-20 lg:py-24 bg-white text-gray-900 antialiased">
+    <section className="pl-24 mx-auto px-6 py-20 bg-white text-gray-900 antialiased">
         <div className="flex items-center justify-between mb-10">
             <h1 className="text-3xl md:text-4xl font-semibold tracking-tight text-gray-900">{t('Explore hospitals around the world')}</h1>
             
             {/* Navigation Buttons */}
-            <div className="flex gap-3">
+            <div className="flex gap-3 pr-20">
                 <button 
                     onClick={() => scroll('left')}
                     className="w-10 h-10 rounded-full border border-gray-200 flex items-center justify-center text-gray-900 hover:bg-gray-50 transition-colors"
@@ -106,11 +106,11 @@ export const ExploreHospitals: React.FC = () => {
 
         <div 
             ref={scrollRef}
-            className="flex overflow-x-auto gap-6 pb-8 -mx-6 px-6 no-scrollbar snap-x snap-mandatory scroll-smooth"
+            className="flex overflow-x-auto gap-6  pb-8 -mx-6 px-6 no-scrollbar snap-x snap-mandatory scroll-smooth"
         >
             
             {countries.map((country, idx) => (
-                <div key={idx} className="min-w-[260px] md:min-w-[280px] flex-shrink-0 flex flex-col group cursor-pointer snap-center">
+                <div key={idx} className="min-w-[260px] md:min-w-[280px] max-w-[350px] flex-shrink-0 flex flex-col group cursor-pointer snap-center">
                     {/* Image Header */}
                     <div className="relative h-[200px] w-full overflow-hidden rounded-2xl bg-gray-100 shadow-sm">
                         <img 

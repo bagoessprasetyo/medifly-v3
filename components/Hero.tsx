@@ -271,7 +271,7 @@ export const Hero: React.FC<HeroProps> = ({ onQuickSearch }) => {
                     {/* Card 1 */}
                     <div 
                         onMouseEnter={() => setTreatment(t("Hospitals in Malaysia covered by my insurance?"))}
-                        className="min-w-[240px] md:min-w-[280px] h-[200px] md:h-[240px] bg-[#F2F2F2] rounded-2xl p-4 md:p-5 flex flex-col justify-between shrink-0 snap-center snap-always hover:shadow-xl hover:-translate-y-1 transition-all duration-300 border border-transparent hover:border-slate-200 cursor-pointer"
+                        className="min-w-[240px] md:min-w-[280px]  h-[200px] md:h-[240px] bg-[#F2F2F2] rounded-2xl p-4 md:p-5 flex flex-col justify-between shrink-0 snap-center snap-always hover:shadow-xl hover:-translate-y-1 transition-all duration-300 border border-transparent hover:border-slate-200 cursor-pointer"
                     >
                         <div>
                             <span className="text-[10px] font-medium text-slate-500 mb-2 block uppercase tracking-wide">{t('Ask AI')}</span>

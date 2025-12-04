@@ -49,8 +49,8 @@ export const MedicalTeam: React.FC = () => {
   ];
 
   return (
-    <section className="w-full py-20 lg:py-28 bg-white text-gray-900">
-        <div className="max-w-[1400px] mx-auto px-6 lg:px-8">
+    <section className="w-full py-20 bg-white text-gray-900">
+        <div className="pl-24 mx-auto">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-20">
                 
                 {/* Left Content */}
@@ -116,7 +116,7 @@ export const MedicalTeam: React.FC = () => {
                     </div>
 
                     {/* Navigation Buttons */}
-                    <div className="flex justify-end gap-3 mt-10 pr-6 lg:pr-0">
+                    <div className="flex justify-end gap-3 mt-10 pr-6 lg:pr-24">
                         <button 
                             onClick={() => scroll('left')}
                             className="w-12 h-12 rounded-full border border-gray-200 flex items-center justify-center text-gray-900 hover:bg-gray-50 transition-colors"

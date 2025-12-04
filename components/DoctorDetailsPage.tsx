@@ -80,10 +80,11 @@ He also received advanced specialization training in modern technologies. He is 
   ];
 
   const faqs = [
-    "What is Medifly?",
-    "How Does Medifly.ai works?",
-    "Can Medifly ai Help me to on a medical trip?",
-    "How do I book a for treatment?"
+    "How do I find the right doctor for my condition?",
+    "How can Medifly.Ai help me?",
+    "How do I schedule an appointment or treatment?",
+    "Are virtual consultations available before traveling?",
+    "Are consultations available in multiple languages?"
   ];
 
   const relatedDoctors = DOCTORS.filter(d => d.id !== doctor.id && d.specialty === doctor.specialty).slice(0, 4);
@@ -92,31 +93,33 @@ He also received advanced specialization training in modern technologies. He is 
   const hospitalData = HOSPITALS.find(h => h.id === doctor.hospitalId || h.name === doctor.hospitalName);
 
   return (
-    <div className="bg-white min-h-screen font-sans text-[#1C1C1C] relative">
+    <div className="bg-white min-h-screen font-sans text-[#1C1C1C] relative ">
         
         {/* Sticky Header - Slides down on scroll */}
         <div 
-            className={`fixed top-20 left-0 right-0 z-[40] bg-white border-b border-slate-100 shadow-sm transition-transform duration-300 ease-in-out px-6 py-3 flex items-center justify-between
+            className={`fixed top-20 left-0 right-0 z-[40] bg-white border-b border-slate-100 shadow-sm transition-transform duration-300 ease-in-out py-3 
             ${showStickyHeader ? 'translate-y-0' : '-translate-y-full'}`}
         >
-            <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full overflow-hidden border border-slate-200">
-                    <img src={doctor.imageUrl} alt={doctor.name} className="w-full h-full object-cover" />
+            <div className="flex items-center justify-between max-w-7xl mx-auto px-6">
+                <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full overflow-hidden border border-slate-200">
+                        <img src={doctor.imageUrl} alt={doctor.name} className="w-full h-full object-cover" />
+                    </div>
+                    <div>
+                        <h3 className="text-sm font-bold text-slate-900 leading-tight">{doctor.name}</h3>
+                        <p className="text-xs text-slate-500">{doctor.specialty}</p>
+                    </div>
                 </div>
-                <div>
-                    <h3 className="text-sm font-bold text-slate-900 leading-tight">{doctor.name}</h3>
-                    <p className="text-xs text-slate-500">{doctor.specialty}</p>
-                </div>
+                <button className="bg-[#1C1C1C] text-white px-4 py-2 rounded-lg font-medium text-xs hover:bg-black transition-colors">
+                    Request Treatment Info
+                </button>
             </div>
-            <button className="bg-[#1C1C1C] text-white px-4 py-2 rounded-lg font-medium text-xs hover:bg-black transition-colors">
-                Request Treatment Info
-            </button>
         </div>
 
         {/* Top Navbar Placeholder (Handled by Layout) */}
         <div className="h-8"></div>
 
-        <div className="max-w-[1400px] mx-auto px-6 py-8">
+        <div className="max-w-7xl mx-auto px-6 py-8">
             
             {/* Breadcrumb - Added for Navigation */}
             <div className="mb-8 hidden md:block">
@@ -182,7 +185,7 @@ He also received advanced specialization training in modern technologies. He is 
                     {/* About */}
                     <section>
                         <h2 className="flex items-center gap-2 text-lg font-semibold mb-4">
-                            <User className="w-5 h-5 text-zinc-400" /> About
+                            <User className="w-5 h-5 text-zinc-400" /> Key Experience
                         </h2>
                         <div className="text-zinc-600 leading-relaxed text-sm space-y-4 whitespace-pre-line">
                             {aboutText}
@@ -192,7 +195,7 @@ He also received advanced specialization training in modern technologies. He is 
                     {/* Condition Treated */}
                     <section>
                         <h2 className="flex items-center gap-2 text-lg font-semibold mb-4">
-                            <Stethoscope className="w-5 h-5 text-zinc-400" /> Condition Treated
+                            <Stethoscope className="w-5 h-5 text-zinc-400" /> Conditions Treated
                         </h2>
                         <div className="border-t border-zinc-100 pt-4">
                             <ul className="space-y-3">
@@ -238,7 +241,7 @@ He also received advanced specialization training in modern technologies. He is 
                                     </button>
                                     {openFaqIndex === i && (
                                         <div className="mt-3 text-sm text-zinc-500 leading-relaxed pr-8 animate-in slide-in-from-top-1">
-                                            Absolutely. Medifly AI assists you through every step of your medical journey — from finding the right hospital and doctor to estimating costs, planning your stay, and arranging travel details.
+                                            Absolutely. Medifly AI assists you through every step of your medical journey — from finding the right hospital and doctor to estimating costs, planning your stay, and arranging travel details. We make medical trips simpler, smarter, and stress-free.
                                         </div>
                                     )}
                                 </div>
