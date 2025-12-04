@@ -6,7 +6,10 @@
 
 @layer base {
   html {
-    font-family: 'General Sans', sans-serif;
+    font-family: 'General Sans', ui-sans-serif, system-ui, sans-serif;
+  }
+  body {
+    font-family: 'General Sans', ui-sans-serif, system-ui, sans-serif;
   }
 }
 
