@@ -12,6 +12,7 @@ import {
 import { Hospital, Doctor } from '../types';
 import { HOSPITALS, DOCTORS } from '../constants';
 import { generateLocationInfo, LocationInfo } from '../services/geminiService';
+import { HealthPotential } from './HealthPotential';
 
 interface HospitalPageProps {
   hospital: Hospital;
@@ -1009,7 +1010,7 @@ export const HospitalPage: React.FC<HospitalPageProps> = ({
       </section>
 
       {/* 7. Related Hospitals */}
-      <section className="max-w-7xl mx-auto px-6 py-16">
+      {/* <section className="max-w-7xl mx-auto px-6 py-16">
           <h2 className="text-2xl font-semibold text-center tracking-tight mb-12">Hospitals in the Area</h2>
            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {relatedHospitals.map((related, i) => (
@@ -1039,7 +1040,7 @@ export const HospitalPage: React.FC<HospitalPageProps> = ({
         <div className="flex justify-center mt-8">
             <button onClick={onNavigateToHospitals} className="border border-gray-200 bg-white text-slate-900 px-8 py-3 rounded-lg font-medium text-sm hover:bg-gray-50 transition-colors shadow-sm hover:shadow-md">Discover More Hospitals</button>
         </div>
-      </section>
+      </section> */}
 
       {/* 8. Explore More Hospitals */}
       <section className="max-w-7xl mx-auto px-6 py-16 border-t border-gray-100">
@@ -1070,7 +1071,7 @@ export const HospitalPage: React.FC<HospitalPageProps> = ({
             <button onClick={onNavigateToHospitals} className="border border-gray-200 bg-white text-slate-900 px-8 py-3 rounded-lg font-medium text-sm hover:bg-gray-50 transition-colors shadow-sm hover:shadow-md">Discover More Hospitals</button>
         </div>
       </section>
-
+      <HealthPotential/>
     </div>
   );
 };
