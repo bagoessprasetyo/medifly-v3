@@ -7,7 +7,7 @@ import {
   CheckCircle2, ArrowLeft, ArrowRight, Microscope, Filter, Clock, ChevronLeft,
   GraduationCap, Scan, CheckCircle, Scissors, Sparkles, Bot, MessageSquare,
   Crown, Globe, Target, Car, Mountain, BriefcaseMedical, Smile, Stethoscope as StethIcon,
-  ShieldCheck, FileCheck, Loader2
+  ShieldCheck, FileCheck, Loader2, BookOpen, Calendar
 } from 'lucide-react';
 import { Hospital, Doctor } from '../types';
 import { HOSPITALS, DOCTORS } from '../constants';
@@ -732,29 +732,59 @@ export const HospitalPage: React.FC<HospitalPageProps> = ({
         <div className="w-full relative">
              <div className="flex gap-6 w-max animate-scroll-horizontal hover:pause">
                  {scrollDoctors.map((doc, i) => (
-                    <div key={i} className="w-[300px] flex-shrink-0 bg-white border border-slate-100 rounded-xl overflow-hidden hover:shadow-lg transition-all group">
-                        <div className="h-[220px] bg-slate-50 relative overflow-hidden">
-                            <img src={doc.imageUrl} alt={doc.name} className="w-full h-full object-cover object-top mix-blend-multiply opacity-95 group-hover:scale-105 transition-transform duration-700" />
+                    <div key={i} className="w-[320px] flex-shrink-0 bg-white rounded-2xl overflow-hidden hover:shadow-xl transition-all group border border-slate-100">
+                        {/* Doctor Photo */}
+                        <div className="h-[260px] bg-gradient-to-b from-slate-50 to-white relative overflow-hidden flex items-end justify-center">
+                            <img src={doc.imageUrl} alt={doc.name} className="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-700" />
                         </div>
-                        <div className="p-5 flex flex-col">
-                            <h3 className="text-lg font-bold text-slate-900 mb-1">{doc.name}</h3>
-                            <div className="flex items-center gap-1.5 text-xs text-slate-500 mb-3 font-medium">
+
+                        <div className="p-6 flex flex-col">
+                            {/* Doctor Name */}
+                            <h3 className="text-xl font-bold text-slate-900 mb-2">{doc.name}</h3>
+
+                            {/* Hospital with Flag */}
+                            <div className="flex items-center gap-2 text-sm text-slate-600 mb-4">
                                 <span className="text-base">{getCountryFlag()}</span>
                                 <span className="truncate">{hospital.name}, {hospital.country}</span>
                             </div>
-                            <div className="mb-4 space-y-1">
-                                <p className="text-sm font-medium text-slate-800">{doc.specialty}</p>
-                                <p className="text-xs text-slate-400 line-clamp-1">{doc.procedures.join(' • ')}</p>
-                                <div className="inline-flex items-center gap-1.5 mt-2 px-2 py-1 bg-slate-50 border border-slate-100 rounded text-[10px] font-medium text-slate-600">
-                                    <BriefcaseMedical className="w-3 h-3" />
-                                    200+ robotic joint procedures
-                                </div>
+
+                            {/* Specialty */}
+                            <p className="text-base font-medium text-slate-900 mb-3">{doc.specialty}</p>
+
+                            {/* Subspecialties as Tags */}
+                            <div className="flex flex-wrap items-center gap-2 mb-4">
+                                {doc.procedures.slice(0, 3).map((proc, idx) => (
+                                    <span key={idx} className="text-xs text-slate-600">
+                                        {proc}
+                                        {idx < Math.min(doc.procedures.length, 3) - 1 && <span className="ml-2 text-slate-300">•</span>}
+                                    </span>
+                                ))}
+                                {doc.procedures.length > 3 && (
+                                    <span className="inline-flex items-center justify-center bg-slate-100 text-xs font-medium text-slate-600 px-2 py-0.5 rounded-full">
+                                        +{doc.procedures.length - 3}
+                                    </span>
+                                )}
                             </div>
-                            <div className="flex items-center gap-2 text-[10px] text-slate-500 mb-5 pt-3 border-t border-slate-50">
-                                <Languages className="w-3.5 h-3.5" />
-                                <span>English, Bahasa Indonesia</span>
+
+                            {/* Achievement Badge */}
+                            <div className="flex items-center gap-2 mb-4">
+                                <BriefcaseMedical className="w-4 h-4 text-slate-500" />
+                                <span className="text-sm text-slate-600">200+ robotic joint procedures</span>
                             </div>
-                            <button onClick={() => onNavigateToDoctor?.(doc)} className="w-full py-2.5 border border-slate-200 rounded-lg text-xs font-bold text-slate-700 hover:bg-slate-900 hover:text-white hover:border-slate-900 transition-all">Learn More</button>
+
+                            {/* Languages */}
+                            <div className="flex items-center gap-2 text-sm text-slate-600 mb-6 pb-4 border-b border-slate-100">
+                                <Languages className="w-4 h-4 text-slate-500" />
+                                <span>{doc.languages?.join(', ') || 'English, Bahasa Indonesia'}</span>
+                            </div>
+
+                            {/* Overview Button */}
+                            <button
+                                onClick={() => onNavigateToDoctor?.(doc)}
+                                className="w-full py-3 border border-slate-200 rounded-xl text-sm font-semibold text-slate-700 hover:bg-slate-900 hover:text-white hover:border-slate-900 transition-all"
+                            >
+                                Overview
+                            </button>
                         </div>
                     </div>
                  ))}
@@ -874,7 +904,95 @@ export const HospitalPage: React.FC<HospitalPageProps> = ({
         </div>
       </section>
 
-      {/* 6. FAQ */}
+      {/* 6. Expert Health Insights */}
+      <section className="max-w-7xl mx-auto px-6 py-16 border-t border-gray-100">
+        <div className="text-center max-w-3xl mx-auto mb-12">
+          <h2 className="text-3xl md:text-4xl font-semibold tracking-tight text-[#1C1C1C] mb-4">Expert Health Insights</h2>
+          <p className="text-sm text-gray-500 leading-relaxed">Learn about trusted insights, tips, and updates from our team of specialists.</p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {[
+            {
+              title: "Understanding Heart Health: Prevention Tips from Our Cardiologists",
+              category: "Cardiology",
+              date: "Nov 28, 2024",
+              readTime: "5 min read",
+              image: "https://images.unsplash.com/photo-1559757175-5700dde675bc?auto=format&fit=crop&q=80&w=400",
+              author: "Dr. Sarah Chen",
+              type: "Article"
+            },
+            {
+              title: "Advances in Robotic Surgery: What Patients Need to Know",
+              category: "Surgery",
+              date: "Nov 25, 2024",
+              readTime: "7 min read",
+              image: "https://images.unsplash.com/photo-1551190822-a9333d879b1f?auto=format&fit=crop&q=80&w=400",
+              author: "Dr. Michael Tan",
+              type: "Research"
+            },
+            {
+              title: "Managing Diabetes: A Comprehensive Guide for International Patients",
+              category: "Endocrinology",
+              date: "Nov 20, 2024",
+              readTime: "6 min read",
+              image: "https://images.unsplash.com/photo-1579684385127-1ef15d508118?auto=format&fit=crop&q=80&w=400",
+              author: "Dr. Aminah Rahman",
+              type: "Article"
+            }
+          ].map((insight, i) => (
+            <div key={i} className="bg-white rounded-xl border border-gray-100 overflow-hidden hover:shadow-lg transition-all duration-300 group cursor-pointer flex flex-col h-full">
+              <div className="aspect-[16/10] bg-gray-100 relative overflow-hidden">
+                <img
+                  src={insight.image}
+                  alt={insight.title}
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                />
+                <div className="absolute top-3 left-3">
+                  <span className={`text-[10px] font-semibold px-2.5 py-1 rounded-full ${
+                    insight.type === 'Research'
+                      ? 'bg-purple-100 text-purple-700'
+                      : 'bg-emerald-100 text-emerald-700'
+                  }`}>
+                    {insight.type}
+                  </span>
+                </div>
+              </div>
+              <div className="p-5 flex flex-col flex-1">
+                <div className="flex items-center gap-2 mb-3">
+                  <span className="text-xs font-medium text-[#1C1C1C] bg-slate-100 px-2 py-0.5 rounded">{insight.category}</span>
+                  <span className="text-xs text-gray-400">•</span>
+                  <span className="text-xs text-gray-500">{insight.readTime}</span>
+                </div>
+                <h3 className="text-base font-semibold text-[#1C1C1C] mb-3 line-clamp-2 leading-snug group-hover:text-slate-700 transition-colors">{insight.title}</h3>
+                <div className="mt-auto pt-4 border-t border-gray-50 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="w-6 h-6 rounded-full bg-slate-200 flex items-center justify-center">
+                      <Users className="w-3 h-3 text-slate-500" />
+                    </div>
+                    <span className="text-xs text-gray-600">{insight.author}</span>
+                  </div>
+                  <div className="flex items-center gap-1 text-xs text-gray-400">
+                    <Calendar className="w-3 h-3" />
+                    <span>{insight.date}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div className="flex justify-center mt-10">
+          <button
+            onClick={onNavigateToInsights}
+            className="border border-gray-200 bg-white text-slate-900 px-8 py-3 rounded-lg font-medium text-sm hover:bg-gray-50 transition-colors shadow-sm hover:shadow-md flex items-center gap-2"
+          >
+            <BookOpen className="w-4 h-4" /> View All Insights
+          </button>
+        </div>
+      </section>
+
+      {/* 7. FAQ */}
       <section className="max-w-7xl mx-auto px-6 py-12 border-t border-gray-100">
         <h2 className="text-2xl font-semibold tracking-tight text-gray-900 mb-8">Frequently Asked Question</h2>
         <div className="space-y-4">
