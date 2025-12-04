@@ -409,9 +409,9 @@ export const HospitalPage: React.FC<HospitalPageProps> = ({
           <div className="lg:col-span-2 space-y-8">
               {/* Key features */}
               <div className="flex flex-wrap gap-x-6 gap-y-2 text-xs font-semibold text-slate-800">
-                  <div className="flex items-center gap-1.5"><Crown className="w-4 h-4" /> VIP Patient Support</div>
-                  <div className="flex items-center gap-1.5"><Plane className="w-4 h-4" /> Easy Airport Access</div>
-                  <div className="flex items-center gap-1.5"><Globe className="w-4 h-4" /> Popular with Foreigners</div>
+                  <div className="flex items-center gap-1.5"><img src="/images/icons/vip-support.svg" className="w-4 h-4" /> VIP Patient Support</div>
+                  <div className="flex items-center gap-1.5"><img src="/images/icons/easy-airport-access.svg" className="w-4 h-4" /> Easy Airport Access</div>
+                  <div className="flex items-center gap-1.5"><img src="/images/icons/popular.svg" className="w-4 h-4" /> Popular with Foreigners</div>
               </div>
 
               <div>

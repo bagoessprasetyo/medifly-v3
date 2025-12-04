@@ -30,7 +30,7 @@ export const HealthPotential: React.FC = () => {
         <div className="flex flex-col group cursor-default">
           <div className="relative w-full aspect-[4/5] bg-[#005f8f] rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300">
             {/* Background Image */}
-            <img src="/assets/images/health-1.svg" alt="Health Analysis" className="absolute inset-0 w-full h-full object-cover" />
+            <img src="/images/health-1.svg" alt="Health Analysis" className="absolute inset-0 w-full h-full object-cover" />
           </div>
           <div className="mt-6 pr-2">
             <h3 className="text-lg font-medium text-slate-900 tracking-tight">{t('Discover Your Options')}</h3>
@@ -44,7 +44,7 @@ export const HealthPotential: React.FC = () => {
         <div className="flex flex-col group cursor-default">
           <div className="relative w-full aspect-[4/5] bg-[#005f8f] rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300">
             {/* Background Image */}
-            <img src="/assets/images/health-2.svg" alt="Health Analysis" className="absolute inset-0 w-full h-full object-cover" />
+            <img src="/images/health-2.svg" alt="Health Analysis" className="absolute inset-0 w-full h-full object-cover" />
           </div>
           <div className="mt-6 pr-2">
             <h3 className="text-lg font-medium text-slate-900 tracking-tight">{t('Compare Experts & Costs with AI')}</h3>
@@ -58,7 +58,7 @@ export const HealthPotential: React.FC = () => {
         <div className="flex flex-col group cursor-default">
           <div className="relative w-full aspect-[4/5] bg-[#005f8f] rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300">
             {/* Background Image */}
-            <img src="/assets/images/health-3.svg" alt="Health Analysis" className="absolute inset-0 w-full h-full object-cover" />
+            <img src="/images/health-3.svg" alt="Health Analysis" className="absolute inset-0 w-full h-full object-cover" />
           </div>
           <div className="mt-6 pr-2">
             <h3 className="text-lg font-medium text-slate-900 tracking-tight">{t('Speak directly with doctors')}</h3>
@@ -72,7 +72,7 @@ export const HealthPotential: React.FC = () => {
         <div className="flex flex-col group cursor-default">
           <div className="relative w-full aspect-[4/5] bg-[#005f8f] rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300">
             {/* Background Image */}
-            <img src="/assets/images/health-4.svg" alt="Health Analysis" className="absolute inset-0 w-full h-full object-cover" />
+            <img src="/images/health-4.svg" alt="Health Analysis" className="absolute inset-0 w-full h-full object-cover" />
           </div>
           <div className="mt-6 pr-2">
             <h3 className="text-lg font-medium text-slate-900 tracking-tight">{t('Plan your full care journey safe')}</h3>
