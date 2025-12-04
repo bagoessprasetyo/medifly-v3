@@ -28,7 +28,7 @@ export const HospitalCard: React.FC<HospitalCardProps> = ({
 
   return (
     <div 
-        className={`bg-white rounded-xl overflow-hidden group flex flex-col cursor-pointer hover:shadow-lg transition-all duration-300 border ${isComparing ? 'border-indigo-500 ring-1 ring-indigo-500' : 'border-transparent hover:border-slate-100'}`}
+        className={`bg-white rounded-lg overflow-hidden group flex flex-col cursor-pointer hover:shadow-lg transition-all duration-300 border ${isComparing ? 'border-indigo-500 ring-1 ring-indigo-500' : 'border-slate-200 hover:border-slate-100'}`}
         onClick={() => onViewDetails(hospital)}
     >
         {/* Image Container */}

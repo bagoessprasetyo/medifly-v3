@@ -12,17 +12,60 @@ import { LocationFilter } from './LocationFilter';
 
 // ... (SPECIALIZATIONS, SEMANTIC_SPECIALTY_MAP, COUNTRIES constants remain the same)
 const SPECIALIZATIONS = [
-  { name: 'Cardiology', description: 'Heart checkup, angioplasty, heart valve surgery, etc.' },
-  { name: 'Orthopedics', description: 'Knee replacement, spine surgery, sports injury care, etc.' },
-  { name: 'Neurology', description: 'Stroke care, brain scan, nerve disorder treatment, etc.' },
-  { name: 'Oncology', description: 'Cancer screening, chemo programs, tumor surgery, etc.' },
-  { name: 'Gastroenterology', description: 'Endoscopy, liver care, digestive disorder treatment, etc.' },
-  { name: 'Urology', description: 'Kidney stone removal, prostate care, bladder issues, etc.' },
-  { name: 'Dermatology', description: 'Skin conditions, laser therapy, cosmetic dermatology, etc.' },
-  { name: 'Fertility', description: 'IVF, egg freezing, fertility assessment, etc.' },
-  { name: 'Dental', description: 'Dental implants, cosmetic dentistry, oral surgery, etc.' },
-  { name: 'Cosmetic Surgery', description: 'Rhinoplasty, liposuction, facelifts, etc.' },
+  { name: 'Cardiology', description: 'Heart checkups, procedures & care' },
+  { name: 'Oncology', description: 'Cancer therapy & tumor management' },
+  { name: 'Pulmonology', description: 'Lung care, breathing & support' },
+  { name: 'Neurology', description: 'Brain, nerve & neurological care' },
+  { name: 'Orthopedics', description: 'Bone, joint & spine care' },
+  { name: 'Gastroenterology', description: 'Digestive health & gut care' },
+  { name: 'Dermatology', description: 'Skin, hair & nail care' },
+  { name: 'Endocrinology', description: 'Hormone, metabolism & gland care' },
+  { name: 'Nephrology', description: 'Kidney health & renal support' },
+  { name: 'Urology', description: 'Urinary system & prostate care' },
+  { name: 'OB-GYN', description: 'Women’s health & reproductive care' },
+  { name: 'Pediatrics', description: 'Child health & wellness' },
+  { name: 'ENT', description: 'Ear, nose & throat care' },
+  { name: 'Ophthalmology', description: 'Eye care & vision support' },
+  { name: 'Rheumatology', description: 'Joint, muscle & autoimmune care' },
+  { name: 'Hematology', description: 'Blood disorders & care' },
+  { name: 'Hepatology', description: 'Liver health & digestive support' },
+  { name: 'Plastic Surgery', description: 'Cosmetic & reconstructive surgery' },
+  { name: 'General Surgery', description: 'Common surgeries & procedures' },
+  { name: 'Psychiatry', description: 'Mental health & emotional care' },
+  { name: 'Rehabilitation', description: 'Recovery & physical therapy' },
+  { name: 'Infectious Disease', description: 'Infection prevention & care' },
+  { name: 'Vascular Surgery', description: 'Blood vessel & circulation care' },
+  { name: 'Allergy & Immunology', description: 'Allergies, asthma & immune support' },
+  { name: 'Sleep Medicine', description: 'Sleep disorders & therapy' },
+  { name: 'Pain Management', description: 'Chronic pain relief & therapy' },
+  { name: 'Bariatric Surgery', description: 'Weight loss surgery & support' },
+  { name: 'Neonatology', description: 'Newborn care & intensive support' },
+  { name: 'Cardiac Surgery', description: 'Heart surgery & bypass procedures' },
+  { name: 'Thoracic Surgery', description: 'Lung & chest surgical care' },
+  { name: 'Critical Care', description: 'ICU support & emergency care' },
+  { name: 'Nuclear Medicine', description: 'Diagnostic scans & imaging' },
+  { name: 'Radiology', description: 'X-ray, MRI & CT imaging' },
+  { name: 'Interventional Radiology', description: 'Image-guided procedures' },
+  { name: 'Podiatry', description: 'Foot, ankle & lower limb care' },
+  { name: 'Occupational Therapy', description: 'Work-related recovery & therapy' },
+  { name: 'Speech Therapy', description: 'Communication & swallowing support' },
+  { name: 'Audiology', description: 'Hearing tests & hearing support' },
+  { name: 'Gastrointestinal Surgery', description: 'Stomach, intestine & gut surgery' },
+  { name: 'Maxillofacial Surgery', description: 'Face, jaw & mouth surgery' },
+  { name: 'Rheumatologic Surgery', description: 'Joint & autoimmune surgical care' },
+  { name: 'Cosmetic Dermatology', description: 'Skin enhancements & treatments' },
+  { name: 'Geriatrics', description: 'Older adult health & wellness' },
+  { name: 'Reproductive Medicine', description: 'Fertility, IVF & reproductive care' },
+  { name: 'Transplant Surgery', description: 'Organ transplant procedures' },
+  { name: 'Pediatric Surgery', description: 'Child surgical care' },
+  { name: 'Endovascular Surgery', description: 'Minimally invasive vascular care' },
+  { name: 'Neuro Surgery', description: 'Brain & spine surgical care' },
+  { name: 'Orthopedic Surgery', description: 'Bone & joint surgical procedures' },
+  { name: 'Cardiothoracic Surgery', description: 'Heart & chest surgery' },
+  { name: 'Gynecologic Surgery', description: 'Women’s reproductive surgery' },
+  { name: 'Medical Genetics', description: 'Genetic disorder diagnosis & care' },
 ];
+
 
 // Semantic Mapping for "Smart Search"
 const SEMANTIC_SPECIALTY_MAP: Record<string, string[]> = {
@@ -122,7 +165,7 @@ export const Marketplace: React.FC<MarketplaceProps> = ({
   const [visibleCount, setVisibleCount] = useState(6);
 
   // Available languages from all hospitals
-  const availableLanguages = ['English', 'Mandarin', 'Thai', 'Japanese', 'Arabic', 'Korean', 'Bahasa Melayu'];
+  const availableLanguages = ['English', 'Melayu', 'Mandarin', 'Hokkien', 'Cantonese'];
 
   // Sync props to state
   useEffect(() => {
@@ -809,7 +852,7 @@ export const Marketplace: React.FC<MarketplaceProps> = ({
                             </div>
                             {/* Load More Button */}
                             {visibleCount < filteredHospitals.length && (
-                                <div className="flex justify-center pb-20">
+                                <div className="flex justify-center pb-6">
                                     <button 
                                         onClick={loadMore}
                                         className="flex items-center gap-2 px-6 py-3 rounded-full border border-gray-300 text-gray-700 font-medium hover:bg-gray-50 hover:border-gray-400 transition-all active:scale-95 bg-white shadow-sm"

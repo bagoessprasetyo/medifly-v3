@@ -272,7 +272,7 @@ export const HospitalPage: React.FC<HospitalPageProps> = ({
   };
 
   return (
-    <div className="bg-white text-[#1C1C1C] font-sans antialiased w-full min-h-full pb-20 overflow-x-hidden">
+    <div className="bg-white text-[#1C1C1C] font-sans antialiased w-full min-h-full pb-12 overflow-x-hidden">
       <style>{`@keyframes scroll-horizontal { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } } .animate-scroll-horizontal { animation: scroll-horizontal 40s linear infinite; } .animate-scroll-horizontal:hover { animation-play-state: paused; }`}</style>
 
       {/* Mobile Back Button */}
