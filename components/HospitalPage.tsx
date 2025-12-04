@@ -9,8 +9,8 @@ import {
   Crown, Globe, Target, Car, Mountain, BriefcaseMedical, Smile, Stethoscope as StethIcon,
   ShieldCheck, FileCheck, Loader2, BookOpen, Calendar
 } from 'lucide-react';
-import { Hospital, Doctor } from '../types';
-import { HOSPITALS, DOCTORS } from '../constants';
+import { Hospital, Doctor, HospitalDetails } from '../types';
+import { HOSPITALS, DOCTORS, getHospitalDetails } from '../constants';
 import { generateLocationInfo, LocationInfo } from '../services/geminiService';
 import { HealthPotential } from './HealthPotential';
 
@@ -27,6 +27,8 @@ interface HospitalPageProps {
   onNavigateToHospital?: (hospital: Hospital) => void;
   onNavigateToDoctor?: (doctor: Doctor) => void;
   onNavigateToInsights?: () => void;
+  onNavigateToFacilityDetails?: (facilityName: string) => void;
+  isChatOpen?: boolean;
 }
 
 export const HospitalPage: React.FC<HospitalPageProps> = ({
@@ -41,7 +43,9 @@ export const HospitalPage: React.FC<HospitalPageProps> = ({
   onViewSpecialization,
   onNavigateToHospital,
   onNavigateToDoctor,
-  onNavigateToInsights
+  onNavigateToInsights,
+  onNavigateToFacilityDetails,
+  isChatOpen = false
 }) => {
 
   const [activeTab, setActiveTab] = useState('overview');
@@ -50,6 +54,9 @@ export const HospitalPage: React.FC<HospitalPageProps> = ({
   const [isScrolled, setIsScrolled] = useState(false);
   const [locationInfo, setLocationInfo] = useState<LocationInfo | null>(null);
   const [isLoadingLocation, setIsLoadingLocation] = useState(true);
+
+  // Get dynamic hospital details
+  const hospitalDetails = useMemo(() => getHospitalDetails(hospital.id), [hospital.id]);
 
   // Scroll to top on mount
   useEffect(() => {
@@ -195,15 +202,21 @@ export const HospitalPage: React.FC<HospitalPageProps> = ({
       { id: 'insights', label: 'Insights', isExternal: true }
   ];
 
-  // Awards Data
-  const awardsList = [
+  // Awards Data - use dynamic data if available, fallback to default
+  const awardsList = useMemo(() => {
+    if (hospitalDetails?.awards && hospitalDetails.awards.length > 0) {
+      return hospitalDetails.awards;
+    }
+    // Default fallback for hospitals without detailed data
+    return [
       { year: "2019", title: "Asian Hospital Management Awards 2019", org: "Gold Award (Customer Service Category)" },
       { year: "2019", title: "Asia Pacific Society of Infection Control", org: "CSSD Centre of Excellence Award" },
       { year: "2023", title: "Best Medical Tourism Hospital", org: "APAC Healthcare Awards" },
       { year: "2023", title: "Smart Hospital Initiative of the Year", org: "Healthcare Asia" },
       { year: "2022", title: "Patient Care Excellence Award", org: "Global Health Asia" },
       { year: "2021", title: "Gold Seal of Approval®", org: "Joint Commission International (JCI)" },
-  ];
+    ];
+  }, [hospitalDetails]);
 
   const visibleAwards = showAllAwards ? awardsList : awardsList.slice(0, 6);
 
@@ -245,16 +258,55 @@ export const HospitalPage: React.FC<HospitalPageProps> = ({
       return [...filteredDoctors, ...filteredDoctors];
   }, [filteredDoctors]);
 
-  const insurancePartners = [
-    { name: 'AIA', domain: 'aia.com' },
-    { name: 'Allianz', domain: 'allianz.com' },
-    { name: 'Prudential', domain: 'prudential.com' },
-    { name: 'Great Eastern', domain: 'greateasternlife.com' },
-    { name: 'Cigna', domain: 'cigna.com' },
-    { name: 'AXA', domain: 'axa.com' },
-    { name: 'Manulife', domain: 'manulife.com' },
-    { name: 'Tokio Marine', domain: 'tokiomarine.com' },
-  ];
+  // Insurance Partners - use dynamic data if available
+  const insurancePartners = useMemo(() => {
+    if (hospitalDetails?.insurancePartners && hospitalDetails.insurancePartners.length > 0) {
+      // Map dynamic insurance names to display format with domain for logo
+      const domainMap: Record<string, string> = {
+        'BPJS Kesehatan': 'bpjs-kesehatan.go.id',
+        'Prudential': 'prudential.com',
+        'Allianz': 'allianz.com',
+        'AXA': 'axa.com',
+        'Manulife': 'manulife.com',
+        'AIA': 'aia.com',
+        'BNI Life': 'bnilife.co.id',
+        'Cigna': 'cigna.com',
+        'Astra Life': 'astralife.co.id',
+        'Sinar Mas MSIG': 'sfrlifeinsurance.com',
+        'Great Eastern': 'greateasternlife.com',
+        'Tokio Marine': 'tokiomarine.com',
+        'Generali': 'generali.com',
+        'Panin Life': 'paninlife.co.id',
+        'Equity Life': 'equity.co.id',
+        'Simas Jiwa': 'simasjiwa.co.id',
+        'CAR Life': 'car.co.id',
+        'Zurich': 'zurich.com',
+        'FWD': 'fwd.com',
+        'Avrist': 'avrist.com',
+        'Sequis Life': 'sequislife.com',
+        'Sun Life': 'sunlife.com',
+        'Jasa Raharja': 'jasaraharja.co.id',
+        'Bumida': 'bumida.co.id',
+        'Mega Insurance': 'megainsurance.co.id',
+        'Lippo General Insurance': 'lippoinsurance.com',
+      };
+      return hospitalDetails.insurancePartners.slice(0, 8).map(name => ({
+        name,
+        domain: domainMap[name] || `${name.toLowerCase().replace(/\s+/g, '')}.com`
+      }));
+    }
+    // Default fallback
+    return [
+      { name: 'AIA', domain: 'aia.com' },
+      { name: 'Allianz', domain: 'allianz.com' },
+      { name: 'Prudential', domain: 'prudential.com' },
+      { name: 'Great Eastern', domain: 'greateasternlife.com' },
+      { name: 'Cigna', domain: 'cigna.com' },
+      { name: 'AXA', domain: 'axa.com' },
+      { name: 'Manulife', domain: 'manulife.com' },
+      { name: 'Tokio Marine', domain: 'tokiomarine.com' },
+    ];
+  }, [hospitalDetails]);
 
   // Get country flag
   const getCountryFlag = () => {
@@ -333,7 +385,7 @@ export const HospitalPage: React.FC<HospitalPageProps> = ({
       <div className="max-w-7xl mx-auto px-4 md:px-6 ">
           <div className="flex flex-col items-end md:flex-row md:justify-between gap-4">
               <div className="flex-1">
-                  <h1 className="text-2xl md:text-3xl font-bold text-slate-900 mb-2">{hospital.name}</h1>
+                  <h1 className="text-2xl md:text-3xl font-semibold text-slate-900 mb-2">{hospital.name}</h1>
                   <div className="flex flex-wrap items-center gap-2 text-sm">
                       <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-slate-100 rounded text-slate-700 font-medium text-xs">Hospital</span>
                       <div className="flex items-center gap-1">
@@ -357,7 +409,7 @@ export const HospitalPage: React.FC<HospitalPageProps> = ({
               <div className="flex flex-row items-end space-x-3 shrink-0">
                   <div className="text-right ">
                       <p className="text-xs text-slate-500">Price range</p>
-                      <p className="text-xl md:text-2xl font-bold text-[#1E293B]">{hospital.priceRange}</p>
+                      <p className="text-xl md:text-2xl font-medium text-[#1E293B]">{hospital.priceRange}</p>
                   </div>
                   <button
                     className="bg-black text-white px-6 py-3 rounded-lg font-semibold text-sm transition-all "
@@ -368,9 +420,10 @@ export const HospitalPage: React.FC<HospitalPageProps> = ({
           </div>
       </div>
 
-      {/* Fixed Info Header - Shows on scroll, positioned below navbar */}
+      {/* Fixed Info Header - Shows on scroll, positioned below navbar, hidden when chat is open */}
       <div
         className={`fixed top-20 left-0 right-0 z-[45] bg-white/95 backdrop-blur-md border-b transition-all duration-300 hidden md:block
+        ${isChatOpen ? '!hidden' : ''}
         ${isScrolled ? 'border-gray-200 shadow-sm translate-y-0 opacity-100' : 'border-transparent -translate-y-full opacity-0 pointer-events-none'}`}
       >
           <div className="max-w-7xl mx-auto px-6 h-[56px] relative flex items-center justify-center">
@@ -424,12 +477,12 @@ export const HospitalPage: React.FC<HospitalPageProps> = ({
 
               <div className="flex flex-col sm:flex-row gap-6 p-5 bg-[#FAFAFA] rounded-xl border border-slate-100">
                   <div className="flex gap-3 items-center">
-                     <div className="w-10 h-10 rounded-full bg-gradient-to-br from-yellow-400 to-yellow-600 shadow-sm flex items-center justify-center text-white font-bold text-[10px] border-2 border-white ring-1 ring-yellow-100">JCI</div>
-                     <div><div className="font-bold text-slate-900 text-sm">JCI Accredited</div><div className="text-xs text-slate-500">International healthcare standards</div></div>
+                     <div className="w-10 h-10 rounded-full bg-gradient-to-br from-yellow-400 to-yellow-600 shadow-sm flex items-center justify-center text-white font-medium text-[10px] border-2 border-white ring-1 ring-yellow-100">JCI</div>
+                     <div><div className="font-medium text-slate-900 text-sm">JCI Accredited</div><div className="text-xs text-slate-500">International healthcare standards</div></div>
                   </div>
                   <div className="flex gap-3 items-center">
-                     <div className="w-10 h-10 bg-[#008080] text-white font-bold flex items-center justify-center rounded-lg shadow-sm text-sm">A</div>
-                     <div><div className="font-bold text-slate-900 text-sm">ACCME-Accredited</div><div className="text-xs text-slate-500">Committed in medical education</div></div>
+                     <div className="w-10 h-10 bg-[#008080] text-white font-medium flex items-center justify-center rounded-lg shadow-sm text-sm">A</div>
+                     <div><div className="font-medium text-slate-900 text-sm">ACCME-Accredited</div><div className="text-xs text-slate-500">Committed in medical education</div></div>
                   </div>
               </div>
 
@@ -447,11 +500,11 @@ export const HospitalPage: React.FC<HospitalPageProps> = ({
 
               {/* Awards */}
               <div className="space-y-4">
-                  <h3 className="font-bold text-lg flex items-center gap-2 text-slate-900"><Trophy className="w-5 h-5" /> Awards & Accreditations</h3>
+                  <h3 className="font-medium text-lg flex items-center gap-2 text-slate-900"><Trophy className="w-5 h-5" /> Awards & Accreditations</h3>
                   <div className="space-y-4 pl-2">
                       {visibleAwards.map((award, i) => (
                           <div key={i} className="flex gap-4 text-sm animate-in fade-in slide-in-from-top-1 duration-300">
-                              <span className="font-bold text-[#1C1C1C] w-12 shrink-0">{award.year}</span>
+                              <span className="font-medium text-[#1C1C1C] w-12 shrink-0">{award.year}</span>
                               <div className="flex-1 h-px bg-slate-200 my-auto max-w-[20px] hidden sm:block"></div>
                               <span className="text-slate-600"><span className="underline decoration-slate-300 underline-offset-4 font-medium text-slate-800">{award.title}</span> — {award.org}</span>
                           </div>
@@ -465,10 +518,10 @@ export const HospitalPage: React.FC<HospitalPageProps> = ({
               {/* Insurance Support Section - Enhanced */}
               <div className="bg-slate-50 rounded-2xl p-6 border border-slate-100 mt-8">
                   <div className="flex items-center justify-between mb-4">
-                      <h3 className="font-bold text-lg flex items-center gap-2 text-slate-900">
+                      <h3 className="font-medium text-lg flex items-center gap-2 text-slate-900">
                           <ShieldCheck className="w-5 h-5 text-emerald-600" /> Insurance Partners
                       </h3>
-                      <span className="bg-emerald-100 text-emerald-700 text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wider">Direct Billing</span>
+                      <span className="bg-emerald-100 text-emerald-700 text-[10px] font-medium px-2 py-1 rounded uppercase tracking-wider">Direct Billing</span>
                   </div>
 
                   <p className="text-sm text-slate-500 mb-6 leading-relaxed">
@@ -486,7 +539,7 @@ export const HospitalPage: React.FC<HospitalPageProps> = ({
                                       e.currentTarget.style.display = 'none';
                                       if (e.currentTarget.parentElement) {
                                           e.currentTarget.parentElement.innerText = partner.name;
-                                          e.currentTarget.parentElement.classList.add('text-[10px]', 'font-bold', 'text-slate-400', 'text-center');
+                                          e.currentTarget.parentElement.classList.add('text-[10px]', 'font-medium', 'text-slate-400', 'text-center');
                                       }
                                   }}
                               />
@@ -517,7 +570,7 @@ export const HospitalPage: React.FC<HospitalPageProps> = ({
                   <div className="relative z-10">
                       <div className="flex items-center gap-2 mb-3">
                           <div className="p-2 bg-[#1C1C1C] rounded-lg text-[#F1FCA7] shadow-lg shadow-slate-200"><Sparkles className="w-4 h-4" /></div>
-                          <div><h3 className="font-bold text-gray-900 text-sm">Hospital Concierge</h3><p className="text-[10px] text-slate-500 font-medium">Powered by Aria AI</p></div>
+                          <div><h3 className="font-medium text-gray-900 text-sm">Hospital Concierge</h3><p className="text-[10px] text-slate-500 font-medium">Powered by Aria AI</p></div>
                       </div>
                       <p className="text-xs text-slate-600 mb-4 leading-relaxed">I can analyze <strong>{hospital.name}</strong>'s pricing, insurance coverage, and specialist availability instantly.</p>
                       <div className="grid grid-cols-2 gap-2 mb-4">
@@ -534,13 +587,13 @@ export const HospitalPage: React.FC<HospitalPageProps> = ({
               {/* Getting Here - Dynamic */}
               <div className="border border-zinc-200 rounded-xl p-6 shadow-sm bg-white">
                   <div className="flex items-center justify-between mb-6">
-                      <div className="flex items-center gap-2 font-bold text-[#1C1C1C]">
+                      <div className="flex items-center gap-2 font-medium text-[#1C1C1C]">
                           <div className="p-1.5 bg-slate-100 rounded-full"><Navigation className="w-4 h-4" /></div>
                           Getting Here
                       </div>
                       <div className="text-right">
                           <div className="text-[10px] text-slate-400 font-medium uppercase tracking-wide mb-0.5">From your Location</div>
-                          <div className="text-sm font-bold text-slate-900 flex items-center justify-end gap-1.5">
+                          <div className="text-sm font-medium text-slate-900 flex items-center justify-end gap-1.5">
                               <Target className="w-3.5 h-3.5" />
                               {isLoadingLocation ? (
                                 <span className="animate-pulse bg-slate-200 rounded w-16 h-4"></span>
@@ -573,7 +626,7 @@ export const HospitalPage: React.FC<HospitalPageProps> = ({
                           {isLoadingLocation ? (
                             <div className="animate-pulse bg-slate-200 rounded w-32 h-5"></div>
                           ) : (
-                            <div className="text-sm font-bold text-[#1C1C1C]">{locationInfo?.travelInfo.byAir || 'Calculating...'}</div>
+                            <div className="text-sm font-medium text-[#1C1C1C]">{locationInfo?.travelInfo.byAir || 'Calculating...'}</div>
                           )}
                       </div>
                   </div>
@@ -581,7 +634,7 @@ export const HospitalPage: React.FC<HospitalPageProps> = ({
 
               {/* Around the Area - Dynamic */}
               <div className="border border-zinc-200 rounded-xl p-6 shadow-sm bg-white">
-                  <div className="flex items-center gap-2 font-bold text-[#1C1C1C] mb-4">
+                  <div className="flex items-center gap-2 font-medium text-[#1C1C1C] mb-4">
                       <div className="p-1.5 bg-slate-100 rounded-full"><Scan className="w-4 h-4" /></div>
                       Around the Area
                   </div>
@@ -597,7 +650,7 @@ export const HospitalPage: React.FC<HospitalPageProps> = ({
                         onError={(e) => (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1524661135-423995f22d0b?auto=format&fit=crop&q=80&w=400'}
                       />
                       <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                          <div className="bg-white/90 backdrop-blur px-3 py-1.5 rounded-full text-xs font-bold text-slate-900 shadow-sm border border-slate-200">View Map</div>
+                          <div className="bg-white/90 backdrop-blur px-3 py-1.5 rounded-full text-xs font-medium text-slate-900 shadow-sm border border-slate-200">View Map</div>
                       </div>
                   </div>
 
@@ -624,7 +677,7 @@ export const HospitalPage: React.FC<HospitalPageProps> = ({
                       {/* Arrival Airport (near hospital) */}
                       {locationInfo?.nearbyAirport && (
                         <div>
-                            <div className="flex items-center gap-2 text-sm font-bold text-[#1C1C1C] mb-2">
+                            <div className="flex items-center gap-2 text-sm font-medium text-[#1C1C1C] mb-2">
                                 <Plane className="w-4 h-4 text-slate-400" /> Arrival Airport
                             </div>
                             <ul className="pl-8 space-y-2 text-xs text-slate-600 list-disc marker:text-slate-300">
@@ -636,7 +689,7 @@ export const HospitalPage: React.FC<HospitalPageProps> = ({
                       {/* Transportations */}
                       {locationInfo?.transportations && locationInfo.transportations.length > 0 && (
                         <div>
-                            <div className="flex items-center gap-2 text-sm font-bold text-[#1C1C1C] mb-2">
+                            <div className="flex items-center gap-2 text-sm font-medium text-[#1C1C1C] mb-2">
                                 <Bus className="w-4 h-4 text-slate-400" /> Transportations
                             </div>
                             <ul className="pl-8 space-y-2 text-xs text-slate-600 list-disc marker:text-slate-300">
@@ -650,7 +703,7 @@ export const HospitalPage: React.FC<HospitalPageProps> = ({
                       {/* Landmarks */}
                       {locationInfo?.landmarks && locationInfo.landmarks.length > 0 && (
                         <div>
-                            <div className="flex items-center gap-2 text-sm font-bold text-[#1C1C1C] mb-2">
+                            <div className="flex items-center gap-2 text-sm font-medium text-[#1C1C1C] mb-2">
                                 <Flag className="w-4 h-4 text-slate-400" /> Landmarks
                             </div>
                             <ul className="pl-8 space-y-2 text-xs text-slate-600 list-disc marker:text-slate-300">
@@ -668,7 +721,7 @@ export const HospitalPage: React.FC<HospitalPageProps> = ({
 
       {/* 1. Top Expertise */}
       <section id="specialization" className=" mx-auto px-24 py-16 scroll-mt-40 bg-[#FAF8F7]">
-        <h2 className="text-3xl font-semibold text-center tracking-tight mb-12">Our Top Expertise</h2>
+        <h2 className="text-3xl font-medium text-center tracking-tight mb-12">Our Top Expertise</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-3">
             {[
                 { icon: Wind, title: "Pulmonology", desc: "Advanced care for lungs with leading specialists and integrated treatments." },
@@ -699,15 +752,9 @@ export const HospitalPage: React.FC<HospitalPageProps> = ({
           <div className="max-w-7xl mx-auto mb-12">
             <div className="flex flex-col gap-4">
                 <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                    <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-slate-900">World-Class Care, Led by Top Specialists</h2>
-                    <button
-                        onClick={onNavigateToDoctors}
-                        className="bg-[#1C1C1C] text-white px-6 py-2.5 rounded-lg text-sm font-semibold hover:bg-black transition-all shadow-sm flex items-center gap-2 active:scale-95 shrink-0 w-fit"
-                    >
-                        View All <ArrowRight className="w-4 h-4" />
-                    </button>
+                    <h2 className="text-3xl md:text-4xl font-medium tracking-tight text-slate-900">World-Class Care, Led by Top Specialists</h2>
                 </div>
-                <p className="text-slate-500 max-w-3xl text-sm">
+                <p className="text-slate-900 max-w-4xl text-sm">
                     Access expert care from 50+ trusted specialists across multiple medical fields, all delivering global-standard treatment you can trust.
                 </p>
             </div>
@@ -719,7 +766,7 @@ export const HospitalPage: React.FC<HospitalPageProps> = ({
                         className={`
                             flex items-center gap-2 px-4 py-2.5 rounded-lg border text-xs font-medium transition-all
                             ${selectedSpecialistFilter === filter.label
-                                ? 'bg-slate-100 border-slate-900 text-slate-900 ring-1 ring-slate-900'
+                                ? 'bg-[#F4F0EE] border-slate-400 text-slate-900 ring-1 ring-slate-700'
                                 : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300 hover:bg-slate-50'}
                         `}
                     >
@@ -729,11 +776,11 @@ export const HospitalPage: React.FC<HospitalPageProps> = ({
                 ))}
             </div>
         </div>
-        {/* Infinite Scroll Carousel */}
-        <div className="w-full relative">
-             <div className="flex gap-6 w-max animate-scroll-horizontal hover:pause">
+        {/* Infinite Scroll Carousel - only animates when "All Doctors" filter is active */}
+        <div className={`w-full relative ${selectedSpecialistFilter === 'All Doctors' ? '' : 'max-w-7xl mx-auto'}`}>
+             <div className={`flex gap-6 ${selectedSpecialistFilter === 'All Doctors' ? 'w-max animate-scroll-horizontal hover:pause' : 'flex-wrap justify-center'}`}>
                  {scrollDoctors.map((doc, i) => (
-                    <div key={i} className="w-[320px] flex-shrink-0 bg-white rounded-2xl overflow-hidden hover:shadow-xl transition-all group border border-slate-100">
+                    <div key={i} className="w-[320px] flex-shrink-0 bg-white rounded-lg overflow-hidden hover:shadow-xl transition-all group border border-slate-200">
                         {/* Doctor Photo */}
                         <div className="h-[260px] bg-gradient-to-b from-slate-50 to-white relative overflow-hidden flex items-end justify-center">
                             <img src={doc.imageUrl} alt={doc.name} className="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-700" />
@@ -741,7 +788,7 @@ export const HospitalPage: React.FC<HospitalPageProps> = ({
 
                         <div className="p-6 flex flex-col">
                             {/* Doctor Name */}
-                            <h3 className="text-xl font-bold text-slate-900 mb-2">{doc.name}</h3>
+                            <h3 className="text-xl font-medium text-slate-900 mb-2">{doc.name}</h3>
 
                             {/* Hospital with Flag */}
                             <div className="flex items-center gap-2 text-sm text-slate-600 mb-4">
@@ -770,11 +817,11 @@ export const HospitalPage: React.FC<HospitalPageProps> = ({
                             {/* Achievement Badge */}
                             <div className="flex items-center gap-2 mb-4">
                                 <BriefcaseMedical className="w-4 h-4 text-slate-500" />
-                                <span className="text-sm text-slate-600">200+ robotic joint procedures</span>
+                                <span className="text-sm text-slate-900">200+ robotic joint procedures</span>
                             </div>
 
                             {/* Languages */}
-                            <div className="flex items-center gap-2 text-sm text-slate-600 mb-6 pb-4 border-b border-slate-100">
+                            <div className="flex items-center gap-2 text-sm text-slate-900 mb-6 pb-4 border-b border-slate-100">
                                 <Languages className="w-4 h-4 text-slate-500" />
                                 <span>{doc.languages?.join(', ') || 'English, Bahasa Indonesia'}</span>
                             </div>
@@ -782,7 +829,7 @@ export const HospitalPage: React.FC<HospitalPageProps> = ({
                             {/* Overview Button */}
                             <button
                                 onClick={() => onNavigateToDoctor?.(doc)}
-                                className="w-full py-3 border border-slate-200 rounded-xl text-sm font-semibold text-slate-700 hover:bg-slate-900 hover:text-white hover:border-slate-900 transition-all"
+                                className="w-full py-2 border border-slate-200 rounded-xl text-sm font-medium text-slate-700 hover:bg-slate-900 hover:text-white hover:border-slate-900 transition-all"
                             >
                                 Overview
                             </button>
@@ -791,11 +838,20 @@ export const HospitalPage: React.FC<HospitalPageProps> = ({
                  ))}
              </div>
         </div>
+        {/* View All Button */}
+        <div className="flex justify-center mt-10">
+            <button
+                onClick={onNavigateToDoctors}
+                className="bg-[#1C1C1C] text-white px-6 py-2 rounded-lg text-sm font-semibold hover:bg-black transition-all shadow-sm flex items-center gap-2 active:scale-95"
+            >
+                View All <ArrowRight className="w-4 h-4" />
+            </button>
+        </div>
       </section>
 
       {/* 3. Facilities */}
       <section id="facilities" className="max-w-7xl mx-auto px-6 py-16 bg-white scroll-mt-40 border-t border-gray-100">
-        <h2 className="text-2xl font-semibold text-center tracking-tight mb-12">Facilities</h2>
+        <h2 className="text-2xl font-medium text-center tracking-tight mb-12">Facilities</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
              {[
                 { title: "Medical & Treatment Centres", img: "https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?auto=format&fit=crop&q=80&w=400", items: ["Accident & Emergency (A&E)", "Intensive Care Unit (ICU)", "Blood/Stem Cell Bio", "Cardiology Clinic"] },
@@ -803,24 +859,28 @@ export const HospitalPage: React.FC<HospitalPageProps> = ({
                 { title: "Patient Care & Recovery", img: "https://images.unsplash.com/photo-1596541223130-5d31a73fb6c6?auto=format&fit=crop&q=80&w=400", items: ["Inpatient Rooms", "Maternity Rooms", "Paediatric Care Services", "Rehabilitation & Physio"] },
                 { title: "Amenities & Support Services", img: "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&q=80&w=400", items: ["Pharmacy", "Food & Beverage", "Laboratory Services", "Billing & Insurance"] }
             ].map((fac, idx) => (
-                <div key={idx}>
-                    <div className="aspect-video rounded-lg overflow-hidden mb-4 bg-gray-100 relative group">
+                <div
+                    key={idx}
+                    className="cursor-pointer group"
+                    onClick={() => onNavigateToFacilityDetails?.(fac.title)}
+                >
+                    <div className="aspect-video rounded-lg overflow-hidden mb-4 bg-gray-100 relative">
                         <img src={fac.img} alt={fac.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                     </div>
-                    <h3 className="text-sm font-semibold mb-3">{fac.title}</h3>
+                    <h3 className="text-md font-medium mb-3 group-hover:text-blue-600 transition-colors">{fac.title}</h3>
                     <ul className="space-y-2">
                         {fac.items.map((item, i) => (
-                            <li key={i} className="flex items-start text-xs text-gray-500">
+                            <li key={i} className="flex items-start text-sm text-slate-900">
                                 <CheckCircle className="w-3 h-3 text-gray-400 mr-2 mt-0.5" /> {item}
                             </li>
                         ))}
-                        <li className="flex items-start text-xs text-gray-400 ml-5">+{Math.floor(Math.random() * 10) + 5} More</li>
+                        <li className="flex items-start text-xs text-slate-900 ml-5 border border-slate-200 w-fit py-1 px-2 rounded-full">+{Math.floor(Math.random() * 10) + 5} More</li>
                     </ul>
                 </div>
             ))}
         </div>
         <div className="flex justify-center mt-10">
-            <button onClick={onViewFacilities} className="border border-gray-200 bg-white text-slate-900 px-8 py-3 rounded-lg font-medium text-sm hover:bg-gray-50 transition-colors shadow-sm hover:shadow-md">View All Facilities</button>
+            <button onClick={onViewFacilities} className="flex flex-row items-center space-x-5 border border-gray-200 bg-white text-slate-900 px-6 py-2 rounded-lg font-medium text-sm hover:bg-gray-50 transition-colors shadow-sm hover:shadow-md">View All Facilities <ChevronRight className='size-5'/> </button>
         </div>
       </section>
 
@@ -828,8 +888,8 @@ export const HospitalPage: React.FC<HospitalPageProps> = ({
       <section id="packages" className="w-full py-16 scroll-mt-40" style={{ backgroundColor: '#FAF8F7' }}>
           <div className="max-w-7xl mx-auto px-6">
            <div className="text-center max-w-3xl mx-auto mb-12">
-             <h2 className="text-3xl md:text-4xl font-semibold tracking-tight text-[#1C1C1C] mb-4">Packages Available</h2>
-             <p className="text-sm text-gray-500 leading-relaxed">Discover our curated medical packages that combine expert care, advanced technology, and personalized attention</p>
+             <h2 className="text-3xl md:text-4xl font-medium tracking-tight text-[#1C1C1C] mb-4">Packages Available</h2>
+             <p className="text-sm text-slate-900 leading-relaxed">Discover our carefully designed medical packages that combine expert care, advanced technology, and personalized attention</p>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -843,15 +903,15 @@ export const HospitalPage: React.FC<HospitalPageProps> = ({
                         />
                     </div>
                     <div className="p-5 flex flex-col flex-1">
-                        <h3 className="text-base font-bold text-[#1C1C1C] mb-1">Basic Medical Check-Up</h3>
-                        <p className="text-xs text-gray-500 mb-3">Medical Check-Up</p>
+                        <h3 className="text-base font-medium text-[#1C1C1C] mb-1">Basic Medical Check-Up</h3>
+                        <p className="text-xs text-gray-900 mb-3">Medical Check-Up</p>
                         <div className="flex items-center gap-2 mb-4">
                              <div className="w-5 h-5 rounded-full bg-[#F1FCA7] flex items-center justify-center shrink-0">
                                 <Building2 className="w-3 h-3 text-[#1C1C1C]" />
                              </div>
                              <span className="text-xs text-gray-500 truncate">{hospital.name}</span>
                         </div>
-                        <p className="text-sm font-bold text-[#1C1C1C] mb-5">Rp 400.000</p>
+                        <p className="text-sm font-medium text-[#1C1C1C] mb-5">Rp 400.000</p>
                         <button className="w-full py-2.5 rounded-lg border border-gray-200 text-xs font-medium text-[#1C1C1C] hover:bg-gray-50 transition-colors mt-auto">Overview</button>
                     </div>
                 </div>
@@ -861,7 +921,7 @@ export const HospitalPage: React.FC<HospitalPageProps> = ({
         <div className="flex justify-center mt-12">
             <button
                 onClick={onNavigateToPackages}
-                className="bg-[#1C1C1C] text-white px-8 py-3 rounded-lg font-medium text-sm hover:bg-black transition-colors shadow-lg shadow-black/10"
+                className="bg-[#1C1C1C] text-white px-8 py-2 rounded-lg font-medium text-sm hover:bg-black transition-colors shadow-lg shadow-black/10"
             >
                 View More
             </button>
@@ -873,27 +933,40 @@ export const HospitalPage: React.FC<HospitalPageProps> = ({
       <section className="max-w-7xl mx-auto px-6 py-20">
            <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
             <div className="col-span-1 py-4">
-                <h2 className="text-3xl font-semibold tracking-tight text-gray-900 mb-6 leading-tight">Backed by the country's leading health experts</h2>
-                <p className="text-base text-gray-500 leading-relaxed mb-6">
+                <h2 className="text-3xl font-medium tracking-tight text-gray-900 mb-6 leading-tight">Backed by the country's leading health experts</h2>
+                <p className="text-base text-slate-900 leading-relaxed mb-6">
                     At {hospital.name}, our mission is to provide the best of clinical care. Top medical experts across disciplines are part of our extensive health network. With their broad range of achievements, clinical efficiency, and caring touch, rest assured, you are in the right hands.
                 </p>
             </div>
             <div className="col-span-1 lg:col-span-2 overflow-hidden">
                 <div className="flex gap-6 overflow-x-auto no-scrollbar pb-6">
-                    {[
-                        { name: "Rachel Yew", role: "Chief Executive Officer", img: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=400", uni: "University of Malaysia", exp: "15 Years" },
-                        { name: "Dr. Kelvin Ching", role: "Chief Medical Officer", img: "https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&q=80&w=400", uni: "University of Glasgow", exp: "20 Years" },
-                        { name: "Dr. Kamal Amzan", role: "Chief Operations Officer", img: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&q=80&w=400", uni: "University of Malaya", exp: "MBA Healthcare" }
-                    ].map((exec, i) => (
+                    {(hospitalDetails?.leadership && hospitalDetails.leadership.length > 0
+                      ? hospitalDetails.leadership.slice(0, 3).map((leader, i) => ({
+                          name: leader.name,
+                          role: leader.position,
+                          img: i === 0
+                            ? "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=400"
+                            : i === 1
+                              ? "https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&q=80&w=400"
+                              : "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&q=80&w=400",
+                          uni: "Leading Institution",
+                          exp: "20+ Years"
+                        }))
+                      : [
+                          { name: "Rachel Yew", role: "Chief Executive Officer", img: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=400", uni: "University of Malaysia", exp: "15 Years" },
+                          { name: "Dr. Kelvin Ching", role: "Chief Medical Officer", img: "https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&q=80&w=400", uni: "University of Glasgow", exp: "20 Years" },
+                          { name: "Dr. Kamal Amzan", role: "Chief Operations Officer", img: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&q=80&w=400", uni: "University of Malaya", exp: "MBA Healthcare" }
+                        ]
+                    ).map((exec, i) => (
                         <div key={i} className="min-w-[280px] md:min-w-[320px]">
                             <div className="h-48 overflow-hidden rounded-t-xl bg-gray-100">
                                 <img src={exec.img} className="w-full h-full object-cover object-top hover:scale-105 transition-transform duration-500" />
                             </div>
                             <div className="bg-gray-50 p-6 rounded-b-xl border-x border-b border-gray-100">
-                                <h3 className="font-semibold text-gray-900">{exec.name}</h3>
-                                <p className="text-xs text-gray-500 mb-4">{exec.role}</p>
-                                <p className="text-xs text-gray-500 leading-relaxed mb-4 line-clamp-3">Leading with extensive experience to ensure the highest operational and clinical standards.</p>
-                                <div className="flex flex-col gap-1 text-[10px] text-gray-500">
+                                <h3 className="font-medium text-lg text-gray-900">{exec.name}</h3>
+                                <p className="text-sm text-slate-900 mb-4">{exec.role}</p>
+                                <p className="text-sm text-slate-900 leading-relaxed mb-4 line-clamp-3">Leading with extensive experience to ensure the highest operational and clinical standards.</p>
+                                <div className="flex flex-col gap-1 text-[14px] text-slate-900 font-medium">
                                     <span className="flex items-center"><GraduationCap className="w-3 h-3 mr-1" /> {exec.uni}</span>
                                     <span className="flex items-center"><Award className="w-3 h-3 mr-1" /> {exec.exp}</span>
                                 </div>
@@ -908,7 +981,7 @@ export const HospitalPage: React.FC<HospitalPageProps> = ({
       {/* 6. Expert Health Insights */}
       <section className="max-w-7xl mx-auto px-6 py-16 border-t border-gray-100">
         <div className="text-center max-w-3xl mx-auto mb-12">
-          <h2 className="text-3xl md:text-4xl font-semibold tracking-tight text-[#1C1C1C] mb-4">Expert Health Insights</h2>
+          <h2 className="text-3xl md:text-4xl font-medium tracking-tight text-[#1C1C1C] mb-4">Expert Health Insights</h2>
           <p className="text-sm text-gray-500 leading-relaxed">Learn about trusted insights, tips, and updates from our team of specialists.</p>
         </div>
 
@@ -963,17 +1036,17 @@ export const HospitalPage: React.FC<HospitalPageProps> = ({
                 <div className="flex items-center gap-2 mb-3">
                   <span className="text-xs font-medium text-[#1C1C1C] bg-slate-100 px-2 py-0.5 rounded">{insight.category}</span>
                   <span className="text-xs text-gray-400">•</span>
-                  <span className="text-xs text-gray-500">{insight.readTime}</span>
+                  <span className="text-xs text-slate-900">{insight.readTime}</span>
                 </div>
-                <h3 className="text-base font-semibold text-[#1C1C1C] mb-3 line-clamp-2 leading-snug group-hover:text-slate-700 transition-colors">{insight.title}</h3>
+                <h3 className="text-base font-medium text-[#1C1C1C] mb-3 line-clamp-2 leading-snug group-hover:text-slate-700 transition-colors">{insight.title}</h3>
                 <div className="mt-auto pt-4 border-t border-gray-50 flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <div className="w-6 h-6 rounded-full bg-slate-200 flex items-center justify-center">
                       <Users className="w-3 h-3 text-slate-500" />
                     </div>
-                    <span className="text-xs text-gray-600">{insight.author}</span>
+                    <span className="text-xs text-slate-900">{insight.author}</span>
                   </div>
-                  <div className="flex items-center gap-1 text-xs text-gray-400">
+                  <div className="flex items-center gap-1 text-xs text-slate-900">
                     <Calendar className="w-3 h-3" />
                     <span>{insight.date}</span>
                   </div>
@@ -986,7 +1059,7 @@ export const HospitalPage: React.FC<HospitalPageProps> = ({
         <div className="flex justify-center mt-10">
           <button
             onClick={onNavigateToInsights}
-            className="border border-gray-200 bg-white text-slate-900 px-8 py-3 rounded-lg font-medium text-sm hover:bg-gray-50 transition-colors shadow-sm hover:shadow-md flex items-center gap-2"
+            className="border border-gray-200 bg-white text-slate-900 px-8 py-2 rounded-lg font-medium text-sm hover:bg-gray-50 transition-colors shadow-sm hover:shadow-md flex items-center gap-2"
           >
             <BookOpen className="w-4 h-4" /> View All Insights
           </button>
@@ -1044,31 +1117,31 @@ export const HospitalPage: React.FC<HospitalPageProps> = ({
 
       {/* 8. Explore More Hospitals */}
       <section className="max-w-7xl mx-auto px-6 py-16 border-t border-gray-100">
-        <h2 className="text-2xl font-semibold text-center tracking-tight mb-12">Explore More Hospital</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <h2 className="text-2xl font-medium text-center tracking-tight mb-12">Explore More Hospital</h2>
+        <div className={`grid grid-cols-1 md:grid-cols-2 gap-6 ${isChatOpen ? 'lg:grid-cols-3' : 'lg:grid-cols-4'}`}>
            {exploreMoreHospitals.map((h, i) => (
                <div key={i} className="bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-lg transition-all group cursor-pointer flex flex-col h-full" onClick={() => onNavigateToHospital?.(h)}>
                     <div className="h-48 relative bg-gray-200 overflow-hidden">
                         <img src={h.imageUrl} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" alt={h.name} />
-                        <div className="absolute bottom-2 left-2 bg-[#1A1A1A]/90 backdrop-blur px-2 py-1 rounded flex items-center gap-1 text-white text-[10px]"><span className="font-bold">G</span><Star className="w-2.5 h-2.5 text-yellow-400 fill-yellow-400" /><span className="font-bold">{h.rating}/5</span><span className="text-gray-400">({h.reviewCount} reviews)</span></div>
+                        <div className="absolute bottom-2 left-2 bg-[#1A1A1A]/90 backdrop-blur px-2 py-1 rounded flex items-center gap-1 text-white text-[10px]"><span className="font-medium">G</span><Star className="w-2.5 h-2.5 text-yellow-400 fill-yellow-400" /><span className="font-medium">{h.rating}/5</span><span className="text-gray-400">({h.reviewCount} reviews)</span></div>
                     </div>
                     <div className="p-4 flex flex-col flex-1">
                         <div className="flex justify-between items-start mb-1">
-                            <h3 className="font-bold text-slate-900 text-base line-clamp-1 leading-tight" title={h.name}>{h.name}</h3>
+                            <h3 className="font-medium text-slate-900 text-base line-clamp-1 leading-tight" title={h.name}>{h.name}</h3>
                             <span className="text-slate-400 text-sm font-medium flex shrink-0 ml-2"><span className="text-slate-900">{h.priceRange}</span><span className="opacity-30">{Array(Math.max(0, 3 - h.priceRange.length)).fill('$').join('')}</span></span>
                         </div>
-                        <div className="flex items-center gap-1.5 text-xs text-slate-500 mb-3"><span>{h.country === 'Malaysia' ? '🇲🇾' : h.country === 'Singapore' ? '🇸🇬' : h.country === 'Thailand' ? '🇹🇭' : '🏳️'}</span><span className="truncate">{h.location}, {h.country}</span></div>
+                        <div className="flex items-center gap-1.5 text-xs text-slate-900 mb-3"><span>{h.country === 'Malaysia' ? '🇲🇾' : h.country === 'Singapore' ? '🇸🇬' : h.country === 'Thailand' ? '🇹🇭' : '🏳️'}</span><span className="truncate">{h.location}, {h.country}</span></div>
                         <div className="flex items-center gap-1.5 text-xs font-medium text-slate-700 mb-4"><div className="w-5 h-5 rounded-full bg-[#E4F28A] flex items-center justify-center shrink-0"><Plane className="w-3 h-3 rotate-[-45deg]" /></div><span>Less than 3 hour Away</span></div>
                         <p className="text-xs text-slate-500 leading-relaxed mb-4 line-clamp-3 min-h-[3.5em]">Committed to patient-centered care, {h.name} ensures high-quality treatments tailored to individual needs.</p>
-                        <div className="flex items-center gap-2 text-xs text-slate-600 mb-2"><Languages className="w-3.5 h-3.5 text-slate-400" /><span className="truncate">{h.languages?.slice(0,3).join(', ') || 'English, Local'}</span></div>
-                        <div className="flex items-center justify-between text-[10px] text-slate-500 mb-4 mt-auto pt-3"><div className="flex items-center gap-1.5"><Stethoscope className="w-3.5 h-3.5 text-slate-400" /> 170 specialists</div><div className="flex items-center gap-1.5"><BriefcaseMedical className="w-3.5 h-3.5 text-slate-400" /> {h.specialties.length}+ specialization</div></div>
-                        <button className="w-full py-2.5 rounded-lg border border-gray-200 text-xs font-bold text-slate-900 hover:bg-slate-50 transition-colors">Learn More</button>
+                        <div className="flex items-center gap-2 text-xs text-slate-900 mb-2"><Languages className="w-3.5 h-3.5 text-slate-600" /><span className="truncate">{h.languages?.slice(0,3).join(', ') || 'English, Local'}</span></div>
+                        <div className="flex items-center justify-between text-[12px] text-slate-900 mb-4 mt-auto pt-3"><div className="flex items-center gap-1.5"><Stethoscope className="w-3.5 h-3.5 text-slate-600" /> 170 specialists</div><div className="flex items-center gap-1.5"><BriefcaseMedical className="w-3.5 h-3.5 text-slate-600" /> {h.specialties.length}+ specialization</div></div>
+                        <button className="w-full py-2 rounded-lg border border-gray-200 text-xs font-medium text-slate-900 hover:bg-slate-50 transition-colors">Learn More</button>
                     </div>
                 </div>
            ))}
         </div>
         <div className="flex justify-center mt-8">
-            <button onClick={onNavigateToHospitals} className="border border-gray-200 bg-white text-slate-900 px-8 py-3 rounded-lg font-medium text-sm hover:bg-gray-50 transition-colors shadow-sm hover:shadow-md">Discover More Hospitals</button>
+            <button onClick={onNavigateToHospitals} className="border border-gray-200 bg-white text-slate-900 px-8 py-2 rounded-lg font-medium text-sm hover:bg-gray-50 transition-colors shadow-sm hover:shadow-md">Discover More Hospitals</button>
         </div>
       </section>
       <HealthPotential/>

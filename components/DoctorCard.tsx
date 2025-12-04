@@ -10,7 +10,10 @@ interface DoctorCardProps {
 
 export const DoctorCard: React.FC<DoctorCardProps> = ({ doctor, onViewDetails }) => {
   return (
-    <div className="group bg-white flex flex-col h-full rounded-xl overflow-hidden hover:shadow-lg transition-all duration-300 border border-transparent hover:border-slate-100">
+    <div
+      className="group bg-white flex flex-col h-full rounded-xl overflow-hidden hover:shadow-lg transition-all duration-300 border border-transparent hover:border-slate-100 cursor-pointer"
+      onClick={() => onViewDetails?.(doctor)}
+    >
         <div className="h-48 bg-gray-100 overflow-hidden relative mb-4">
             <img 
                 src={doctor.imageUrl} 
@@ -52,8 +55,11 @@ export const DoctorCard: React.FC<DoctorCardProps> = ({ doctor, onViewDetails })
                 </div>
             </div>
 
-            <button 
-                onClick={() => onViewDetails?.(doctor)}
+            <button
+                onClick={(e) => {
+                    e.stopPropagation();
+                    onViewDetails?.(doctor);
+                }}
                 className="w-full mt-5 border border-gray-200 text-sm font-medium text-gray-700 py-2.5 rounded-lg hover:bg-gray-50 hover:border-gray-300 transition-all hover:bg-slate-50"
             >
                 Overview

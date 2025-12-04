@@ -195,7 +195,7 @@ export const Hero: React.FC<HeroProps> = ({ onQuickSearch }) => {
                         </div>
                     </div>
 
-                    <h2 className="text-2xl font-bold text-slate-900 mb-2 text-center tracking-tight">
+                    <h2 className="text-2xl font-medium text-slate-900 mb-2 text-center tracking-tight">
                         {loadingPhase === 0 && t("Accessing Global Database...")}
                         {loadingPhase === 1 && t("Analyzing Medical Network...")}
                         {loadingPhase === 2 && t("Matches Found")}
@@ -249,7 +249,7 @@ export const Hero: React.FC<HeroProps> = ({ onQuickSearch }) => {
             
             {/* Hero Text */}
             <div className="text-center max-w-4xl mx-auto mb-8 md:mb-10">
-                <h1 className="text-3xl md:text-5xl lg:text-6xl font-semibold tracking-tight text-slate-900 mb-4 leading-[1.1]">
+                <h1 className="text-3xl md:text-5xl lg:text-6xl font-medium tracking-tight text-slate-900 mb-4 leading-[1.1]">
                     {t('Access world-class healthcare beyond borders.')}
                 </h1>
                 <p className="text-base md:text-xl text-[#867676] font-normal max-w-2xl mx-auto leading-relaxed">
@@ -471,7 +471,7 @@ export const Hero: React.FC<HeroProps> = ({ onQuickSearch }) => {
                                         value={origin} 
                                         onChange={(e) => setOrigin(e.target.value)}
                                         onClick={(e) => e.stopPropagation()}
-                                        className="bg-transparent border-none p-0 w-20 text-xs font-semibold text-slate-800 focus:ring-0"
+                                        className="bg-transparent border-none p-0 w-20 text-xs font-medium text-slate-800 focus:ring-0"
                                         placeholder={t('City')}
                                     />
                                 )}
@@ -483,7 +483,7 @@ export const Hero: React.FC<HeroProps> = ({ onQuickSearch }) => {
                                 <input 
                                     value={destination} 
                                     onChange={(e) => setDestination(e.target.value)}
-                                    className="bg-transparent border-none p-0 w-20 text-xs font-semibold text-slate-800 focus:ring-0"
+                                    className="bg-transparent border-none p-0 w-20 text-xs font-medium text-slate-800 focus:ring-0"
                                     placeholder={t('Anywhere')}
                                 />
                             </button>
@@ -497,7 +497,7 @@ export const Hero: React.FC<HeroProps> = ({ onQuickSearch }) => {
                         <button 
                             onClick={handleSubmit}
                             disabled={isSearching}
-                            className="bg-[#D9F850] hover:bg-[#cdf034] text-slate-900 text-sm font-bold px-5 py-2 rounded-xl shadow-[0_2px_10px_rgba(217,248,80,0.4)] transition-all flex items-center justify-center gap-2 active:scale-95 active:shadow-none disabled:opacity-70 disabled:cursor-not-allowed"
+                            className="bg-[#D9F850] hover:bg-[#cdf034] text-slate-900 text-sm font-medium px-5 py-2 rounded-xl shadow-[0_2px_10px_rgba(217,248,80,0.4)] transition-all flex items-center justify-center gap-2 active:scale-95 active:shadow-none disabled:opacity-70 disabled:cursor-not-allowed"
                         >
                             {isSearching ? t('Processing...') : t('Generate')}
                             {!isSearching && <Sparkles className="w-3.5 h-3.5" />}

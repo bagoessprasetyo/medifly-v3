@@ -10,7 +10,7 @@ export const Footer: React.FC = () => {
                 
                 {/* Support */}
                 <div className="space-y-3">
-                    <h3 className="font-bold text-base">Support</h3>
+                    <h3 className="font-medium text-base">Support</h3>
                     <ul className="space-y-2">
                         <li><a href="#" className="hover:underline hover:text-blue-600 transition-colors">Manage your trips</a></li>
                         <li><a href="#" className="hover:underline hover:text-blue-600 transition-colors">Contact Customer Service</a></li>
@@ -20,7 +20,7 @@ export const Footer: React.FC = () => {
 
                 {/* Discover */}
                 <div className="space-y-3">
-                    <h3 className="font-bold text-base">Discover</h3>
+                    <h3 className="font-medium text-base">Discover</h3>
                     <ul className="space-y-2">
                         <li><a href="#" className="hover:underline hover:text-blue-600 transition-colors">Genius loyalty program</a></li>
                         <li><a href="#" className="hover:underline hover:text-blue-600 transition-colors">Seasonal and holiday deals</a></li>
@@ -36,7 +36,7 @@ export const Footer: React.FC = () => {
 
                 {/* Terms and settings */}
                 <div className="space-y-3">
-                    <h3 className="font-bold text-base">Terms and settings</h3>
+                    <h3 className="font-medium text-base">Terms and settings</h3>
                     <ul className="space-y-2">
                         <li><a href="#" className="hover:underline hover:text-blue-600 transition-colors">Privacy Notice</a></li>
                         <li><a href="#" className="hover:underline hover:text-blue-600 transition-colors">Terms of Service</a></li>
@@ -49,7 +49,7 @@ export const Footer: React.FC = () => {
 
                 {/* Partners */}
                 <div className="space-y-3">
-                    <h3 className="font-bold text-base">Partners</h3>
+                    <h3 className="font-medium text-base">Partners</h3>
                     <ul className="space-y-2">
                         <li><a href="#" className="hover:underline hover:text-blue-600 transition-colors">Extranet login</a></li>
                         <li><a href="#" className="hover:underline hover:text-blue-600 transition-colors">Partner help</a></li>
@@ -60,7 +60,7 @@ export const Footer: React.FC = () => {
 
                 {/* About */}
                 <div className="space-y-3">
-                    <h3 className="font-bold text-base">About</h3>
+                    <h3 className="font-medium text-base">About</h3>
                     <ul className="space-y-2">
                         <li><a href="#" className="hover:underline hover:text-blue-600 transition-colors">About Medifly</a></li>
                         <li><a href="#" className="hover:underline hover:text-blue-600 transition-colors">How We Work</a></li>
@@ -97,8 +97,8 @@ export const Footer: React.FC = () => {
                 
                 {/* Partner Logos (Styled Text Representations) */}
                 <div className="flex flex-wrap justify-center items-center gap-8 opacity-70 grayscale hover:grayscale-0 transition-all duration-500">
-                    <span className="font-bold text-xl text-[#003580] tracking-tight">Booking.com</span>
-                    <span className="font-bold text-xl text-[#0068EF] tracking-tight">priceline</span>
+                    <span className="font-medium text-xl text-[#003580] tracking-tight">Booking.com</span>
+                    <span className="font-medium text-xl text-[#0068EF] tracking-tight">priceline</span>
                     <span className="font-extrabold text-xl text-[#FF690F] tracking-tight">KAYAK</span>
                     <div className="flex items-center gap-1">
                         <div className="flex gap-0.5">
@@ -107,11 +107,11 @@ export const Footer: React.FC = () => {
                             <div className="w-2 h-2 rounded-full bg-[#E5AA30]"></div>
                             <div className="w-2 h-2 rounded-full bg-[#D64644]"></div>
                         </div>
-                        <span className="font-bold text-xl text-slate-800 tracking-tight">agoda</span>
+                        <span className="font-medium text-xl text-slate-800 tracking-tight">agoda</span>
                     </div>
                     <div className="flex items-center gap-1">
                         <div className="w-3 h-3 rounded-full bg-[#DA3743]"></div>
-                        <span className="font-bold text-xl text-slate-800 tracking-tight">OpenTable</span>
+                        <span className="font-medium text-xl text-slate-800 tracking-tight">OpenTable</span>
                     </div>
                 </div>
             </div>

@@ -89,7 +89,7 @@ export const SpecializationDetailsPage: React.FC<SpecializationDetailsPageProps>
           <ChevronRight className="w-4 h-4 text-slate-300" />
           <span className="cursor-pointer hover:text-slate-900 transition-colors" onClick={onBack}>Specializations</span>
           <ChevronRight className="w-4 h-4 text-slate-300" />
-          <span className="font-semibold text-slate-900">{specializationName}</span>
+          <span className="font-medium text-slate-900">{specializationName}</span>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
@@ -109,7 +109,7 @@ export const SpecializationDetailsPage: React.FC<SpecializationDetailsPageProps>
             </div>
 
             {/* Title & Header Info */}
-            <h1 className="text-3xl md:text-4xl font-bold text-slate-900 mb-2 tracking-tight leading-tight">{specializationName}</h1>
+            <h1 className="text-3xl md:text-4xl font-medium text-slate-900 mb-2 tracking-tight leading-tight">{specializationName}</h1>
             <p className="text-base font-medium text-slate-600 mb-4">Department of {specializationName}</p>
 
             <div className="flex items-center gap-2 text-sm text-slate-500 mb-8">
@@ -121,7 +121,7 @@ export const SpecializationDetailsPage: React.FC<SpecializationDetailsPageProps>
               <span>{hospital.name}, {hospital.location}, {hospital.country}</span>
             </div>
 
-            <button className="bg-[#1C1C1C] text-white px-8 py-3.5 rounded-xl font-semibold text-sm hover:bg-black transition-colors shadow-lg shadow-slate-900/10 mb-12">
+            <button className="bg-[#1C1C1C] text-white px-8 py-3.5 rounded-xl font-medium text-sm hover:bg-black transition-colors shadow-lg shadow-slate-900/10 mb-12">
               Request Treatment Info
             </button>
 
@@ -132,7 +132,7 @@ export const SpecializationDetailsPage: React.FC<SpecializationDetailsPageProps>
 
             {/* Conditions We Treat */}
             <section className="mb-10 pb-10 border-b border-slate-100">
-              <h3 className="flex items-center gap-2 text-lg font-bold text-slate-900 mb-4">
+              <h3 className="flex items-center gap-2 text-lg font-medium text-slate-900 mb-4">
                 <Stethoscope className="w-5 h-5 text-slate-400" /> Conditions We Treat
               </h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -147,7 +147,7 @@ export const SpecializationDetailsPage: React.FC<SpecializationDetailsPageProps>
 
             {/* Treatments */}
             <section className="mb-10 pb-10 border-b border-slate-100">
-              <h3 className="flex items-center gap-2 text-lg font-bold text-slate-900 mb-4">
+              <h3 className="flex items-center gap-2 text-lg font-medium text-slate-900 mb-4">
                 <Activity className="w-5 h-5 text-slate-400" /> Treatments
               </h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -166,7 +166,7 @@ export const SpecializationDetailsPage: React.FC<SpecializationDetailsPageProps>
 
             {/* Facilities */}
             <section className="mb-10 pb-10 border-b border-slate-100">
-              <h3 className="flex items-center gap-2 text-lg font-bold text-slate-900 mb-4">
+              <h3 className="flex items-center gap-2 text-lg font-medium text-slate-900 mb-4">
                 <FileText className="w-5 h-5 text-slate-400" /> Facilities
               </h3>
               <ul className="space-y-3">
@@ -181,7 +181,7 @@ export const SpecializationDetailsPage: React.FC<SpecializationDetailsPageProps>
 
             {/* Specialists */}
             <section className="mb-16">
-              <h3 className="flex items-center gap-2 text-lg font-bold text-slate-900 mb-6">
+              <h3 className="flex items-center gap-2 text-lg font-medium text-slate-900 mb-6">
                 <Info className="w-5 h-5 text-slate-400" /> Our Specialists
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -191,7 +191,7 @@ export const SpecializationDetailsPage: React.FC<SpecializationDetailsPageProps>
                       <img src={doctor.imageUrl} alt={doctor.name} className="h-full object-contain mix-blend-multiply" />
                     </div>
                     <div className="p-4 flex-1 flex flex-col">
-                      <h4 className="font-semibold text-sm mb-1">{doctor.name}</h4>
+                      <h4 className="font-medium text-sm mb-1">{doctor.name}</h4>
                       <div className="text-xs text-slate-500 mb-2">{doctor.specialty}</div>
                       <div className="flex items-center gap-2 text-[10px] text-slate-500 mb-1">
                         <Briefcase className="w-3 h-3 text-slate-400" />
@@ -215,7 +215,7 @@ export const SpecializationDetailsPage: React.FC<SpecializationDetailsPageProps>
 
             {/* FAQ */}
             <section>
-              <h2 className="text-3xl font-bold text-slate-900 mb-8">Frequently Asked Question</h2>
+              <h2 className="text-3xl font-medium text-slate-900 mb-8">Frequently Asked Question</h2>
               <div className="space-y-4 border-t border-slate-100 pt-4">
                 {content.faqs.map((q, i) => (
                   <div key={i} className="border-b border-slate-100 pb-4">
@@ -246,7 +246,7 @@ export const SpecializationDetailsPage: React.FC<SpecializationDetailsPageProps>
                 <div className="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center">
                   <Building2 className="w-5 h-5 text-slate-900" />
                 </div>
-                <h3 className="text-lg font-bold text-slate-900">Hospital</h3>
+                <h3 className="text-lg font-medium text-slate-900">Hospital</h3>
               </div>
 
               <div className="rounded-xl overflow-hidden mb-4 relative h-32 bg-slate-100">
@@ -257,10 +257,10 @@ export const SpecializationDetailsPage: React.FC<SpecializationDetailsPageProps>
 
               <div className="flex items-start gap-3 mb-4">
                 <div className="w-10 h-10 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center shrink-0">
-                  <span className="text-[10px] font-bold text-slate-600">{hospital.name.substring(0,2).toUpperCase()}</span>
+                  <span className="text-[10px] font-medium text-slate-600">{hospital.name.substring(0,2).toUpperCase()}</span>
                 </div>
                 <div>
-                  <h4 className="font-semibold text-slate-900 text-sm leading-tight mb-1">{hospital.name}</h4>
+                  <h4 className="font-medium text-slate-900 text-sm leading-tight mb-1">{hospital.name}</h4>
                   <div className="flex items-center gap-1.5 text-xs text-slate-500">
                     <span className="text-base">
                       {hospital.country === 'Thailand' ? '🇹🇭' :
@@ -278,7 +278,7 @@ export const SpecializationDetailsPage: React.FC<SpecializationDetailsPageProps>
 
               <button
                 onClick={onNavigateToHospital}
-                className="w-full py-3 rounded-lg border border-slate-200 text-slate-700 font-semibold text-sm hover:bg-slate-50 transition-colors"
+                className="w-full py-3 rounded-lg border border-slate-200 text-slate-700 font-medium text-sm hover:bg-slate-50 transition-colors"
               >
                 View Hospital
               </button>

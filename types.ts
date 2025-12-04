@@ -18,6 +18,47 @@ export interface Hospital {
   languages?: string[]; // Supported languages at the hospital
 }
 
+export interface HospitalAward {
+  year: string;
+  title: string;
+  org: string;
+}
+
+export interface HospitalLeader {
+  position: string;
+  name: string;
+}
+
+export interface HospitalDoctor {
+  id: string;
+  name: string;
+  role: string;
+  specialization: string;
+  subSpecialization: string;
+  experience: number;
+  surgeries: number;
+  fellowship: string;
+  availability: string;
+  about: string;
+  achievements: string;
+  publications: string;
+  conditions: string[];
+  treatments: string[];
+  imageUrl: string;
+}
+
+export interface HospitalDetails {
+  hospitalId: string;
+  fullAddress: string;
+  postalCode: string;
+  yearEstablished: number;
+  fullDescription: string;
+  awards: HospitalAward[];
+  insurancePartners: string[];
+  leadership: HospitalLeader[];
+  doctors: HospitalDoctor[];
+}
+
 export interface Doctor {
   id: string;
   name: string;

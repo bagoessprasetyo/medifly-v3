@@ -87,7 +87,28 @@ He also received advanced specialization training in modern technologies. He is 
     "Are consultations available in multiple languages?"
   ];
 
-  const relatedDoctors = DOCTORS.filter(d => d.id !== doctor.id && d.specialty === doctor.specialty).slice(0, 4);
+  // Get related doctors - prioritize same specialty, then same hospital, then fill with other doctors
+  const relatedDoctors = (() => {
+    const sameSpecialty = DOCTORS.filter(d => d.id !== doctor.id && d.specialty === doctor.specialty);
+    if (sameSpecialty.length >= 4) return sameSpecialty.slice(0, 4);
+
+    // If not enough, add doctors from the same hospital
+    const sameHospital = DOCTORS.filter(d =>
+      d.id !== doctor.id &&
+      d.specialty !== doctor.specialty &&
+      d.hospitalName === doctor.hospitalName
+    );
+    const combined = [...sameSpecialty, ...sameHospital];
+    if (combined.length >= 4) return combined.slice(0, 4);
+
+    // If still not enough, add other doctors
+    const others = DOCTORS.filter(d =>
+      d.id !== doctor.id &&
+      d.specialty !== doctor.specialty &&
+      d.hospitalName !== doctor.hospitalName
+    );
+    return [...combined, ...others].slice(0, 4);
+  })();
   
   // Find linked hospital object for image/data
   const hospitalData = HOSPITALS.find(h => h.id === doctor.hospitalId || h.name === doctor.hospitalName);

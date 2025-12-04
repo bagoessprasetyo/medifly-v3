@@ -10,7 +10,7 @@ export const HealthPotential: React.FC = () => {
     <section className="max-w-[1400px] mx-auto px-20 py-20 lg:py-24 bg-white">
       {/* Header Section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-20 mb-16 items-start">
-        <h1 className="text-4xl lg:text-6xl font-semibold tracking-tight leading-[1.1] text-slate-900">
+        <h1 className="text-4xl lg:text-6xl font-medium tracking-tight leading-[1.1] text-slate-900">
           {t('Unlock your Global')} <br className="hidden lg:block" /> {t('Health Potential')}
         </h1>
         <div className="max-w-xl">

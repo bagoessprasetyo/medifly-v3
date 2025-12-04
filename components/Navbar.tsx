@@ -114,8 +114,8 @@ export const Navbar: React.FC<NavbarProps> = ({
                 <div className="hidden lg:block">
                     <LanguageSelector />
                 </div>
-                <button className="text-sm font-medium bg-slate-900 text-white px-5 py-2.5 rounded-full hover:bg-slate-800 transition-colors shadow-sm hover:shadow-md">
-                    {t('Sign in')}
+                <button className="text-sm font-medium bg-slate-900 text-white px-5 py-2.5 rounded-lg hover:bg-slate-800 transition-colors shadow-sm hover:shadow-md">
+                    {t('Get Started')}
                 </button>
             </div>
 

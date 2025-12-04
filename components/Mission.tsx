@@ -17,7 +17,7 @@ export const Mission: React.FC = () => {
                 
                 {/* Headline Column */}
                 <div className="lg:col-span-5 flex flex-col gap-6 animate-in fade-in slide-in-from-bottom-8 duration-1000 fill-mode-forwards">
-                    <h2 className="text-3xl md:text-4xl lg:text-5xl font-semibold tracking-tight leading-[1.1] text-[#1a1a1a]">
+                    <h2 className="text-3xl md:text-4xl lg:text-5xl font-medium tracking-tight leading-[1.1] text-[#1a1a1a]">
                         {t('We’re on a mission to make global healthcare accessible for everyone')}
                     </h2>
                 </div>

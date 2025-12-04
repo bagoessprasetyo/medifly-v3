@@ -135,17 +135,7 @@ export const FacilityGalleryPage: React.FC<FacilityGalleryPageProps> = ({ hospit
     <div className="bg-white min-h-screen pb-20 font-sans text-slate-900">
       
       {/* Sub-Header Actions */}
-      <div className="max-w-7xl mx-auto px-6 py-6 flex justify-between items-center sticky top-20 bg-white/95 backdrop-blur-sm z-30 border-b border-transparent transition-all">
-       
-        <div className="flex gap-2">
-           <button className="flex items-center gap-2 px-3 py-2 hover:bg-slate-100 rounded-lg text-sm font-medium text-slate-700 underline decoration-slate-200 decoration-2 underline-offset-4 hover:decoration-slate-400 transition-all">
-              <Share className="w-4 h-4" /> <span className="hidden sm:inline">Share</span>
-           </button>
-           <button className="flex items-center gap-2 px-3 py-2 hover:bg-slate-100 rounded-lg text-sm font-medium text-slate-700 underline decoration-slate-200 decoration-2 underline-offset-4 hover:decoration-slate-400 transition-all">
-              <Heart className="w-4 h-4" /> <span className="hidden sm:inline">Save</span>
-           </button>
-        </div>
-      </div>
+      
 
       <div className="max-w-7xl mx-auto px-6 mt-4">
         {/* Breadcrumb & Title */}
@@ -153,7 +143,7 @@ export const FacilityGalleryPage: React.FC<FacilityGalleryPageProps> = ({ hospit
             <div className="flex items-center gap-2 text-sm text-slate-500 mb-4">
                 <span>{hospital.name}</span>
                 <ChevronRight className="w-4 h-4 text-slate-300" />
-                <span className="font-semibold text-slate-900">Facilities</span>
+                <span className="font-medium text-slate-900">Facilities</span>
             </div>
             <div className="flex px-2 items-center flex-row">
                  <button 
@@ -163,7 +153,7 @@ export const FacilityGalleryPage: React.FC<FacilityGalleryPageProps> = ({ hospit
                     >
                     <ArrowLeft className="w-5 h-5 text-slate-900 group-hover:-translate-x-0.5 transition-transform" />
                 </button>
-                <h1 className="text-4xl md:text-5xl font-bold text-slate-900 tracking-tight ">
+                <h1 className="text-4xl md:text-5xl font-medium text-slate-900 tracking-tight ">
                     Facilities
                 </h1>
             </div>
@@ -177,7 +167,7 @@ export const FacilityGalleryPage: React.FC<FacilityGalleryPageProps> = ({ hospit
                         key={idx}
                         onClick={() => setActiveTab(idx)}
                         className={`
-                            px-8 py-5 text-sm font-semibold whitespace-nowrap border-b-2 transition-all duration-200
+                            px-8 py-5 text-sm font-medium whitespace-nowrap border-b-2 transition-all duration-200
                             ${activeTab === idx 
                                 ? 'border-slate-900 text-slate-900 bg-[#F1EDEA]' 
                                 : 'border-transparent text-slate-500 hover:text-slate-800 hover:bg-slate-50'}
@@ -207,7 +197,7 @@ export const FacilityGalleryPage: React.FC<FacilityGalleryPageProps> = ({ hospit
 
             {/* Right Column: List */}
             <div>
-                <h2 className="text-2xl font-bold text-slate-900 mb-8">{currentCategory.title}</h2>
+                <h2 className="text-2xl font-medium text-slate-900 mb-8">{currentCategory.title}</h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-5">
                     {currentCategory.items.map((item, idx) => (
                         <div 
@@ -215,7 +205,7 @@ export const FacilityGalleryPage: React.FC<FacilityGalleryPageProps> = ({ hospit
                             className="flex items-start gap-3 group cursor-pointer p-2 rounded-lg hover:bg-slate-50 transition-colors"
                             onClick={() => onViewFacilityDetails?.(item)}
                         >
-                            <CheckCircle2 className="w-5 h-5 text-slate-300 group-hover:text-slate-900 mt-0.5 transition-colors flex-shrink-0" />
+                            <CheckCircle2 className="w-5 h-5 text-slate-900 group-hover:text-slate-900 mt-0.5 transition-colors flex-shrink-0" />
                             <span className="text-sm text-slate-600 group-hover:text-slate-900 transition-colors leading-relaxed font-medium">
                                 {item}
                             </span>

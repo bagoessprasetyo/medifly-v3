@@ -96,7 +96,7 @@ export const MedicalTeam: React.FC = () => {
                                 </div>
                                 
                                 <h3 className="text-xl font-medium text-gray-900">{member.name}</h3>
-                                <p className="text-sm text-gray-500 mt-1 font-normal">{member.role}</p>
+                                <p className="text-md text-slate-900 mt-1 font-normal">{member.role}</p>
                                 
                                 <p className="text-base text-gray-500 mt-5 leading-relaxed font-light min-h-[4.5em]">
                                     {member.desc}
@@ -104,7 +104,7 @@ export const MedicalTeam: React.FC = () => {
                                 
                                 <div className="mt-6 space-y-3">
                                     {member.education.map((edu, i) => (
-                                        <div key={i} className="flex items-center gap-3 text-gray-600">
+                                        <div key={i} className="flex items-center gap-3 text-slate-900">
                                             <GraduationCap className="w-5 h-5 stroke-[1.5]" />
                                             <span className="text-sm">{edu}</span>
                                         </div>

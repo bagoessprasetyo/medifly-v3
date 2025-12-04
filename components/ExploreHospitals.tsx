@@ -85,7 +85,7 @@ export const ExploreHospitals: React.FC = () => {
   return (
     <section className="pl-24 mx-auto px-6 py-20 bg-white text-gray-900 antialiased">
         <div className="flex items-center justify-between mb-10">
-            <h1 className="text-3xl md:text-4xl font-semibold tracking-tight text-gray-900">{t('Explore hospitals around the world')}</h1>
+            <h1 className="text-3xl md:text-4xl font-medium tracking-tight text-gray-900">{t('Explore hospitals around the world')}</h1>
             
             {/* Navigation Buttons */}
             <div className="flex gap-3 pr-20">
@@ -137,7 +137,7 @@ export const ExploreHospitals: React.FC = () => {
                     <div className="mt-5 flex-1 flex flex-col">
                         <div className="flex items-center gap-2 mb-2">
                             <span className="text-xl">{country.flag}</span>
-                            <h3 className="text-lg font-semibold text-gray-900">{t(country.name)}</h3>
+                            <h3 className="text-lg font-medium text-gray-900">{t(country.name)}</h3>
                         </div>
                         
                         <p className="text-sm text-gray-500 leading-relaxed min-h-[3em]">
@@ -148,21 +148,21 @@ export const ExploreHospitals: React.FC = () => {
                         <div className="flex flex-wrap gap-3 mt-4">
                             <div className="flex items-center gap-2 border border-gray-200 rounded-lg px-3 py-2">
                                 <Stethoscope className="w-3.5 h-3.5 text-gray-500" />
-                                <span className="text-xs font-medium text-gray-600">{country.stats.specialists} {t('Specialists')}</span>
+                                <span className="text-xs font-medium text-slate-900">{country.stats.specialists} {t('Specialists')}</span>
                             </div>
                             <div className="flex items-center gap-2 border border-gray-200 rounded-lg px-3 py-2">
                                 <Building2 className="w-3.5 h-3.5 text-gray-500" />
-                                <span className="text-xs font-medium text-gray-600">{country.stats.hospitals} {t('Hospitals')}</span>
+                                <span className="text-xs font-medium text-slate-900">{country.stats.hospitals} {t('Hospitals')}</span>
                             </div>
                         </div>
 
                         {/* Popular Searches */}
                         <div className="mt-5">
-                            <p className="text-xs font-medium text-gray-400 mb-2.5 uppercase tracking-wide">{t('Popular Searches:')}</p>
+                            <p className="text-xs font-medium text-slate-900 mb-2.5 uppercase tracking-wide">{t('Popular Searches:')}</p>
                             <ul className="space-y-2">
                                 {country.searches.map((search, i) => (
-                                    <li key={i} className="flex items-start gap-2 text-xs text-gray-500 hover:text-gray-900 transition-colors cursor-pointer group/link">
-                                        <Search className="w-3 h-3 mt-0.5 text-gray-400 group-hover/link:text-gray-600 shrink-0" />
+                                    <li key={i} className="flex items-start gap-2 text-xs text-slate-900 hover:text-gray-900 transition-colors cursor-pointer group/link">
+                                        <Search className="w-3 h-3 mt-0.5 text-slate-900 group-hover/link:text-gray-600 shrink-0" />
                                         {t(search)}
                                     </li>
                                 ))}
