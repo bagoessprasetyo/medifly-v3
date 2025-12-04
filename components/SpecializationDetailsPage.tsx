@@ -218,7 +218,7 @@ export const SpecializationDetailsPage: React.FC<SpecializationDetailsPageProps>
         <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-16 items-center">
           {/* Left Content */}
           <div className="space-y-6">
-            <h2 className="text-4xl lg:text-5xl font-semibold text-gray-900 tracking-tight leading-[1.1]">
+            <h2 className="text-4xl lg:text-5xl font-medium text-gray-900 tracking-tight leading-[1.1]">
               Conditions We Treat
             </h2>
             <p className="text-lg leading-relaxed text-gray-500 max-w-lg">
@@ -266,8 +266,8 @@ export const SpecializationDetailsPage: React.FC<SpecializationDetailsPageProps>
       <section className="bg-[#F4F0EE] py-24 px-6">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16 space-y-4">
-            <span className="uppercase tracking-widest text-xs font-semibold text-gray-500">Treatments</span>
-            <h2 className="text-3xl lg:text-4xl font-semibold text-gray-900 tracking-tight leading-tight max-w-2xl mx-auto">
+            <span className="uppercase tracking-widest text-xs font-medium text-gray-500">Treatments</span>
+            <h2 className="text-3xl lg:text-4xl font-medium text-gray-900 tracking-tight leading-tight max-w-2xl mx-auto">
               Comprehensive care utilizing the latest medical advancements.
             </h2>
           </div>
@@ -279,7 +279,7 @@ export const SpecializationDetailsPage: React.FC<SpecializationDetailsPageProps>
                 onClick={() => onNavigateToTreatment?.(treatment)}
                 className="bg-white p-6 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-300 flex items-center cursor-pointer"
               >
-                <h3 className="text-lg font-semibold text-gray-900">{treatment}</h3>
+                <h3 className="text-lg font-medium text-gray-900">{treatment}</h3>
               </div>
             ))}
           </div>
@@ -290,7 +290,7 @@ export const SpecializationDetailsPage: React.FC<SpecializationDetailsPageProps>
       <section className="bg-white py-24 px-6">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16 space-y-4">
-            <h2 className="text-3xl lg:text-4xl font-semibold text-gray-900 tracking-tight leading-tight">
+            <h2 className="text-3xl lg:text-4xl font-medium text-gray-900 tracking-tight leading-tight">
               Specialists Ready for Your <br className="hidden sm:block" /> {specializationName} Journey
             </h2>
             <p className="text-base text-gray-500">Access expert doctors behind hundreds of advanced procedures.</p>
@@ -311,7 +311,7 @@ export const SpecializationDetailsPage: React.FC<SpecializationDetailsPageProps>
                   />
                 </div>
                 <div className="pt-5 pb-2 space-y-3">
-                  <h3 className="text-lg font-semibold text-gray-900">{doctor.name}</h3>
+                  <h3 className="text-lg font-medium text-gray-900">{doctor.name}</h3>
                   <div className="flex items-center gap-2 text-xs font-medium text-gray-600">
                     <span className="w-4 h-4 rounded-full bg-red-100 flex items-center justify-center text-[10px]">
                       {doctor.hospitalCountry === 'Malaysia' ? '🇲🇾' :
@@ -342,7 +342,7 @@ export const SpecializationDetailsPage: React.FC<SpecializationDetailsPageProps>
                       e.stopPropagation();
                       onNavigateToDoctor(doctor);
                     }}
-                    className="w-full mt-4 py-2 rounded-lg border border-gray-200 text-xs font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
+                    className="w-full mt-4 py-2 rounded-lg border border-gray-200 text-xs font-medium text-gray-700 hover:bg-gray-50 transition-colors"
                   >
                     Overview
                   </button>
@@ -356,7 +356,7 @@ export const SpecializationDetailsPage: React.FC<SpecializationDetailsPageProps>
       {/* Section 4: Facilities */}
       <section className="bg-[#F4F0EE] py-24 px-6">
         <div className="max-w-7xl mx-auto">
-          <h2 className="text-3xl lg:text-4xl font-semibold text-gray-900 tracking-tight text-center mb-16">Facilities</h2>
+          <h2 className="text-3xl lg:text-4xl font-medium text-gray-900 tracking-tight text-center mb-16">Facilities</h2>
 
           <div className="bg-white rounded-2xl p-12 max-w-4xl mx-auto shadow-sm">
             <div className="grid md:grid-cols-2 gap-12">
@@ -401,7 +401,7 @@ export const SpecializationDetailsPage: React.FC<SpecializationDetailsPageProps>
       <section className="bg-white py-24 px-6 pb-32">
         <div className="max-w-7xl mx-auto">
           <div className="mb-16">
-            <h2 className="text-3xl lg:text-4xl font-semibold text-gray-900 tracking-tight leading-tight mb-4">
+            <h2 className="text-3xl lg:text-4xl font-medium text-gray-900 tracking-tight leading-tight mb-4">
               Insights That Advance <br className="hidden sm:block" /> {specializationName} Care
             </h2>
             <p className="text-lg text-gray-500 max-w-2xl">
@@ -422,12 +422,12 @@ export const SpecializationDetailsPage: React.FC<SpecializationDetailsPageProps>
                   alt="Article"
                 />
                 <div className="absolute top-4 left-4 flex gap-2">
-                  <span className="bg-white/90 backdrop-blur-sm px-2 py-1 text-[10px] font-semibold rounded text-gray-900 uppercase tracking-wide">Article</span>
-                  <span className="bg-white/90 backdrop-blur-sm px-2 py-1 text-[10px] font-semibold rounded text-gray-900 uppercase tracking-wide">{specializationName}</span>
+                  <span className="bg-white/90 backdrop-blur-sm px-2 py-1 text-[10px] font-medium rounded text-gray-900 uppercase tracking-wide">Article</span>
+                  <span className="bg-white/90 backdrop-blur-sm px-2 py-1 text-[10px] font-medium rounded text-gray-900 uppercase tracking-wide">{specializationName}</span>
                 </div>
               </div>
               <div className="p-6 flex flex-col flex-grow">
-                <h3 className="text-base font-semibold text-gray-900 mb-8 leading-snug">
+                <h3 className="text-base font-medium text-gray-900 mb-8 leading-snug">
                   Latest advances in {specializationName.toLowerCase()} treatment options at leading hospitals
                 </h3>
                 <div className="mt-auto flex items-center justify-between text-xs font-medium text-gray-500">
@@ -449,12 +449,12 @@ export const SpecializationDetailsPage: React.FC<SpecializationDetailsPageProps>
                   alt="Article"
                 />
                 <div className="absolute top-4 left-4 flex gap-2">
-                  <span className="bg-white/90 backdrop-blur-sm px-2 py-1 text-[10px] font-semibold rounded text-gray-900 uppercase tracking-wide">Article</span>
-                  <span className="bg-white/90 backdrop-blur-sm px-2 py-1 text-[10px] font-semibold rounded text-gray-900 uppercase tracking-wide">{specializationName}</span>
+                  <span className="bg-white/90 backdrop-blur-sm px-2 py-1 text-[10px] font-medium rounded text-gray-900 uppercase tracking-wide">Article</span>
+                  <span className="bg-white/90 backdrop-blur-sm px-2 py-1 text-[10px] font-medium rounded text-gray-900 uppercase tracking-wide">{specializationName}</span>
                 </div>
               </div>
               <div className="p-6 flex flex-col flex-grow">
-                <h3 className="text-base font-semibold text-gray-900 mb-8 leading-snug">
+                <h3 className="text-base font-medium text-gray-900 mb-8 leading-snug">
                   Understanding {specializationName.toLowerCase()} procedures and what to expect during treatment
                 </h3>
                 <div className="mt-auto flex items-center justify-between text-xs font-medium text-gray-500">
@@ -476,12 +476,12 @@ export const SpecializationDetailsPage: React.FC<SpecializationDetailsPageProps>
                   alt="Article"
                 />
                 <div className="absolute top-4 left-4 flex gap-2">
-                  <span className="bg-white/90 backdrop-blur-sm px-2 py-1 text-[10px] font-semibold rounded text-gray-900 uppercase tracking-wide">Article</span>
-                  <span className="bg-white/90 backdrop-blur-sm px-2 py-1 text-[10px] font-semibold rounded text-gray-900 uppercase tracking-wide">{specializationName}</span>
+                  <span className="bg-white/90 backdrop-blur-sm px-2 py-1 text-[10px] font-medium rounded text-gray-900 uppercase tracking-wide">Article</span>
+                  <span className="bg-white/90 backdrop-blur-sm px-2 py-1 text-[10px] font-medium rounded text-gray-900 uppercase tracking-wide">{specializationName}</span>
                 </div>
               </div>
               <div className="p-6 flex flex-col flex-grow">
-                <h3 className="text-base font-semibold text-gray-900 mb-8 leading-snug">
+                <h3 className="text-base font-medium text-gray-900 mb-8 leading-snug">
                   Patient success stories and recovery journeys in {specializationName.toLowerCase()} care
                 </h3>
                 <div className="mt-auto flex items-center justify-between text-xs font-medium text-gray-500">
@@ -495,7 +495,7 @@ export const SpecializationDetailsPage: React.FC<SpecializationDetailsPageProps>
           <div className="flex justify-center mt-16">
             <button
               onClick={onViewAllInsights}
-              className="px-6 py-3 rounded-full border border-gray-200 text-sm font-semibold text-gray-900 hover:bg-gray-50 transition-colors shadow-sm"
+              className="px-6 py-3 rounded-full border border-gray-200 text-sm font-medium text-gray-900 hover:bg-gray-50 transition-colors shadow-sm"
             >
               See More Articles
             </button>
