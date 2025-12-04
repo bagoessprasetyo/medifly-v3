@@ -1,8 +1,8 @@
-
 import React, { useState, useEffect } from 'react';
 import { MedicalPackage, Hospital } from '../types';
 import { HOSPITALS } from '../constants';
 import { ArrowLeft, ChevronRight, ChevronDown, ChevronUp, MapPin, Building2, Calendar, Info, FileText, Check, Smile, HelpCircle, ClipboardList } from 'lucide-react';
+import { InquiryFormModal } from './ui/InquiryFormModal';
 
 interface PackageDetailsPageProps {
   medicalPackage: MedicalPackage;
@@ -12,6 +12,7 @@ interface PackageDetailsPageProps {
 
 export const PackageDetailsPage: React.FC<PackageDetailsPageProps> = ({ medicalPackage, onBack, onNavigateToHospital }) => {
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(0);
+  const [isInquiryModalOpen, setIsInquiryModalOpen] = useState(false);
 
   // Scroll to top on mount
   useEffect(() => {
@@ -131,7 +132,10 @@ export const PackageDetailsPage: React.FC<PackageDetailsPageProps> = ({ medicalP
                     )}
                 </div>
 
-                <button className="bg-[#1C1C1C] text-white px-8 py-3.5 rounded-xl font-semibold text-sm hover:bg-black transition-colors shadow-lg shadow-slate-900/10 mb-12">
+                <button
+                    onClick={() => setIsInquiryModalOpen(true)}
+                    className="bg-[#1C1C1C] text-white px-8 py-3.5 rounded-xl font-semibold text-sm hover:bg-black transition-colors shadow-lg shadow-slate-900/10 mb-12"
+                >
                     Request Treatment Info
                 </button>
 
@@ -287,6 +291,13 @@ export const PackageDetailsPage: React.FC<PackageDetailsPageProps> = ({ medicalP
 
         </div>
       </div>
+
+      {/* Inquiry Form Modal */}
+      <InquiryFormModal
+        isOpen={isInquiryModalOpen}
+        onClose={() => setIsInquiryModalOpen(false)}
+        defaultProcedure={`${medicalPackage.title} - ${medicalPackage.category}`}
+      />
     </div>
   );
 };

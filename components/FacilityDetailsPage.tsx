@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Hospital } from '../types';
 import { ChevronRight, ChevronDown, ChevronUp, Building2, Info, FileText, Check, HelpCircle, ClipboardList } from 'lucide-react';
+import { InquiryFormModal } from './ui/InquiryFormModal';
 
 interface FacilityDetailsPageProps {
   hospital: Hospital;
@@ -11,6 +12,7 @@ interface FacilityDetailsPageProps {
 
 export const FacilityDetailsPage: React.FC<FacilityDetailsPageProps> = ({ hospital, facilityName, onBack, onNavigateToHospital }) => {
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(0);
+  const [isInquiryModalOpen, setIsInquiryModalOpen] = useState(false);
 
   // Scroll to top on mount
   useEffect(() => {
@@ -70,7 +72,7 @@ export const FacilityDetailsPage: React.FC<FacilityDetailsPageProps> = ({ hospit
           <ChevronRight className="w-4 h-4 text-slate-300" />
           <span className="cursor-pointer hover:text-slate-900 transition-colors" onClick={onBack}>Facilities</span>
           <ChevronRight className="w-4 h-4 text-slate-300" />
-          <span className="font-medium text-slate-900 truncate max-w-[200px]">{facilityName}</span>
+          <span className="font-semibold text-slate-900 truncate max-w-[200px]">{facilityName}</span>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
@@ -92,10 +94,10 @@ export const FacilityDetailsPage: React.FC<FacilityDetailsPageProps> = ({ hospit
             </div>
 
             {/* Title & Header Info */}
-            <h1 className="text-3xl md:text-4xl font-medium text-slate-900 mb-2 tracking-tight leading-tight">{facilityName}</h1>
+            <h1 className="text-3xl md:text-4xl font-bold text-slate-900 mb-2 tracking-tight leading-tight">{facilityName}</h1>
             <p className="text-base font-medium text-slate-600 mb-4">Medical Facility</p>
 
-            <div className="flex items-center gap-2 text-sm text-slate-900 mb-8">
+            <div className="flex items-center gap-2 text-sm text-slate-500 mb-8">
               <span className="text-lg mr-1">
                 {hospital.country === 'Thailand' ? '🇹🇭' :
                  hospital.country === 'Singapore' ? '🇸🇬' :
@@ -104,7 +106,10 @@ export const FacilityDetailsPage: React.FC<FacilityDetailsPageProps> = ({ hospit
               <span>{hospital.name}, {hospital.location}, {hospital.country}</span>
             </div>
 
-            <button className="bg-[#1C1C1C] text-white px-8 py-3.5 rounded-xl font-semibold text-sm hover:bg-black transition-colors shadow-lg shadow-slate-900/10 mb-12">
+            <button
+              onClick={() => setIsInquiryModalOpen(true)}
+              className="bg-[#1C1C1C] text-white px-8 py-3.5 rounded-xl font-semibold text-sm hover:bg-black transition-colors shadow-lg shadow-slate-900/10 mb-12"
+            >
               Request Treatment Info
             </button>
 
@@ -115,13 +120,13 @@ export const FacilityDetailsPage: React.FC<FacilityDetailsPageProps> = ({ hospit
 
             {/* Overview */}
             <section className="mb-10 pb-10 border-b border-slate-100">
-              <h3 className="flex items-center gap-2 text-lg font-medium text-slate-900 mb-4">
+              <h3 className="flex items-center gap-2 text-lg font-bold text-slate-900 mb-4">
                 <Info className="w-5 h-5 text-slate-400" /> Overview
               </h3>
               <div className="space-y-4">
                 {content.overview.map((item, idx) => (
                   <div key={idx} className="flex gap-4">
-                    <span className="flex-shrink-0 w-6 h-6 bg-[#F1FCA7] rounded flex items-center justify-center text-xs font-medium text-slate-900 mt-0.5">
+                    <span className="flex-shrink-0 w-6 h-6 bg-[#F1FCA7] rounded flex items-center justify-center text-xs font-bold text-slate-900 mt-0.5">
                       {idx + 1}
                     </span>
                     <p className="text-sm text-slate-600 leading-relaxed">{item}</p>
@@ -132,7 +137,7 @@ export const FacilityDetailsPage: React.FC<FacilityDetailsPageProps> = ({ hospit
 
             {/* Pre-operation */}
             <section className="mb-10 pb-10 border-b border-slate-100">
-              <h3 className="flex items-center gap-2 text-lg font-medium text-slate-900 mb-4">
+              <h3 className="flex items-center gap-2 text-lg font-bold text-slate-900 mb-4">
                 <ClipboardList className="w-5 h-5 text-slate-400" /> Pre-operation {facilityName}
               </h3>
               <ul className="space-y-3">
@@ -147,7 +152,7 @@ export const FacilityDetailsPage: React.FC<FacilityDetailsPageProps> = ({ hospit
 
             {/* Procedure */}
             <section className="mb-10 pb-10 border-b border-slate-100">
-              <h3 className="flex items-center gap-2 text-lg font-medium text-slate-900 mb-4">
+              <h3 className="flex items-center gap-2 text-lg font-bold text-slate-900 mb-4">
                 <FileText className="w-5 h-5 text-slate-400" /> {facilityName} Procedure
               </h3>
               <ul className="space-y-3">
@@ -162,7 +167,7 @@ export const FacilityDetailsPage: React.FC<FacilityDetailsPageProps> = ({ hospit
 
             {/* Benefits */}
             <section className="mb-16">
-              <h3 className="flex items-center gap-2 text-lg font-medium text-slate-900 mb-4">
+              <h3 className="flex items-center gap-2 text-lg font-bold text-slate-900 mb-4">
                 <HelpCircle className="w-5 h-5 text-slate-400" /> Benefits
               </h3>
               <ul className="space-y-3">
@@ -177,7 +182,7 @@ export const FacilityDetailsPage: React.FC<FacilityDetailsPageProps> = ({ hospit
 
             {/* FAQ */}
             <section>
-              <h2 className="text-3xl font-medium text-slate-900 mb-8">Frequently Asked Question</h2>
+              <h2 className="text-3xl font-bold text-slate-900 mb-8">Frequently Asked Question</h2>
               <div className="space-y-4 border-t border-slate-100 pt-4">
                 {content.faqs.map((q, i) => (
                   <div key={i} className="border-b border-slate-100 pb-4">
@@ -208,7 +213,7 @@ export const FacilityDetailsPage: React.FC<FacilityDetailsPageProps> = ({ hospit
                 <div className="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center">
                   <Building2 className="w-5 h-5 text-slate-900" />
                 </div>
-                <h3 className="text-lg font-medium text-slate-900">Hospital</h3>
+                <h3 className="text-lg font-bold text-slate-900">Hospital</h3>
               </div>
 
               <div className="rounded-xl overflow-hidden mb-4 relative h-32 bg-slate-100">
@@ -219,7 +224,7 @@ export const FacilityDetailsPage: React.FC<FacilityDetailsPageProps> = ({ hospit
 
               <div className="flex items-start gap-3 mb-4">
                 <div className="w-10 h-10 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center shrink-0">
-                  <span className="text-[10px] font-medium text-slate-600">{hospital.name.substring(0,2).toUpperCase()}</span>
+                  <span className="text-[10px] font-bold text-slate-600">{hospital.name.substring(0,2).toUpperCase()}</span>
                 </div>
                 <div>
                   <h4 className="font-semibold text-slate-900 text-sm leading-tight mb-1">{hospital.name}</h4>
@@ -249,6 +254,13 @@ export const FacilityDetailsPage: React.FC<FacilityDetailsPageProps> = ({ hospit
 
         </div>
       </div>
+
+      {/* Inquiry Form Modal */}
+      <InquiryFormModal
+        isOpen={isInquiryModalOpen}
+        onClose={() => setIsInquiryModalOpen(false)}
+        defaultProcedure={`${facilityName} at ${hospital.name}`}
+      />
     </div>
   );
 };

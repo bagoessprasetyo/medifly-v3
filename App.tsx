@@ -636,6 +636,7 @@ const MainApp: React.FC = () => {
                     onViewAllInsights={handleNavigateToInsights}
                     onNavigateToArticle={handleNavigateToArticle}
                     onNavigateToTreatment={handleNavigateToTreatment}
+                    onNavigateToFacility={handleNavigateToFacilityDetails}
                 />
             )}
 

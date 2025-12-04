@@ -3,6 +3,7 @@ import { Doctor } from '../types';
 import { User, Stethoscope, GraduationCap, Calendar, Building2, MapPin, ChevronDown, ChevronUp, Languages, MessageSquare, Info, Check, ArrowLeft, ChevronRight } from 'lucide-react';
 import { DoctorCard } from './DoctorCard';
 import { DOCTORS, HOSPITALS } from '../constants';
+import { InquiryFormModal } from './ui/InquiryFormModal';
 
 interface DoctorDetailsPageProps {
   doctor: Doctor;
@@ -14,6 +15,7 @@ interface DoctorDetailsPageProps {
 export const DoctorDetailsPage: React.FC<DoctorDetailsPageProps> = ({ doctor, onBack, onNavigateToHospital, onViewDoctor }) => {
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(0);
   const [showStickyHeader, setShowStickyHeader] = useState(false);
+  const [isInquiryModalOpen, setIsInquiryModalOpen] = useState(false);
 
   // Scroll to top on mount or doctor change
   useEffect(() => {
@@ -127,11 +129,14 @@ He also received advanced specialization training in modern technologies. He is 
                         <img src={doctor.imageUrl} alt={doctor.name} className="w-full h-full object-cover" />
                     </div>
                     <div>
-                        <h3 className="text-sm font-bold text-slate-900 leading-tight">{doctor.name}</h3>
+                        <h3 className="text-sm font-semibold text-slate-900 leading-tight">{doctor.name}</h3>
                         <p className="text-xs text-slate-500">{doctor.specialty}</p>
                     </div>
                 </div>
-                <button className="bg-[#1C1C1C] text-white px-4 py-2 rounded-lg font-medium text-xs hover:bg-black transition-colors">
+                <button
+                    onClick={() => setIsInquiryModalOpen(true)}
+                    className="bg-[#1C1C1C] text-white px-4 py-2 rounded-lg font-medium text-xs hover:bg-black transition-colors"
+                >
                     Request Treatment Info
                 </button>
             </div>
@@ -157,7 +162,7 @@ He also received advanced specialization training in modern technologies. He is 
 
             {/* Mobile Back Button */}
             <div className="md:hidden mb-6">
-                 <button onClick={onBack} className="flex items-center gap-2 text-slate-900 font-semibold p-2 -ml-2 rounded-full hover:bg-slate-50">
+                 <button onClick={onBack} className="flex items-center gap-2 text-slate-900 font-medium p-2 -ml-2 rounded-full hover:bg-slate-50">
                     <ArrowLeft className="w-5 h-5" /> Back
                  </button>
             </div>
@@ -192,7 +197,10 @@ He also received advanced specialization training in modern technologies. He is 
                 </div>
 
                 <div className="self-start md:self-center">
-                    <button className="bg-[#1C1C1C] text-white px-6 py-3 rounded-lg font-medium text-sm hover:bg-black transition-colors shadow-lg shadow-black/5">
+                    <button
+                        onClick={() => setIsInquiryModalOpen(true)}
+                        className="bg-[#1C1C1C] text-white px-6 py-3 rounded-lg font-medium text-sm hover:bg-black transition-colors shadow-lg shadow-black/5"
+                    >
                         Request Treatment Info
                     </button>
                 </div>
@@ -205,7 +213,7 @@ He also received advanced specialization training in modern technologies. He is 
                     
                     {/* About */}
                     <section>
-                        <h2 className="flex items-center gap-2 text-lg font-semibold mb-4">
+                        <h2 className="flex items-center gap-2 text-lg font-medium mb-4">
                             <User className="w-5 h-5 text-zinc-400" /> Key Experience
                         </h2>
                         <div className="text-zinc-600 leading-relaxed text-sm space-y-4 whitespace-pre-line">
@@ -215,7 +223,7 @@ He also received advanced specialization training in modern technologies. He is 
 
                     {/* Condition Treated */}
                     <section>
-                        <h2 className="flex items-center gap-2 text-lg font-semibold mb-4">
+                        <h2 className="flex items-center gap-2 text-lg font-medium mb-4">
                             <Stethoscope className="w-5 h-5 text-zinc-400" /> Conditions Treated
                         </h2>
                         <div className="border-t border-zinc-100 pt-4">
@@ -232,7 +240,7 @@ He also received advanced specialization training in modern technologies. He is 
 
                     {/* Fellowship */}
                     <section>
-                        <h2 className="flex items-center gap-2 text-lg font-semibold mb-4">
+                        <h2 className="flex items-center gap-2 text-lg font-medium mb-4">
                             <GraduationCap className="w-5 h-5 text-zinc-400" /> Fellowship and Accreditation
                         </h2>
                         <div className="border-t border-zinc-100 pt-4">
@@ -249,7 +257,7 @@ He also received advanced specialization training in modern technologies. He is 
 
                     {/* FAQ */}
                     <section>
-                        <h2 className="text-2xl font-semibold mb-6">Frequently Asked Question</h2>
+                        <h2 className="text-2xl font-medium mb-6">Frequently Asked Question</h2>
                         <div className="space-y-4 border-t border-zinc-100 pt-4">
                             {faqs.map((q, i) => (
                                 <div key={i} className="border-b border-zinc-100 pb-4">
@@ -284,7 +292,7 @@ He also received advanced specialization training in modern technologies. He is 
                         <div className="flex items-start gap-4 mb-4">
                             <div className="w-12 h-12 rounded-full border border-zinc-100 p-1 bg-white shrink-0">
                                 {/* Logo placeholder */}
-                                <div className="w-full h-full rounded-full bg-blue-50 flex items-center justify-center text-[10px] font-bold text-blue-600">
+                                <div className="w-full h-full rounded-full bg-blue-50 flex items-center justify-center text-[10px] font-medium text-blue-600">
                                     {doctor.hospitalName.substring(0, 2).toUpperCase()}
                                 </div>
                             </div>
@@ -356,6 +364,13 @@ He also received advanced specialization training in modern technologies. He is 
             </div>
 
         </div>
+
+        {/* Inquiry Form Modal */}
+        <InquiryFormModal
+            isOpen={isInquiryModalOpen}
+            onClose={() => setIsInquiryModalOpen(false)}
+            defaultProcedure={`Consultation with ${doctor.name} - ${doctor.specialty}`}
+        />
     </div>
   );
 };
