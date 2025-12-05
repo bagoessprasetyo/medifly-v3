@@ -301,6 +301,26 @@ export const translateBatch = async (
   }
 };
 
+// Type definitions for travel segments
+export interface TravelSegment {
+  type: 'flight' | 'bus' | 'train' | 'car' | 'taxi' | 'walk' | 'ferry';
+  from: { name: string; code?: string };
+  to: { name: string; code?: string };
+  duration: string;
+  details?: string; // e.g., "Direct Flight", "Express Bus", "Grab/Taxi"
+}
+
+export interface TravelRoute {
+  mode: 'air' | 'bus' | 'train' | 'car';
+  totalDuration: string;
+  totalDurationMinutes: number; // For sorting/comparison
+  segments: TravelSegment[];
+  recommended?: boolean;
+  estimatedCost?: string;
+  available: boolean; // Whether this route is available for this origin-destination pair
+  unavailableReason?: string; // Why the route is not available
+}
+
 // Type definitions for location info
 export interface LocationInfo {
   address: string;
@@ -314,6 +334,8 @@ export interface LocationInfo {
   transportations: { name: string; distance: string }[];
   landmarks: { name: string; distance: string }[];
   mapUrl: string;
+  // New advanced travel routes
+  travelRoutes: TravelRoute[];
 }
 
 // Cache for location info to avoid repeated API calls
@@ -337,7 +359,7 @@ export const generateLocationInfo = async (
 
     const prompt = `You are a travel information assistant for a medical tourism platform.
 
-Given a hospital location and user's origin, generate accurate travel and nearby location information.
+Given a hospital location and user's origin, generate accurate travel and nearby location information with DETAILED MULTI-MODAL travel routes.
 
 Hospital: ${hospitalName}
 Hospital Location: ${hospitalLocation}, ${country}
@@ -365,19 +387,116 @@ Generate a JSON response with the following structure:
     { "name": "Famous nearby landmark, temple, or tourist attraction", "distance": "X.X km away" },
     { "name": "Popular shopping mall or commercial area nearby", "distance": "X.X km away" },
     { "name": "Well-known restaurant, market, or cultural site nearby", "distance": "X.X km away" }
+  ],
+  "travelRoutes": [
+    {
+      "mode": "air",
+      "totalDuration": "X hours Y minutes",
+      "totalDurationMinutes": 600,
+      "recommended": true,
+      "available": true,
+      "estimatedCost": "$XXX - $XXX",
+      "segments": [
+        {
+          "type": "car",
+          "from": { "name": "User's neighborhood/area" },
+          "to": { "name": "Departure Airport Name", "code": "ABC" },
+          "duration": "30 - 45 min",
+          "details": "Taxi/Grab"
+        },
+        {
+          "type": "flight",
+          "from": { "name": "Departure Airport Name", "code": "ABC" },
+          "to": { "name": "Arrival Airport Name", "code": "XYZ" },
+          "duration": "X hours",
+          "details": "Direct Flight"
+        },
+        {
+          "type": "car",
+          "from": { "name": "Arrival Airport Name", "code": "XYZ" },
+          "to": { "name": "Hospital Name" },
+          "duration": "30 - 45 min",
+          "details": "Taxi/Grab"
+        }
+      ]
+    },
+    {
+      "mode": "bus",
+      "totalDuration": "X hours",
+      "totalDurationMinutes": 720,
+      "available": true or false,
+      "unavailableReason": "Only include if available is false - e.g., 'No direct bus routes available between these countries'",
+      "estimatedCost": "$XX - $XX",
+      "segments": [
+        {
+          "type": "car",
+          "from": { "name": "User's area" },
+          "to": { "name": "Bus Terminal Name" },
+          "duration": "20 - 30 min",
+          "details": "Taxi/Grab"
+        },
+        {
+          "type": "bus",
+          "from": { "name": "Bus Terminal Name" },
+          "to": { "name": "Destination Bus Terminal" },
+          "duration": "X hours",
+          "details": "Express Bus / Coach"
+        },
+        {
+          "type": "car",
+          "from": { "name": "Destination Bus Terminal" },
+          "to": { "name": "Hospital Name" },
+          "duration": "15 - 25 min",
+          "details": "Taxi/Grab"
+        }
+      ]
+    },
+    {
+      "mode": "train",
+      "totalDuration": "X hours",
+      "totalDurationMinutes": 480,
+      "available": true or false,
+      "unavailableReason": "Only include if available is false",
+      "estimatedCost": "$XX - $XX",
+      "segments": [...]
+    },
+    {
+      "mode": "car",
+      "totalDuration": "X hours",
+      "totalDurationMinutes": 360,
+      "available": true or false,
+      "unavailableReason": "Only include if available is false - e.g., 'Driving between islands/countries not possible'",
+      "estimatedCost": "$XX - $XX (fuel + tolls)",
+      "segments": [
+        {
+          "type": "car",
+          "from": { "name": "User's location" },
+          "to": { "name": "Hospital Name" },
+          "duration": "X hours",
+          "details": "Self-drive / Private car"
+        }
+      ]
+    }
   ]
 }
 
-Requirements:
-1. Use REAL and ACCURATE information:
-   - Use the actual departure airport from the user's origin city
-   - Use the actual arrival airport near the hospital
-   - Use real metro/BTS/MRT stations, bus routes near the hospital coordinates
-   - Use real landmarks, malls, and restaurants near the hospital
-2. Provide accurate estimated distances based on the hospital coordinates
-3. Include 1-2 transportation options and 2-3 landmarks
-4. Make the address realistic and specific to that hospital
-5. Base flight time on actual typical flight durations between the two cities
+CRITICAL Requirements:
+1. ALWAYS include ALL 4 travel modes (air, bus, train, car) in travelRoutes array
+2. For each mode, set "available": true if that transport method is realistically possible, false otherwise
+3. If a mode is NOT available (e.g., can't drive between islands, no train connection between countries), set:
+   - "available": false
+   - "unavailableReason": "Clear explanation why this mode isn't available"
+   - "segments": [] (empty array)
+   - "totalDurationMinutes": 0
+4. For AVAILABLE routes:
+   - Include realistic segments from user's location TO THE HOSPITAL (not just to airport/station)
+   - The final segment should ALWAYS end at the hospital
+   - Calculate totalDurationMinutes as the sum of all segment durations
+5. Mark the fastest/most practical route as "recommended": true
+6. Use REAL airport codes, bus terminals, train stations
+7. For international travel where land transport isn't practical, mark bus/train/car as unavailable
+8. For domestic/nearby city travel, all modes might be available
+9. Estimate costs in USD
 
 Return ONLY valid JSON, no markdown or explanation.`;
 
@@ -423,7 +542,64 @@ Return ONLY valid JSON, no markdown or explanation.`;
         { name: 'City Center', distance: '5 km away' },
         { name: 'Shopping Mall', distance: '3 km away' }
       ],
-      mapUrl: `https://api.mapbox.com/styles/v1/mapbox/light-v10/static/pin-s+1C1C1C(${coordinates.lng},${coordinates.lat})/${coordinates.lng},${coordinates.lat},14,0/400x200@2x?access_token=pk.eyJ1IjoibWVkaWZseSIsImEiOiJjbTdtbnh5aXYwMHFyMmtzY3Z3Z3l3c3d6In0.vCgD0jPLKH5xhYqJxJnLYA`
+      mapUrl: `https://api.mapbox.com/styles/v1/mapbox/light-v10/static/pin-s+1C1C1C(${coordinates.lng},${coordinates.lat})/${coordinates.lng},${coordinates.lat},14,0/400x200@2x?access_token=pk.eyJ1IjoibWVkaWZseSIsImEiOiJjbTdtbnh5aXYwMHFyMmtzY3Z3Z3l3c3d6In0.vCgD0jPLKH5xhYqJxJnLYA`,
+      travelRoutes: [
+        {
+          mode: 'air',
+          totalDuration: 'About 4-5 hours',
+          totalDurationMinutes: 270,
+          recommended: true,
+          available: true,
+          estimatedCost: '$150 - $300',
+          segments: [
+            {
+              type: 'car',
+              from: { name: originCity },
+              to: { name: originCity === 'Jakarta' ? 'Soekarno-Hatta International Airport' : `${originCity} Airport`, code: originCity === 'Jakarta' ? 'CGK' : 'XXX' },
+              duration: '30 - 45 min',
+              details: 'Taxi/Grab'
+            },
+            {
+              type: 'flight',
+              from: { name: originCity === 'Jakarta' ? 'Soekarno-Hatta International Airport' : `${originCity} Airport`, code: originCity === 'Jakarta' ? 'CGK' : 'XXX' },
+              to: { name: `${hospitalLocation} Airport`, code: 'XXX' },
+              duration: '2 - 3 hours',
+              details: 'Direct Flight'
+            },
+            {
+              type: 'car',
+              from: { name: `${hospitalLocation} Airport`, code: 'XXX' },
+              to: { name: hospitalName },
+              duration: '30 - 45 min',
+              details: 'Taxi/Grab'
+            }
+          ]
+        },
+        {
+          mode: 'bus',
+          totalDuration: 'Not available',
+          totalDurationMinutes: 0,
+          available: false,
+          unavailableReason: 'No direct bus routes available for international travel',
+          segments: []
+        },
+        {
+          mode: 'train',
+          totalDuration: 'Not available',
+          totalDurationMinutes: 0,
+          available: false,
+          unavailableReason: 'No direct train routes available for this destination',
+          segments: []
+        },
+        {
+          mode: 'car',
+          totalDuration: 'Not available',
+          totalDurationMinutes: 0,
+          available: false,
+          unavailableReason: 'Driving not possible for international destinations',
+          segments: []
+        }
+      ]
     };
 
     return fallback;

@@ -14,6 +14,7 @@ import { HOSPITALS, DOCTORS, PACKAGES } from '../constants';
 import { generateLocationInfo, LocationInfo } from '../services/geminiService';
 import { HealthPotential } from './HealthPotential';
 import { InquiryFormModal } from './ui/InquiryFormModal';
+import GettingHere from './GettingHere';
 
 interface HospitalPageProps {
     hospital: Hospital;
@@ -543,53 +544,12 @@ export const HospitalPage: React.FC<HospitalPageProps> = ({
                         </div>
                     </div>
 
-                    {/* Getting Here - Dynamic */}
-                    <div className="border border-zinc-200 rounded-xl p-6 shadow-sm bg-white">
-                        <div className="flex items-center justify-between mb-6">
-                            <div className="flex items-center gap-2 font-medium text-[#1C1C1C]">
-                                <div className="p-1.5 bg-slate-100 rounded-full"><Navigation className="w-4 h-4" /></div>
-                                Getting Here
-                            </div>
-                            <div className="text-right">
-                                <div className="text-[10px] text-slate-400 font-medium uppercase tracking-wide mb-0.5">From your Location</div>
-                                <div className="text-sm font-medium text-slate-900 flex items-center justify-end gap-1.5">
-                                    <Target className="w-3.5 h-3.5" />
-                                    {isLoadingLocation ? (
-                                        <span className="animate-pulse bg-slate-200 rounded w-16 h-4"></span>
-                                    ) : (
-                                        locationInfo?.travelInfo.fromLocation || 'Jakarta'
-                                    )}
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Departure Airport (from user's location) */}
-                        <div className="mb-4 pb-4 border-b border-slate-100">
-                            <div className="text-[10px] text-slate-400 font-medium uppercase tracking-wide mb-2">Departure</div>
-                            {isLoadingLocation ? (
-                                <div className="animate-pulse bg-slate-200 rounded w-full h-5"></div>
-                            ) : (
-                                <div className="text-sm font-medium text-slate-700">
-                                    {locationInfo?.travelInfo.departureAirport || 'Soekarno-Hatta International Airport (CGK)'}
-                                </div>
-                            )}
-                        </div>
-
-                        {/* Flight Duration */}
-                        <div className="flex items-center gap-4 pt-2">
-                            <div className="w-12 h-12 bg-[#E4F28A] rounded-full flex items-center justify-center text-[#1C1C1C] border-4 border-white shadow-sm ring-1 ring-slate-100">
-                                <Plane className="w-5 h-5 rotate-[-45deg]" strokeWidth={2} />
-                            </div>
-                            <div>
-                                <div className="text-xs text-zinc-500 font-medium mb-0.5">By Air</div>
-                                {isLoadingLocation ? (
-                                    <div className="animate-pulse bg-slate-200 rounded w-32 h-5"></div>
-                                ) : (
-                                    <div className="text-sm font-medium text-[#1C1C1C]">{locationInfo?.travelInfo.byAir || 'Calculating...'}</div>
-                                )}
-                            </div>
-                        </div>
-                    </div>
+                    {/* Getting Here - Advanced Multi-Modal */}
+                    <GettingHere
+                        locationInfo={locationInfo}
+                        isLoading={isLoadingLocation}
+                        hospitalName={hospital.name}
+                    />
 
                     {/* Around the Area - Dynamic */}
                     <div className="border border-zinc-200 rounded-xl p-6 shadow-sm bg-white">
@@ -597,21 +557,43 @@ export const HospitalPage: React.FC<HospitalPageProps> = ({
                             <div className="p-1.5 bg-slate-100 rounded-full"><Scan className="w-4 h-4" /></div>
                             Around the Area
                         </div>
-                        <div className="flex items-center gap-2 mb-5 cursor-pointer hover:opacity-80 transition-opacity">
+                        <a
+                            href={`https://www.google.com/maps/search/?api=1&query=${hospital.coordinates.lat},${hospital.coordinates.lng}&query_place_id=${encodeURIComponent(hospital.name)}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-2 mb-5 cursor-pointer hover:opacity-80 transition-opacity"
+                        >
                             <MapPin className="w-4 h-4 text-slate-500" />
                             <span className="font-semibold text-slate-900 text-sm">Map</span>
-                        </div>
-                        <div className="w-full h-32 bg-slate-100 rounded-xl mb-5 overflow-hidden relative border border-slate-200 group cursor-pointer">
-                            <img
-                                src={`https://api.mapbox.com/styles/v1/mapbox/light-v10/static/pin-s+1C1C1C(${hospital.coordinates.lng},${hospital.coordinates.lat})/${hospital.coordinates.lng},${hospital.coordinates.lat},14,0/400x200@2x?access_token=pk.eyJ1IjoibWVkaWZseSIsImEiOiJjbTdtbnh5aXYwMHFyMmtzY3Z3Z3l3c3d6In0.vCgD0jPLKH5xhYqJxJnLYA`}
-                                alt="Map"
-                                className="w-full h-full object-cover grayscale opacity-60 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-500"
-                                onError={(e) => (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1524661135-423995f22d0b?auto=format&fit=crop&q=80&w=400'}
-                            />
-                            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                                <div className="bg-white/90 backdrop-blur px-3 py-1.5 rounded-full text-xs font-medium text-slate-900 shadow-sm border border-slate-200">View Map</div>
+                            <span className="text-[10px] text-slate-400 ml-auto">Open in Google Maps</span>
+                        </a>
+                        <a
+                            href={`https://www.google.com/maps/search/?api=1&query=${hospital.coordinates.lat},${hospital.coordinates.lng}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="block w-full h-44 bg-slate-100 rounded-xl mb-5 overflow-hidden relative border border-slate-200 group cursor-pointer"
+                        >
+                            {/* Using OpenStreetMap static tiles with marker overlay */}
+                            <div className="relative w-full h-full">
+                                <iframe
+                                    src={`https://www.openstreetmap.org/export/embed.html?bbox=${hospital.coordinates.lng - 0.008},${hospital.coordinates.lat - 0.005},${hospital.coordinates.lng + 0.008},${hospital.coordinates.lat + 0.005}&layer=mapnik&marker=${hospital.coordinates.lat},${hospital.coordinates.lng}`}
+                                    className="w-full h-full border-0 pointer-events-none"
+                                    title={`Map showing ${hospital.name} location`}
+                                />
+                                {/* Overlay to capture clicks */}
+                                <div className="absolute inset-0 bg-transparent group-hover:bg-black/5 transition-colors duration-300" />
                             </div>
-                        </div>
+                            <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between">
+                                <div className="bg-white/95 backdrop-blur px-3 py-1.5 rounded-lg text-xs font-medium text-slate-900 shadow-sm border border-slate-200 flex items-center gap-1.5">
+                                    <MapPin className="w-3 h-3 text-[#1C1C1C]" />
+                                    {hospital.name}
+                                </div>
+                                <div className="bg-[#1C1C1C] text-white px-3 py-1.5 rounded-lg text-xs font-medium shadow-sm flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                    <Navigation className="w-3 h-3" />
+                                    Get Directions
+                                </div>
+                            </div>
+                        </a>
 
                         {/* Address */}
                         <div className="flex gap-3 mb-6 text-xs text-slate-600 items-start leading-relaxed bg-slate-50 p-3 rounded-lg border border-slate-100">
