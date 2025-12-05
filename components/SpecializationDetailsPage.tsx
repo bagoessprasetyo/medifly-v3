@@ -103,7 +103,7 @@ export const SpecializationDetailsPage: React.FC<SpecializationDetailsPageProps>
           <div className="lg:col-span-8">
 
             {/* Hero Image */}
-            <div className="aspect-video w-full rounded-2xl overflow-hidden bg-slate-100 mb-8 relative group">
+            <div className="aspect-video w-full rounded-lg overflow-hidden bg-slate-100 mb-8 relative group">
               <img
                 src={`https://source.unsplash.com/1600x900/?hospital,${specializationName},doctor`}
                 onError={(e) => (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1579684385127-1ef15d508118?q=80&w=2080&auto=format&fit=crop'}
@@ -120,15 +120,15 @@ export const SpecializationDetailsPage: React.FC<SpecializationDetailsPageProps>
             <div className="flex items-center gap-2 text-sm text-slate-500 mb-8">
               <span className="text-lg mr-1">
                 {hospital.country === 'Thailand' ? '🇹🇭' :
-                 hospital.country === 'Singapore' ? '🇸🇬' :
-                 hospital.country === 'Malaysia' ? '🇲🇾' : '🏳️'}
+                  hospital.country === 'Singapore' ? '🇸🇬' :
+                    hospital.country === 'Malaysia' ? '🇲🇾' : '🏳️'}
               </span>
               <span>{hospital.name}, {hospital.location}, {hospital.country}</span>
             </div>
 
             <button
               onClick={() => setIsInquiryModalOpen(true)}
-              className="bg-[#1C1C1C] text-white px-8 py-3.5 rounded-xl font-medium text-sm hover:bg-black transition-colors shadow-lg shadow-slate-900/10 mb-12"
+              className="bg-[#1C1C1C] text-white px-8 py-3.5 rounded-lg font-medium text-sm hover:bg-black transition-colors shadow-lg shadow-slate-900/10 mb-12"
             >
               Request Treatment Info
             </button>
@@ -165,32 +165,32 @@ export const SpecializationDetailsPage: React.FC<SpecializationDetailsPageProps>
 
           {/* Right Sidebar - Sticky Hospital Card */}
           <div className="lg:col-span-4 relative">
-            <div className="sticky top-28 bg-white border border-slate-200 rounded-2xl p-6 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)]">
+            <div className="sticky top-28 bg-white border border-slate-200 rounded-lg p-6 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)]">
 
               <div className="flex items-center gap-3 mb-6">
-                <div className="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center">
+                <div className="w-10 h-10 bg-slate-100 rounded-lg flex items-center justify-center">
                   <Building2 className="w-5 h-5 text-slate-900" />
                 </div>
                 <h3 className="text-lg font-medium text-slate-900">Hospital</h3>
               </div>
 
-              <div className="rounded-xl overflow-hidden mb-4 relative h-32 bg-slate-100">
+              <div className="rounded-lg overflow-hidden mb-4 relative h-32 bg-slate-100">
                 {hospital.imageUrl && (
                   <img src={hospital.imageUrl} alt={hospital.name} className="w-full h-full object-cover" />
                 )}
               </div>
 
               <div className="flex items-start gap-3 mb-4">
-                <div className="w-10 h-10 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center shrink-0">
-                  <span className="text-[10px] font-medium text-slate-600">{hospital.name.substring(0,2).toUpperCase()}</span>
+                <div className="w-10 h-10 rounded-lg bg-slate-50 border border-slate-100 flex items-center justify-center shrink-0">
+                  <span className="text-[10px] font-medium text-slate-600">{hospital.name.substring(0, 2).toUpperCase()}</span>
                 </div>
                 <div>
                   <h4 className="font-medium text-slate-900 text-sm leading-tight mb-1">{hospital.name}</h4>
                   <div className="flex items-center gap-1.5 text-xs text-slate-500">
                     <span className="text-base">
                       {hospital.country === 'Thailand' ? '🇹🇭' :
-                       hospital.country === 'Singapore' ? '🇸🇬' :
-                       hospital.country === 'Malaysia' ? '🇲🇾' : '🏳️'}
+                        hospital.country === 'Singapore' ? '🇸🇬' :
+                          hospital.country === 'Malaysia' ? '🇲🇾' : '🏳️'}
                     </span>
                     <span className="truncate max-w-[150px]">{hospital.location}, {hospital.country}</span>
                   </div>
@@ -227,7 +227,7 @@ export const SpecializationDetailsPage: React.FC<SpecializationDetailsPageProps>
           </div>
 
           {/* Right List Card */}
-          <div className="bg-white p-10 rounded-2xl shadow-sm border border-gray-100/50">
+          <div className="bg-white p-10 rounded-lg shadow-sm border border-gray-100/50">
             <div className="grid sm:grid-cols-2 gap-x-12 gap-y-6">
               <ul className="space-y-6">
                 {content.conditions.slice(0, Math.ceil(content.conditions.length / 2)).map((condition, idx) => (
@@ -303,7 +303,7 @@ export const SpecializationDetailsPage: React.FC<SpecializationDetailsPageProps>
                 onClick={() => onNavigateToDoctor(doctor)}
                 className="group cursor-pointer"
               >
-                <div className="bg-[#FAF8F7] rounded-t-xl aspect-[4/3] relative overflow-hidden">
+                <div className="bg-[#FAF8F7] rounded-t-lg aspect-[4/3] relative overflow-hidden">
                   <img
                     src={doctor.imageUrl}
                     alt={doctor.name}
@@ -313,11 +313,11 @@ export const SpecializationDetailsPage: React.FC<SpecializationDetailsPageProps>
                 <div className="pt-5 pb-2 space-y-3">
                   <h3 className="text-lg font-medium text-gray-900">{doctor.name}</h3>
                   <div className="flex items-center gap-2 text-xs font-medium text-gray-600">
-                    <span className="w-4 h-4 rounded-full bg-red-100 flex items-center justify-center text-[10px]">
+                    <span className="w-4 h-4 rounded-lg bg-red-100 flex items-center justify-center text-[10px]">
                       {doctor.hospitalCountry === 'Malaysia' ? '🇲🇾' :
-                       doctor.hospitalCountry === 'Singapore' ? '🇸🇬' :
-                       doctor.hospitalCountry === 'Thailand' ? '🇹🇭' :
-                       doctor.hospitalCountry === 'South Korea' ? '🇰🇷' : '🏳️'}
+                        doctor.hospitalCountry === 'Singapore' ? '🇸🇬' :
+                          doctor.hospitalCountry === 'Thailand' ? '🇹🇭' :
+                            doctor.hospitalCountry === 'South Korea' ? '🇰🇷' : '🏳️'}
                     </span>
                     <span className="truncate">{doctor.hospitalName}, {doctor.hospitalCountry}</span>
                   </div>
@@ -358,7 +358,7 @@ export const SpecializationDetailsPage: React.FC<SpecializationDetailsPageProps>
         <div className="max-w-7xl mx-auto">
           <h2 className="text-3xl lg:text-4xl font-medium text-gray-900 tracking-tight text-center mb-16">Facilities</h2>
 
-          <div className="bg-white rounded-2xl p-12 max-w-4xl mx-auto shadow-sm">
+          <div className="bg-white rounded-lg p-12 max-w-4xl mx-auto shadow-sm">
             <div className="grid md:grid-cols-2 gap-12">
               <ul className="space-y-6">
                 {content.facilities.slice(0, Math.ceil(content.facilities.length / 2)).map((item, idx) => {
@@ -413,7 +413,7 @@ export const SpecializationDetailsPage: React.FC<SpecializationDetailsPageProps>
             {/* Blog Card 1 */}
             <div
               onClick={() => onNavigateToArticle?.(`Latest Advances in ${specializationName}`)}
-              className="bg-[#F4F0EE] rounded-xl overflow-hidden group cursor-pointer h-full flex flex-col"
+              className="bg-[#F4F0EE] rounded-lg overflow-hidden group cursor-pointer h-full flex flex-col"
             >
               <div className="relative h-48">
                 <img
@@ -440,7 +440,7 @@ export const SpecializationDetailsPage: React.FC<SpecializationDetailsPageProps>
             {/* Blog Card 2 */}
             <div
               onClick={() => onNavigateToArticle?.(`Understanding ${specializationName} Procedures`)}
-              className="bg-[#F4F0EE] rounded-xl overflow-hidden group cursor-pointer h-full flex flex-col"
+              className="bg-[#F4F0EE] rounded-lg overflow-hidden group cursor-pointer h-full flex flex-col"
             >
               <div className="relative h-48">
                 <img
@@ -467,7 +467,7 @@ export const SpecializationDetailsPage: React.FC<SpecializationDetailsPageProps>
             {/* Blog Card 3 */}
             <div
               onClick={() => onNavigateToArticle?.(`Patient Success Stories in ${specializationName}`)}
-              className="bg-[#F4F0EE] rounded-xl overflow-hidden group cursor-pointer h-full flex flex-col"
+              className="bg-[#F4F0EE] rounded-lg overflow-hidden group cursor-pointer h-full flex flex-col"
             >
               <div className="relative h-48">
                 <img
@@ -495,7 +495,7 @@ export const SpecializationDetailsPage: React.FC<SpecializationDetailsPageProps>
           <div className="flex justify-center mt-16">
             <button
               onClick={onViewAllInsights}
-              className="px-6 py-3 rounded-full border border-gray-200 text-sm font-medium text-gray-900 hover:bg-gray-50 transition-colors shadow-sm"
+              className="px-6 py-3 rounded-lg border border-gray-200 text-sm font-medium text-gray-900 hover:bg-gray-50 transition-colors shadow-sm"
             >
               See More Articles
             </button>

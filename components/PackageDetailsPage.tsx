@@ -10,7 +10,7 @@ import { ArrowLeft, ChevronRight, ChevronDown, ChevronUp, MapPin, Building2, Cal
 
 import { InquiryFormModal } from './ui/InquiryFormModal';
 
- 
+
 
 interface PackageDetailsPageProps {
 
@@ -22,7 +22,7 @@ interface PackageDetailsPageProps {
 
 }
 
- 
+
 
 export const PackageDetailsPage: React.FC<PackageDetailsPageProps> = ({ medicalPackage, onBack, onNavigateToHospital }) => {
 
@@ -30,7 +30,7 @@ export const PackageDetailsPage: React.FC<PackageDetailsPageProps> = ({ medicalP
 
   const [isInquiryModalOpen, setIsInquiryModalOpen] = useState(false);
 
- 
+
 
   // Scroll to top on mount
 
@@ -50,7 +50,7 @@ export const PackageDetailsPage: React.FC<PackageDetailsPageProps> = ({ medicalP
 
   }, [medicalPackage.id]);
 
- 
+
 
   // Find associated hospital with case-insensitive robust matching
 
@@ -62,7 +62,7 @@ export const PackageDetailsPage: React.FC<PackageDetailsPageProps> = ({ medicalP
 
   ) || HOSPITALS[0];
 
- 
+
 
   // Mock detailed content generator
 
@@ -142,23 +142,23 @@ export const PackageDetailsPage: React.FC<PackageDetailsPageProps> = ({ medicalP
 
   };
 
- 
+
 
   return (
 
     <div className="bg-white min-h-screen pb-20 font-sans text-slate-900">
 
- 
+
 
       {/* Navbar Placeholder */}
 
       <div className="h-6"></div>
 
- 
+
 
       <div className="max-w-[1400px] mx-auto px-6">
 
- 
+
 
         {/* Breadcrumb */}
 
@@ -186,17 +186,17 @@ export const PackageDetailsPage: React.FC<PackageDetailsPageProps> = ({ medicalP
 
         </motion.div>
 
- 
+
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
 
- 
+
 
           {/* Left Content Column */}
 
           <div className="lg:col-span-8">
 
- 
+
 
             {/* Hero Image */}
 
@@ -208,7 +208,7 @@ export const PackageDetailsPage: React.FC<PackageDetailsPageProps> = ({ medicalP
 
               transition={{ duration: 0.5 }}
 
-              className="aspect-video w-full rounded-2xl overflow-hidden bg-slate-100 mb-8 relative group"
+              className="aspect-video w-full rounded-lg overflow-hidden bg-slate-100 mb-8 relative group"
 
             >
 
@@ -232,7 +232,7 @@ export const PackageDetailsPage: React.FC<PackageDetailsPageProps> = ({ medicalP
 
                   transition={{ duration: 0.4, delay: 0.3 }}
 
-                  className="absolute bottom-6 left-6 bg-[#FF6666] text-white text-sm font-semibold px-4 py-2 rounded-lg shadow-sm"
+                  className="absolute bottom-6 left-6 bg-[#FF6666] text-white text-sm font-medium px-4 py-2 rounded-lg shadow-sm"
 
                 >
 
@@ -244,7 +244,7 @@ export const PackageDetailsPage: React.FC<PackageDetailsPageProps> = ({ medicalP
 
             </motion.div>
 
- 
+
 
             {/* Title & Header Info */}
 
@@ -256,7 +256,7 @@ export const PackageDetailsPage: React.FC<PackageDetailsPageProps> = ({ medicalP
 
               transition={{ duration: 0.4, delay: 0.1 }}
 
-              className="text-3xl md:text-4xl font-semibold text-slate-900 mb-2 tracking-tight leading-tight"
+              className="text-3xl md:text-4xl font-medium text-slate-900 mb-2 tracking-tight leading-tight"
 
             >
 
@@ -280,7 +280,7 @@ export const PackageDetailsPage: React.FC<PackageDetailsPageProps> = ({ medicalP
 
             </motion.p>
 
- 
+
 
             <motion.div
 
@@ -298,9 +298,9 @@ export const PackageDetailsPage: React.FC<PackageDetailsPageProps> = ({ medicalP
 
                 {hospital?.country === 'Thailand' ? '🇹🇭' :
 
-                 hospital?.country === 'Singapore' ? '🇸🇬' :
+                  hospital?.country === 'Singapore' ? '🇸🇬' :
 
-                 hospital?.country === 'Malaysia' ? '🇲🇾' : '🏳️'}
+                    hospital?.country === 'Malaysia' ? '🇲🇾' : '🏳️'}
 
               </span>
 
@@ -308,7 +308,7 @@ export const PackageDetailsPage: React.FC<PackageDetailsPageProps> = ({ medicalP
 
             </motion.div>
 
- 
+
 
             {/* Pricing Block */}
 
@@ -334,7 +334,7 @@ export const PackageDetailsPage: React.FC<PackageDetailsPageProps> = ({ medicalP
 
               {medicalPackage.validUntil && (
 
-                <span className="bg-[#FF6666] text-white text-xs font-semibold px-2.5 py-1 rounded flex items-center gap-1.5">
+                <span className="bg-[#FF6666] text-white text-xs font-medium px-2.5 py-1 rounded flex items-center gap-1.5">
 
                   <Calendar className="w-3 h-3" /> {medicalPackage.validUntil}
 
@@ -344,7 +344,7 @@ export const PackageDetailsPage: React.FC<PackageDetailsPageProps> = ({ medicalP
 
             </motion.div>
 
- 
+
 
             <motion.button
 
@@ -360,7 +360,7 @@ export const PackageDetailsPage: React.FC<PackageDetailsPageProps> = ({ medicalP
 
               onClick={() => setIsInquiryModalOpen(true)}
 
-              className="bg-[#1C1C1C] text-white px-8 py-3.5 rounded-xl font-semibold text-sm hover:bg-black transition-colors shadow-lg shadow-slate-900/10 mb-12"
+              className="bg-[#1C1C1C] text-white px-8 py-3.5 rounded-lg font-medium text-sm hover:bg-black transition-colors shadow-lg shadow-slate-900/10 mb-12"
 
             >
 
@@ -368,7 +368,7 @@ export const PackageDetailsPage: React.FC<PackageDetailsPageProps> = ({ medicalP
 
             </motion.button>
 
- 
+
 
             {/* Description */}
 
@@ -388,7 +388,7 @@ export const PackageDetailsPage: React.FC<PackageDetailsPageProps> = ({ medicalP
 
             </motion.p>
 
- 
+
 
             {/* Terms & Conditions */}
 
@@ -444,7 +444,7 @@ export const PackageDetailsPage: React.FC<PackageDetailsPageProps> = ({ medicalP
 
             </motion.section>
 
- 
+
 
             {/* Package Included */}
 
@@ -496,7 +496,7 @@ export const PackageDetailsPage: React.FC<PackageDetailsPageProps> = ({ medicalP
 
             </motion.section>
 
- 
+
 
             {/* Benefits */}
 
@@ -548,7 +548,7 @@ export const PackageDetailsPage: React.FC<PackageDetailsPageProps> = ({ medicalP
 
             </motion.section>
 
- 
+
 
             {/* How to do it */}
 
@@ -600,7 +600,7 @@ export const PackageDetailsPage: React.FC<PackageDetailsPageProps> = ({ medicalP
 
             </motion.section>
 
- 
+
 
             {/* Preparation */}
 
@@ -652,7 +652,7 @@ export const PackageDetailsPage: React.FC<PackageDetailsPageProps> = ({ medicalP
 
             </motion.section>
 
- 
+
 
             {/* FAQ */}
 
@@ -730,11 +730,11 @@ export const PackageDetailsPage: React.FC<PackageDetailsPageProps> = ({ medicalP
 
             </motion.section>
 
- 
+
 
           </div>
 
- 
+
 
           {/* Right Sidebar - Sticky Hospital Card */}
 
@@ -748,11 +748,11 @@ export const PackageDetailsPage: React.FC<PackageDetailsPageProps> = ({ medicalP
 
               transition={{ duration: 0.5, delay: 0.3 }}
 
-              className="sticky top-28 bg-white border border-slate-200 rounded-2xl p-6 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)]"
+              className="sticky top-28 bg-white border border-slate-200 rounded-lg p-6 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)]"
 
             >
 
- 
+
 
               <div className="flex items-center gap-3 mb-6">
 
@@ -766,7 +766,7 @@ export const PackageDetailsPage: React.FC<PackageDetailsPageProps> = ({ medicalP
 
               </div>
 
- 
+
 
               <motion.div
 
@@ -788,19 +788,19 @@ export const PackageDetailsPage: React.FC<PackageDetailsPageProps> = ({ medicalP
 
               </motion.div>
 
- 
+
 
               <div className="flex items-start gap-3 mb-4">
 
                 <div className="w-10 h-10 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center shrink-0">
 
-                  <span className="text-[10px] font-medium text-slate-600">{hospital?.name.substring(0,2).toUpperCase()}</span>
+                  <span className="text-[10px] font-medium text-slate-600">{hospital?.name.substring(0, 2).toUpperCase()}</span>
 
                 </div>
 
                 <div>
 
-                  <h4 className="font-semibold text-slate-900 text-sm leading-tight mb-1">{hospital?.name}</h4>
+                  <h4 className="font-medium text-slate-900 text-sm leading-tight mb-1">{hospital?.name}</h4>
 
                   <div className="flex items-center gap-1.5 text-xs text-slate-500">
 
@@ -814,7 +814,7 @@ export const PackageDetailsPage: React.FC<PackageDetailsPageProps> = ({ medicalP
 
               </div>
 
- 
+
 
               <p className="text-xs text-slate-500 leading-relaxed mb-6 border-b border-slate-100 pb-6">
 
@@ -822,7 +822,7 @@ export const PackageDetailsPage: React.FC<PackageDetailsPageProps> = ({ medicalP
 
               </p>
 
- 
+
 
               <motion.button
 
@@ -844,13 +844,13 @@ export const PackageDetailsPage: React.FC<PackageDetailsPageProps> = ({ medicalP
 
           </div>
 
- 
+
 
         </div>
 
       </div>
 
- 
+
 
       {/* Inquiry Form Modal */}
 

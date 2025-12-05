@@ -37,7 +37,7 @@ export const CITY_COORDINATES: Record<string, { lat: number; lng: number }> = {
   'izmir': { lat: 38.4237, lng: 27.1428 },
   'bursa': { lat: 40.1885, lng: 29.0610 },
   'doha': { lat: 25.2854, lng: 51.5310 },
-  
+
   // USA
   'new york': { lat: 40.7128, lng: -74.0060 },
   'nyc': { lat: 40.7128, lng: -74.0060 },
@@ -50,7 +50,7 @@ export const CITY_COORDINATES: Record<string, { lat: number; lng: number }> = {
   'mía': { lat: 25.7617, lng: -80.1918 },
   'miami': { lat: 25.7617, lng: -80.1918 },
   'seattle': { lat: 47.6062, lng: -122.3321 },
-  
+
   // Europe
   'paris': { lat: 48.8566, lng: 2.3522 },
   'berlin': { lat: 52.5200, lng: 13.4050 },
@@ -58,13 +58,80 @@ export const CITY_COORDINATES: Record<string, { lat: number; lng: number }> = {
   'madrid': { lat: 40.4168, lng: -3.7038 },
   'rome': { lat: 41.9028, lng: 12.4964 },
   'zurich': { lat: 47.3769, lng: 8.5417 },
-  
+
   // Australia/NZ
   'sydney': { lat: -33.8688, lng: 151.2093 },
   'melbourne': { lat: -37.8136, lng: 144.9631 },
   'perth': { lat: -31.9505, lng: 115.8605 },
   'auckland': { lat: -36.8485, lng: 174.7633 },
 };
+
+export const COUNTRIES = [
+  {
+    name: 'Indonesia',
+    flag: '🇮🇩',
+    image: 'https://images.unsplash.com/photo-1572016018057-d64dfa9536d1?q=80&w=872&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+    time: '0 hrs',
+    desc: 'Modern medical facilities with affordable care and growing centers of excellence.',
+    stats: { specialists: '2,300', hospitals: '115' },
+    searches: ['Top hospitals in Bali', 'Top Wellness centers in Bali', 'Wellness & detox clinics in Ubud']
+  },
+  {
+    name: 'Malaysia',
+    flag: '🇲🇾',
+    image: 'https://images.unsplash.com/photo-1596422846543-75c6fc197f07?auto=format&fit=crop&q=80&w=800',
+    time: '1.5 hrs',
+    desc: 'Modern hospitals with Bahasa-speaking staff and excellent patient safety.',
+    stats: { specialists: '2,300', hospitals: '115' },
+    searches: ['IVF centers in Kuala Lumpur', 'Top 10 Orthopedic hospitals in Penang', 'Top cardiac surgeons in Malaysia']
+  },
+  {
+    name: 'Singapore',
+    flag: '🇸🇬',
+    image: 'https://images.unsplash.com/photo-1525625293386-3f8f99389edd?auto=format&fit=crop&q=80&w=800',
+    time: '1 hr',
+    desc: 'Premium healthcare standards with cutting-edge technology.',
+    stats: { specialists: '2,300', hospitals: '115' },
+    searches: ['Cancer centers in Singapore', 'Cardiac surgery specialists', 'Executive health screening packages']
+  },
+  {
+    name: 'Thailand',
+    flag: '🇹🇭',
+    image: 'https://images.unsplash.com/photo-1508009603885-50cf7c579365?auto=format&fit=crop&q=80&w=800',
+    time: '3 hrs',
+    desc: 'World-leading destination for affordable surgeries and wellness retreats.',
+    stats: { specialists: '2,300', hospitals: '115' },
+    searches: ['Cosmetic surgery in Bangkok', 'Dental clinics in Phuket', 'Top 10 Weight-loss centers in Bangkok']
+  },
+  {
+    name: 'South Korea',
+    flag: '🇰🇷',
+    image: 'https://images.unsplash.com/photo-1538485399081-7191377e8241?auto=format&fit=crop&q=80&w=800',
+    time: '7 hrs',
+    desc: 'Global hub for advanced cosmetic surgery and dermatology treatments.',
+    stats: { specialists: '1,800', hospitals: '95' },
+    searches: ['Plastic surgery clinics in Seoul', 'Dermatology skin treatments', 'Advanced cancer care']
+  },
+  {
+    name: 'Turkey',
+    flag: '🇹🇷',
+    image: 'https://images.unsplash.com/photo-1524231757912-21f4fe3a7200?auto=format&fit=crop&q=80&w=800',
+    time: '12 hrs',
+    desc: 'Leading destination for hair transplants and dental procedures at competitive prices.',
+    stats: { specialists: '1,500', hospitals: '85' },
+    searches: ['Hair transplant clinics Istanbul', 'Dental veneers packages', 'Rhinoplasty specialists']
+  },
+  {
+    name: 'India',
+    flag: '🇮🇳',
+    image: 'https://images.unsplash.com/photo-1524492412937-b28074a5d7da?auto=format&fit=crop&q=80&w=800',
+    time: '5 hrs',
+    desc: 'Highly skilled specialists performing complex surgeries at a fraction of the cost.',
+    stats: { specialists: '5,000', hospitals: '250' },
+    searches: ['Cardiac bypass surgery India', 'Organ transplant hospitals', 'Affordable oncology treatment']
+  }
+];
+
 
 export const SPECIALIZATIONS = [
   { name: 'Cardiology', description: 'Heart checkup, angioplasty, heart valve surgery, etc.' },
@@ -96,12 +163,12 @@ export const SEMANTIC_SPECIALTY_MAP: Record<string, string[]> = {
 };
 
 export const getCoordinatesForCity = (city: string) => {
-    if (!city) return null;
-    const key = city.toLowerCase().trim();
-    if (CITY_COORDINATES[key]) return CITY_COORDINATES[key];
-    // Partial match attempt
-    const found = Object.keys(CITY_COORDINATES).find(k => key.includes(k) || k.includes(key));
-    return found ? CITY_COORDINATES[found] : null;
+  if (!city) return null;
+  const key = city.toLowerCase().trim();
+  if (CITY_COORDINATES[key]) return CITY_COORDINATES[key];
+  // Partial match attempt
+  const found = Object.keys(CITY_COORDINATES).find(k => key.includes(k) || k.includes(key));
+  return found ? CITY_COORDINATES[found] : null;
 };
 
 export const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => {
@@ -113,7 +180,7 @@ export const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2
     Math.cos(lat1 * (Math.PI / 180)) * Math.cos(lat2 * (Math.PI / 180)) *
     Math.sin(dLon / 2) * Math.sin(dLon / 2);
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  const d = R * c; 
+  const d = R * c;
   return d; // Return precise float
 };
 
@@ -697,7 +764,7 @@ export const HOSPITALS: Hospital[] = [
     reviewCount: 850,
     imageUrl: 'https://shahalam.avisena.com.my/wp-content/uploads/2023/01/facilities-intro.jpg',
     images: [
-      'https://shahalam.avisena.com.my/wp-content/uploads/2023/01/facilities-intro.jpg', 
+      'https://shahalam.avisena.com.my/wp-content/uploads/2023/01/facilities-intro.jpg',
       'https://shahalam.avisena.com.my/wp-content/uploads/2023/02/avisena-concierge-valet.jpg',
       'https://shahalam.avisena.com.my/wp-content/uploads/2023/01/sutera-intro-img.jpg',
       'https://shahalam.avisena.com.my/wp-content/uploads/2023/01/sutera-lounge-1.jpg'
@@ -2339,7 +2406,7 @@ export const HOSPITALS: Hospital[] = [
     accreditation: ['MOH PNG'],
     languages: ['English', 'Tok Pisin'],
   },
-  
+
   {
     id: '128',
     name: 'Pacific International Hospital',
@@ -3959,496 +4026,496 @@ export const getHospitalDetails = (hospitalId: string): HospitalDetails | undefi
 };
 
 export const DOCTORS: Doctor[] = [
-    {
-        id: '1',
-        name: 'Dr. Khoo Eng Hooi',
-        specialty: 'Orthopedic',
-        hospitalId: '38', // Gleneagles Penang
-        hospitalName: 'Gleneagles Hospital',
-        hospitalCountry: 'Malaysia',
-        imageUrl: 'https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?auto=format&fit=crop&q=80&w=800',
-        languages: ['English', 'Bahasa Melayu', 'Hokkien'],
-        experienceYears: 18,
-        procedures: ['Spinal Surgery', 'Orthopedic Trauma', 'Robotic Joint Surgery'],
-        gender: 'Male',
-        rating: 4.9,
-        reviewCount: 142
-    },
-    {
-        id: '2',
-        name: 'Dr. Sarah Lim',
-        specialty: 'Cardiology',
-        hospitalId: '21', // Advanced Singapore General Hospital
-        hospitalName: 'Advanced Singapore General Hospital',
-        hospitalCountry: 'Singapore',
-        imageUrl: 'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?auto=format&fit=crop&q=80&w=800',
-        languages: ['English', 'Mandarin'],
-        experienceYears: 12,
-        procedures: ['Angioplasty', 'Heart Failure Management', 'Pacemaker Implantation'],
-        gender: 'Female',
-        rating: 4.8,
-        reviewCount: 98
-    },
-    {
-        id: '3',
-        name: 'Dr. Somchai V.',
-        specialty: 'Oncology',
-        hospitalId: '1', // Bumrungrad
-        hospitalName: 'Bumrungrad International',
-        hospitalCountry: 'Thailand',
-        imageUrl: 'https://images.unsplash.com/photo-1622253692010-333f2da6031d?auto=format&fit=crop&q=80&w=800',
-        languages: ['English', 'Thai'],
-        experienceYears: 22,
-        procedures: ['Chemotherapy', 'Immunotherapy', 'Targeted Therapy'],
-        gender: 'Male',
-        rating: 4.9,
-        reviewCount: 215
-    },
-    {
-        id: '4',
-        name: 'Dr. Aminah Binti Yusof',
-        specialty: 'Fertility',
-        hospitalId: '34', // Sunway
-        hospitalName: 'Sunway Medical Centre',
-        hospitalCountry: 'Malaysia',
-        imageUrl: 'https://images.unsplash.com/photo-1594824476967-48c8b964273f?auto=format&fit=crop&q=80&w=800',
-        languages: ['English', 'Bahasa Melayu'],
-        experienceYears: 14,
-        procedures: ['IVF', 'IUI', 'Fertility Preservation'],
-        gender: 'Female',
-        rating: 4.7,
-        reviewCount: 86
-    },
-    
-    {
-        id: '5',
-        name: 'Dr. Kim Min-jun',
-        specialty: 'Plastic Surgery',
-        hospitalId: '64', // Community Seoul Medical Center
-        hospitalName: 'Community Seoul Medical Center',
-        hospitalCountry: 'South Korea',
-        imageUrl: 'https://images.unsplash.com/photo-1537368910025-700350fe46c7?auto=format&fit=crop&q=80&w=800',
-        languages: ['English', 'Korean'],
-        experienceYears: 16,
-        procedures: ['Rhinoplasty', 'Facelift', 'Blepharoplasty'],
-        gender: 'Male',
-        rating: 4.8,
-        reviewCount: 310
-    },
-    {
-        id: '6',
-        name: 'Dr. Anita Desai',
-        specialty: 'Neurology',
-        hospitalId: '24', // Advanced Singapore General Hospital - West
-        hospitalName: 'Advanced Singapore General Hospital - West',
-        hospitalCountry: 'Singapore',
-        imageUrl: 'https://images.unsplash.com/photo-1527613426441-4da17471b66d?auto=format&fit=crop&q=80&w=800',
-        languages: ['English', 'Hindi', 'Tamil'],
-        experienceYears: 19,
-        procedures: ['Stroke Management', 'Epilepsy Treatment', 'Migraine Therapy'],
-        gender: 'Female',
-        rating: 4.9,
-        reviewCount: 156
-    },
-    {
-        id: '7',
-        name: 'Dr. Michael Chen',
-        specialty: 'Orthopedic',
-        hospitalId: '21', // Advanced Singapore General Hospital
-        hospitalName: 'Advanced Singapore General Hospital',
-        hospitalCountry: 'Singapore',
-        imageUrl: 'https://images.unsplash.com/photo-1550831107-1553da8c8464?auto=format&fit=crop&q=80&w=800',
-        languages: ['English', 'Mandarin', 'Cantonese'],
-        experienceYears: 25,
-        procedures: ['Knee Replacement', 'Hip Replacement', 'Sports Medicine'],
-        gender: 'Male',
-        rating: 5.0,
-        reviewCount: 312
-    },
-    {
-        id: '8',
-        name: 'Dr. Priyanki Kapoor',
-        specialty: 'Dermatology',
-        hospitalId: '1',
-        hospitalName: 'Bumrungrad International',
-        hospitalCountry: 'Thailand',
-        imageUrl: 'https://images.unsplash.com/photo-1594824476967-48c8b964273f?auto=format&fit=crop&q=80&w=800',
-        languages: ['English', 'Hindi', 'Thai'],
-        experienceYears: 10,
-        procedures: ['Laser Therapy', 'Skin Cancer Screening', 'Cosmetic Dermatology'],
-        gender: 'Female',
-        rating: 4.7,
-        reviewCount: 88
-    },
-    {
-        id: '9',
-        name: 'Dr. James Wilson',
-        specialty: 'Cardiology',
-        hospitalId: '38',
-        hospitalName: 'Gleneagles Hospital',
-        hospitalCountry: 'Malaysia',
-        imageUrl: 'https://images.unsplash.com/photo-1622253692010-333f2da6031d?auto=format&fit=crop&q=80&w=800',
-        languages: ['English'],
-        experienceYears: 30,
-        procedures: ['Coronary Artery Bypass', 'Valve Repair', 'Arrhythmia Management'],
-        gender: 'Male',
-        rating: 4.9,
-        reviewCount: 420
-    },
-    {
-        id: '10',
-        name: 'Dr. Lee Ji-eun',
-        specialty: 'Fertility',
-        hospitalId: '65', // Premier Incheon Medical Center - Central
-        hospitalName: 'Premier Incheon Medical Center - Central',
-        hospitalCountry: 'South Korea',
-        imageUrl: 'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?auto=format&fit=crop&q=80&w=800',
-        languages: ['Korean', 'English', 'Japanese'],
-        experienceYears: 15,
-        procedures: ['IVF', 'Egg Freezing', 'PCOS Treatment'],
-        gender: 'Female',
-        rating: 4.8,
-        reviewCount: 190
-    },
-    {
-        id: '11',
-        name: 'Dr. Ahmed Al-Fayed',
-        specialty: 'Urology',
-        hospitalId: '24', // Advanced Singapore General Hospital - West
-        hospitalName: 'Advanced Singapore General Hospital - West',
-        hospitalCountry: 'Singapore',
-        imageUrl: 'https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?auto=format&fit=crop&q=80&w=800',
-        languages: ['English', 'Arabic', 'Malay'],
-        experienceYears: 14,
-        procedures: ['Kidney Stones', 'Prostate Surgery', 'Men\'s Health'],
-        gender: 'Male',
-        rating: 4.6,
-        reviewCount: 110
-    },
-    {
-        id: '12',
-        name: 'Dr. Elena Rossi',
-        specialty: 'Pediatrics',
-        hospitalId: '3',
-        hospitalName: 'Samitivej Sukhumvit',
-        hospitalCountry: 'Thailand',
-        imageUrl: 'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?auto=format&fit=crop&q=80&w=800',
-        languages: ['English', 'Italian', 'Thai'],
-        experienceYears: 8,
-        procedures: ['General Pediatrics', 'Neonatology', 'Child Development'],
-        gender: 'Female',
-        rating: 4.9,
-        reviewCount: 130
-    },
-    // RSUP Dr. Cipto Mangunkusumo - Jakarta (ID: 54)
   {
-      id: '101',
-      name: 'Dr. Budi Santoso',
-      specialty: 'Cardiology',
-      hospitalId: '54',
-      hospitalName: 'RSUP Dr. Cipto Mangunkusumo',
-      hospitalCountry: 'Indonesia',
-      imageUrl: 'https://images.pexels.com/photos/5452201/pexels-photo-5452201.jpeg',
-      languages: ['Indonesian', 'English'],
-      experienceYears: 28,
-      procedures: ['CABG', 'Heart Valve Surgery', 'Coronary Artery Bypass'],
-      gender: 'Male',
-      rating: 4.9,
-      reviewCount: 312
+    id: '1',
+    name: 'Dr. Khoo Eng Hooi',
+    specialty: 'Orthopedic',
+    hospitalId: '38', // Gleneagles Penang
+    hospitalName: 'Gleneagles Hospital',
+    hospitalCountry: 'Malaysia',
+    imageUrl: 'https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?auto=format&fit=crop&q=80&w=800',
+    languages: ['English', 'Bahasa Melayu', 'Hokkien'],
+    experienceYears: 18,
+    procedures: ['Spinal Surgery', 'Orthopedic Trauma', 'Robotic Joint Surgery'],
+    gender: 'Male',
+    rating: 4.9,
+    reviewCount: 142
   },
   {
-      id: '102',
-      name: 'Dr. Siti Nurhaliza',
-      specialty: 'Oncology',
-      hospitalId: '54',
-      hospitalName: 'RSUP Dr. Cipto Mangunkusumo',
-      hospitalCountry: 'Indonesia',
-      imageUrl: 'https://images.pexels.com/photos/5452293/pexels-photo-5452293.jpeg',
-      languages: ['Indonesian', 'English', 'Dutch'],
-      experienceYears: 22,
-      procedures: ['Chemotherapy', 'Immunotherapy', 'Targeted Therapy'],
-      gender: 'Female',
-      rating: 4.8,
-      reviewCount: 245
+    id: '2',
+    name: 'Dr. Sarah Lim',
+    specialty: 'Cardiology',
+    hospitalId: '21', // Advanced Singapore General Hospital
+    hospitalName: 'Advanced Singapore General Hospital',
+    hospitalCountry: 'Singapore',
+    imageUrl: 'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?auto=format&fit=crop&q=80&w=800',
+    languages: ['English', 'Mandarin'],
+    experienceYears: 12,
+    procedures: ['Angioplasty', 'Heart Failure Management', 'Pacemaker Implantation'],
+    gender: 'Female',
+    rating: 4.8,
+    reviewCount: 98
+  },
+  {
+    id: '3',
+    name: 'Dr. Somchai V.',
+    specialty: 'Oncology',
+    hospitalId: '1', // Bumrungrad
+    hospitalName: 'Bumrungrad International',
+    hospitalCountry: 'Thailand',
+    imageUrl: 'https://images.unsplash.com/photo-1622253692010-333f2da6031d?auto=format&fit=crop&q=80&w=800',
+    languages: ['English', 'Thai'],
+    experienceYears: 22,
+    procedures: ['Chemotherapy', 'Immunotherapy', 'Targeted Therapy'],
+    gender: 'Male',
+    rating: 4.9,
+    reviewCount: 215
+  },
+  {
+    id: '4',
+    name: 'Dr. Aminah Binti Yusof',
+    specialty: 'Fertility',
+    hospitalId: '34', // Sunway
+    hospitalName: 'Sunway Medical Centre',
+    hospitalCountry: 'Malaysia',
+    imageUrl: 'https://images.unsplash.com/photo-1594824476967-48c8b964273f?auto=format&fit=crop&q=80&w=800',
+    languages: ['English', 'Bahasa Melayu'],
+    experienceYears: 14,
+    procedures: ['IVF', 'IUI', 'Fertility Preservation'],
+    gender: 'Female',
+    rating: 4.7,
+    reviewCount: 86
+  },
+
+  {
+    id: '5',
+    name: 'Dr. Kim Min-jun',
+    specialty: 'Plastic Surgery',
+    hospitalId: '64', // Community Seoul Medical Center
+    hospitalName: 'Community Seoul Medical Center',
+    hospitalCountry: 'South Korea',
+    imageUrl: 'https://images.unsplash.com/photo-1537368910025-700350fe46c7?auto=format&fit=crop&q=80&w=800',
+    languages: ['English', 'Korean'],
+    experienceYears: 16,
+    procedures: ['Rhinoplasty', 'Facelift', 'Blepharoplasty'],
+    gender: 'Male',
+    rating: 4.8,
+    reviewCount: 310
+  },
+  {
+    id: '6',
+    name: 'Dr. Anita Desai',
+    specialty: 'Neurology',
+    hospitalId: '24', // Advanced Singapore General Hospital - West
+    hospitalName: 'Advanced Singapore General Hospital - West',
+    hospitalCountry: 'Singapore',
+    imageUrl: 'https://images.unsplash.com/photo-1527613426441-4da17471b66d?auto=format&fit=crop&q=80&w=800',
+    languages: ['English', 'Hindi', 'Tamil'],
+    experienceYears: 19,
+    procedures: ['Stroke Management', 'Epilepsy Treatment', 'Migraine Therapy'],
+    gender: 'Female',
+    rating: 4.9,
+    reviewCount: 156
+  },
+  {
+    id: '7',
+    name: 'Dr. Michael Chen',
+    specialty: 'Orthopedic',
+    hospitalId: '21', // Advanced Singapore General Hospital
+    hospitalName: 'Advanced Singapore General Hospital',
+    hospitalCountry: 'Singapore',
+    imageUrl: 'https://images.unsplash.com/photo-1550831107-1553da8c8464?auto=format&fit=crop&q=80&w=800',
+    languages: ['English', 'Mandarin', 'Cantonese'],
+    experienceYears: 25,
+    procedures: ['Knee Replacement', 'Hip Replacement', 'Sports Medicine'],
+    gender: 'Male',
+    rating: 5.0,
+    reviewCount: 312
+  },
+  {
+    id: '8',
+    name: 'Dr. Priyanki Kapoor',
+    specialty: 'Dermatology',
+    hospitalId: '1',
+    hospitalName: 'Bumrungrad International',
+    hospitalCountry: 'Thailand',
+    imageUrl: 'https://images.unsplash.com/photo-1594824476967-48c8b964273f?auto=format&fit=crop&q=80&w=800',
+    languages: ['English', 'Hindi', 'Thai'],
+    experienceYears: 10,
+    procedures: ['Laser Therapy', 'Skin Cancer Screening', 'Cosmetic Dermatology'],
+    gender: 'Female',
+    rating: 4.7,
+    reviewCount: 88
+  },
+  {
+    id: '9',
+    name: 'Dr. James Wilson',
+    specialty: 'Cardiology',
+    hospitalId: '38',
+    hospitalName: 'Gleneagles Hospital',
+    hospitalCountry: 'Malaysia',
+    imageUrl: 'https://images.unsplash.com/photo-1622253692010-333f2da6031d?auto=format&fit=crop&q=80&w=800',
+    languages: ['English'],
+    experienceYears: 30,
+    procedures: ['Coronary Artery Bypass', 'Valve Repair', 'Arrhythmia Management'],
+    gender: 'Male',
+    rating: 4.9,
+    reviewCount: 420
+  },
+  {
+    id: '10',
+    name: 'Dr. Lee Ji-eun',
+    specialty: 'Fertility',
+    hospitalId: '65', // Premier Incheon Medical Center - Central
+    hospitalName: 'Premier Incheon Medical Center - Central',
+    hospitalCountry: 'South Korea',
+    imageUrl: 'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?auto=format&fit=crop&q=80&w=800',
+    languages: ['Korean', 'English', 'Japanese'],
+    experienceYears: 15,
+    procedures: ['IVF', 'Egg Freezing', 'PCOS Treatment'],
+    gender: 'Female',
+    rating: 4.8,
+    reviewCount: 190
+  },
+  {
+    id: '11',
+    name: 'Dr. Ahmed Al-Fayed',
+    specialty: 'Urology',
+    hospitalId: '24', // Advanced Singapore General Hospital - West
+    hospitalName: 'Advanced Singapore General Hospital - West',
+    hospitalCountry: 'Singapore',
+    imageUrl: 'https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?auto=format&fit=crop&q=80&w=800',
+    languages: ['English', 'Arabic', 'Malay'],
+    experienceYears: 14,
+    procedures: ['Kidney Stones', 'Prostate Surgery', 'Men\'s Health'],
+    gender: 'Male',
+    rating: 4.6,
+    reviewCount: 110
+  },
+  {
+    id: '12',
+    name: 'Dr. Elena Rossi',
+    specialty: 'Pediatrics',
+    hospitalId: '3',
+    hospitalName: 'Samitivej Sukhumvit',
+    hospitalCountry: 'Thailand',
+    imageUrl: 'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?auto=format&fit=crop&q=80&w=800',
+    languages: ['English', 'Italian', 'Thai'],
+    experienceYears: 8,
+    procedures: ['General Pediatrics', 'Neonatology', 'Child Development'],
+    gender: 'Female',
+    rating: 4.9,
+    reviewCount: 130
+  },
+  // RSUP Dr. Cipto Mangunkusumo - Jakarta (ID: 54)
+  {
+    id: '101',
+    name: 'Dr. Budi Santoso',
+    specialty: 'Cardiology',
+    hospitalId: '54',
+    hospitalName: 'RSUP Dr. Cipto Mangunkusumo',
+    hospitalCountry: 'Indonesia',
+    imageUrl: 'https://images.pexels.com/photos/5452201/pexels-photo-5452201.jpeg',
+    languages: ['Indonesian', 'English'],
+    experienceYears: 28,
+    procedures: ['CABG', 'Heart Valve Surgery', 'Coronary Artery Bypass'],
+    gender: 'Male',
+    rating: 4.9,
+    reviewCount: 312
+  },
+  {
+    id: '102',
+    name: 'Dr. Siti Nurhaliza',
+    specialty: 'Oncology',
+    hospitalId: '54',
+    hospitalName: 'RSUP Dr. Cipto Mangunkusumo',
+    hospitalCountry: 'Indonesia',
+    imageUrl: 'https://images.pexels.com/photos/5452293/pexels-photo-5452293.jpeg',
+    languages: ['Indonesian', 'English', 'Dutch'],
+    experienceYears: 22,
+    procedures: ['Chemotherapy', 'Immunotherapy', 'Targeted Therapy'],
+    gender: 'Female',
+    rating: 4.8,
+    reviewCount: 245
   },
   // Siloam Hospitals Semanggi - Jakarta (ID: 55)
   {
-      id: '103',
-      name: 'Dr. James Tanaka',
-      specialty: 'Cardiology',
-      hospitalId: '55',
-      hospitalName: 'Siloam Hospitals Semanggi',
-      hospitalCountry: 'Indonesia',
-      imageUrl: 'https://images.pexels.com/photos/5452201/pexels-photo-5452201.jpeg',
-      languages: ['Indonesian', 'English', 'Japanese'],
-      experienceYears: 24,
-      procedures: ['CABG', 'Minimally Invasive Heart Surgery', 'Arrhythmia Treatment'],
-      gender: 'Male',
-      rating: 4.9,
-      reviewCount: 287
+    id: '103',
+    name: 'Dr. James Tanaka',
+    specialty: 'Cardiology',
+    hospitalId: '55',
+    hospitalName: 'Siloam Hospitals Semanggi',
+    hospitalCountry: 'Indonesia',
+    imageUrl: 'https://images.pexels.com/photos/5452201/pexels-photo-5452201.jpeg',
+    languages: ['Indonesian', 'English', 'Japanese'],
+    experienceYears: 24,
+    procedures: ['CABG', 'Minimally Invasive Heart Surgery', 'Arrhythmia Treatment'],
+    gender: 'Male',
+    rating: 4.9,
+    reviewCount: 287
   },
   {
-      id: '104',
-      name: 'Dr. Maya Indira',
-      specialty: 'Neurology',
-      hospitalId: '55',
-      hospitalName: 'Siloam Hospitals Semanggi',
-      hospitalCountry: 'Indonesia',
-      imageUrl: 'https://images.pexels.com/photos/5452293/pexels-photo-5452293.jpeg',
-      languages: ['Indonesian', 'English'],
-      experienceYears: 19,
-      procedures: ['Stroke Management', 'Epilepsy Treatment', 'Brain Tumor Surgery'],
-      gender: 'Female',
-      rating: 4.8,
-      reviewCount: 198
+    id: '104',
+    name: 'Dr. Maya Indira',
+    specialty: 'Neurology',
+    hospitalId: '55',
+    hospitalName: 'Siloam Hospitals Semanggi',
+    hospitalCountry: 'Indonesia',
+    imageUrl: 'https://images.pexels.com/photos/5452293/pexels-photo-5452293.jpeg',
+    languages: ['Indonesian', 'English'],
+    experienceYears: 19,
+    procedures: ['Stroke Management', 'Epilepsy Treatment', 'Brain Tumor Surgery'],
+    gender: 'Female',
+    rating: 4.8,
+    reviewCount: 198
   },
   // RS Pondok Indah - Jakarta (ID: 56)
   {
-      id: '105',
-      name: 'Dr. Arief Wijaya',
-      specialty: 'Orthopedics',
-      hospitalId: '56',
-      hospitalName: 'RS Pondok Indah - Pondok Indah',
-      hospitalCountry: 'Indonesia',
-      imageUrl: 'https://images.pexels.com/photos/5452201/pexels-photo-5452201.jpeg',
-      languages: ['Indonesian', 'English'],
-      experienceYears: 21,
-      procedures: ['Joint Replacement', 'Spine Surgery', 'Sports Medicine'],
-      gender: 'Male',
-      rating: 4.9,
-      reviewCount: 276
+    id: '105',
+    name: 'Dr. Arief Wijaya',
+    specialty: 'Orthopedics',
+    hospitalId: '56',
+    hospitalName: 'RS Pondok Indah - Pondok Indah',
+    hospitalCountry: 'Indonesia',
+    imageUrl: 'https://images.pexels.com/photos/5452201/pexels-photo-5452201.jpeg',
+    languages: ['Indonesian', 'English'],
+    experienceYears: 21,
+    procedures: ['Joint Replacement', 'Spine Surgery', 'Sports Medicine'],
+    gender: 'Male',
+    rating: 4.9,
+    reviewCount: 276
   },
   {
-      id: '106',
-      name: 'Dr. Linda Kusuma',
-      specialty: 'Fertility',
-      hospitalId: '56',
-      hospitalName: 'RS Pondok Indah - Pondok Indah',
-      hospitalCountry: 'Indonesia',
-      imageUrl: 'https://images.pexels.com/photos/5452293/pexels-photo-5452293.jpeg',
-      languages: ['Indonesian', 'English', 'Mandarin'],
-      experienceYears: 18,
-      procedures: ['IVF', 'IUI', 'Fertility Preservation'],
-      gender: 'Female',
-      rating: 4.8,
-      reviewCount: 234
+    id: '106',
+    name: 'Dr. Linda Kusuma',
+    specialty: 'Fertility',
+    hospitalId: '56',
+    hospitalName: 'RS Pondok Indah - Pondok Indah',
+    hospitalCountry: 'Indonesia',
+    imageUrl: 'https://images.pexels.com/photos/5452293/pexels-photo-5452293.jpeg',
+    languages: ['Indonesian', 'English', 'Mandarin'],
+    experienceYears: 18,
+    procedures: ['IVF', 'IUI', 'Fertility Preservation'],
+    gender: 'Female',
+    rating: 4.8,
+    reviewCount: 234
   },
   // RS Hasan Sadikin - Bandung (ID: 57)
   {
-      id: '107',
-      name: 'Dr. Hendro Prasetyo',
-      specialty: 'Cardiology',
-      hospitalId: '57',
-      hospitalName: 'RS Hasan Sadikin',
-      hospitalCountry: 'Indonesia',
-      imageUrl: 'https://images.pexels.com/photos/5452201/pexels-photo-5452201.jpeg',
-      languages: ['Indonesian', 'English', 'Sundanese'],
-      experienceYears: 26,
-      procedures: ['Interventional Cardiology', 'Heart Transplant', 'CABG'],
-      gender: 'Male',
-      rating: 4.9,
-      reviewCount: 298
+    id: '107',
+    name: 'Dr. Hendro Prasetyo',
+    specialty: 'Cardiology',
+    hospitalId: '57',
+    hospitalName: 'RS Hasan Sadikin',
+    hospitalCountry: 'Indonesia',
+    imageUrl: 'https://images.pexels.com/photos/5452201/pexels-photo-5452201.jpeg',
+    languages: ['Indonesian', 'English', 'Sundanese'],
+    experienceYears: 26,
+    procedures: ['Interventional Cardiology', 'Heart Transplant', 'CABG'],
+    gender: 'Male',
+    rating: 4.9,
+    reviewCount: 298
   },
   {
-      id: '108',
-      name: 'Dr. Dewi Lestari',
-      specialty: 'Pediatrics',
-      hospitalId: '57',
-      hospitalName: 'RS Hasan Sadikin',
-      hospitalCountry: 'Indonesia',
-      imageUrl: 'https://images.pexels.com/photos/5452293/pexels-photo-5452293.jpeg',
-      languages: ['Indonesian', 'English'],
-      experienceYears: 20,
-      procedures: ['Pediatric Cardiology', 'Neonatology', 'Child Development'],
-      gender: 'Female',
-      rating: 4.8,
-      reviewCount: 245
+    id: '108',
+    name: 'Dr. Dewi Lestari',
+    specialty: 'Pediatrics',
+    hospitalId: '57',
+    hospitalName: 'RS Hasan Sadikin',
+    hospitalCountry: 'Indonesia',
+    imageUrl: 'https://images.pexels.com/photos/5452293/pexels-photo-5452293.jpeg',
+    languages: ['Indonesian', 'English'],
+    experienceYears: 20,
+    procedures: ['Pediatric Cardiology', 'Neonatology', 'Child Development'],
+    gender: 'Female',
+    rating: 4.8,
+    reviewCount: 245
   },
   // Santosa Hospital Bandung Central (ID: 58)
   {
-      id: '109',
-      name: 'Dr. Ricky Wijayanto',
-      specialty: 'Oncology',
-      hospitalId: '58',
-      hospitalName: 'Santosa Hospital Bandung Central',
-      hospitalCountry: 'Indonesia',
-      imageUrl: 'https://images.pexels.com/photos/5452201/pexels-photo-5452201.jpeg',
-      languages: ['Indonesian', 'English'],
-      experienceYears: 23,
-      procedures: ['Cancer Surgery', 'Chemotherapy', 'Radiation Therapy'],
-      gender: 'Male',
-      rating: 4.9,
-      reviewCount: 267
+    id: '109',
+    name: 'Dr. Ricky Wijayanto',
+    specialty: 'Oncology',
+    hospitalId: '58',
+    hospitalName: 'Santosa Hospital Bandung Central',
+    hospitalCountry: 'Indonesia',
+    imageUrl: 'https://images.pexels.com/photos/5452201/pexels-photo-5452201.jpeg',
+    languages: ['Indonesian', 'English'],
+    experienceYears: 23,
+    procedures: ['Cancer Surgery', 'Chemotherapy', 'Radiation Therapy'],
+    gender: 'Male',
+    rating: 4.9,
+    reviewCount: 267
   },
   {
-      id: '110',
-      name: 'Dr. Anita Permata',
-      specialty: 'Neurology',
-      hospitalId: '58',
-      hospitalName: 'Santosa Hospital Bandung Central',
-      hospitalCountry: 'Indonesia',
-      imageUrl: 'https://images.pexels.com/photos/5452293/pexels-photo-5452293.jpeg',
-      languages: ['Indonesian', 'English', 'Mandarin'],
-      experienceYears: 17,
-      procedures: ['Stroke Treatment', 'Epilepsy Management', 'Parkinson\'s Disease'],
-      gender: 'Female',
-      rating: 4.7,
-      reviewCount: 189
+    id: '110',
+    name: 'Dr. Anita Permata',
+    specialty: 'Neurology',
+    hospitalId: '58',
+    hospitalName: 'Santosa Hospital Bandung Central',
+    hospitalCountry: 'Indonesia',
+    imageUrl: 'https://images.pexels.com/photos/5452293/pexels-photo-5452293.jpeg',
+    languages: ['Indonesian', 'English', 'Mandarin'],
+    experienceYears: 17,
+    procedures: ['Stroke Treatment', 'Epilepsy Management', 'Parkinson\'s Disease'],
+    gender: 'Female',
+    rating: 4.7,
+    reviewCount: 189
   },
   // Royal Jakarta Hospital - South (ID: 59)
   {
-      id: '111',
-      name: 'Dr. Hendra Susanto',
-      specialty: 'Cardiology',
-      hospitalId: '59',
-      hospitalName: 'Royal Jakarta Hospital - South',
-      hospitalCountry: 'Indonesia',
-      imageUrl: 'https://images.pexels.com/photos/5452201/pexels-photo-5452201.jpeg',
-      languages: ['Indonesian', 'English'],
-      experienceYears: 25,
-      procedures: ['CABG', 'Interventional Cardiology', 'Heart Failure Management'],
-      gender: 'Male',
-      rating: 4.9,
-      reviewCount: 289
+    id: '111',
+    name: 'Dr. Hendra Susanto',
+    specialty: 'Cardiology',
+    hospitalId: '59',
+    hospitalName: 'Royal Jakarta Hospital - South',
+    hospitalCountry: 'Indonesia',
+    imageUrl: 'https://images.pexels.com/photos/5452201/pexels-photo-5452201.jpeg',
+    languages: ['Indonesian', 'English'],
+    experienceYears: 25,
+    procedures: ['CABG', 'Interventional Cardiology', 'Heart Failure Management'],
+    gender: 'Male',
+    rating: 4.9,
+    reviewCount: 289
   },
   {
-      id: '112',
-      name: 'Dr. Sari Wulandari',
-      specialty: 'Fertility',
-      hospitalId: '59',
-      hospitalName: 'Royal Jakarta Hospital - South',
-      hospitalCountry: 'Indonesia',
-      imageUrl: 'https://images.pexels.com/photos/5452293/pexels-photo-5452293.jpeg',
-      languages: ['Indonesian', 'English'],
-      experienceYears: 19,
-      procedures: ['IVF', 'ICSI', 'Egg Freezing'],
-      gender: 'Female',
-      rating: 4.8,
-      reviewCount: 223
+    id: '112',
+    name: 'Dr. Sari Wulandari',
+    specialty: 'Fertility',
+    hospitalId: '59',
+    hospitalName: 'Royal Jakarta Hospital - South',
+    hospitalCountry: 'Indonesia',
+    imageUrl: 'https://images.pexels.com/photos/5452293/pexels-photo-5452293.jpeg',
+    languages: ['Indonesian', 'English'],
+    experienceYears: 19,
+    procedures: ['IVF', 'ICSI', 'Egg Freezing'],
+    gender: 'Female',
+    rating: 4.8,
+    reviewCount: 223
   },
   // RS Dr. Kariadi - Semarang (ID: 60)
   {
-      id: '113',
-      name: 'Dr. Bambang Sutrisno',
-      specialty: 'Orthopedics',
-      hospitalId: '60',
-      hospitalName: 'RS Dr. Kariadi',
-      hospitalCountry: 'Indonesia',
-      imageUrl: 'https://images.pexels.com/photos/5452201/pexels-photo-5452201.jpeg',
-      languages: ['Indonesian', 'English', 'Javanese'],
-      experienceYears: 27,
-      procedures: ['Joint Replacement', 'Spine Surgery', 'Trauma Surgery'],
-      gender: 'Male',
-      rating: 4.9,
-      reviewCount: 312
+    id: '113',
+    name: 'Dr. Bambang Sutrisno',
+    specialty: 'Orthopedics',
+    hospitalId: '60',
+    hospitalName: 'RS Dr. Kariadi',
+    hospitalCountry: 'Indonesia',
+    imageUrl: 'https://images.pexels.com/photos/5452201/pexels-photo-5452201.jpeg',
+    languages: ['Indonesian', 'English', 'Javanese'],
+    experienceYears: 27,
+    procedures: ['Joint Replacement', 'Spine Surgery', 'Trauma Surgery'],
+    gender: 'Male',
+    rating: 4.9,
+    reviewCount: 312
   },
   {
-      id: '114',
-      name: 'Dr. Ratna Kusumawati',
-      specialty: 'Oncology',
-      hospitalId: '60',
-      hospitalName: 'RS Dr. Kariadi',
-      hospitalCountry: 'Indonesia',
-      imageUrl: 'https://images.pexels.com/photos/5452293/pexels-photo-5452293.jpeg',
-      languages: ['Indonesian', 'English'],
-      experienceYears: 21,
-      procedures: ['Cancer Surgery', 'Immunotherapy', 'Palliative Care'],
-      gender: 'Female',
-      rating: 4.8,
-      reviewCount: 256
+    id: '114',
+    name: 'Dr. Ratna Kusumawati',
+    specialty: 'Oncology',
+    hospitalId: '60',
+    hospitalName: 'RS Dr. Kariadi',
+    hospitalCountry: 'Indonesia',
+    imageUrl: 'https://images.pexels.com/photos/5452293/pexels-photo-5452293.jpeg',
+    languages: ['Indonesian', 'English'],
+    experienceYears: 21,
+    procedures: ['Cancer Surgery', 'Immunotherapy', 'Palliative Care'],
+    gender: 'Female',
+    rating: 4.8,
+    reviewCount: 256
   },
   // Columbia Asia Semarang (ID: 61)
   {
-      id: '115',
-      name: 'Dr. Eko Prasetyo',
-      specialty: 'Cardiology',
-      hospitalId: '61',
-      hospitalName: 'Columbia Asia Semarang',
-      hospitalCountry: 'Indonesia',
-      imageUrl: 'https://images.pexels.com/photos/5452201/pexels-photo-5452201.jpeg',
-      languages: ['Indonesian', 'English'],
-      experienceYears: 22,
-      procedures: ['Interventional Cardiology', 'Echocardiography', 'Cardiac Catheterization'],
-      gender: 'Male',
-      rating: 4.8,
-      reviewCount: 234
+    id: '115',
+    name: 'Dr. Eko Prasetyo',
+    specialty: 'Cardiology',
+    hospitalId: '61',
+    hospitalName: 'Columbia Asia Semarang',
+    hospitalCountry: 'Indonesia',
+    imageUrl: 'https://images.pexels.com/photos/5452201/pexels-photo-5452201.jpeg',
+    languages: ['Indonesian', 'English'],
+    experienceYears: 22,
+    procedures: ['Interventional Cardiology', 'Echocardiography', 'Cardiac Catheterization'],
+    gender: 'Male',
+    rating: 4.8,
+    reviewCount: 234
   },
   {
-      id: '116',
-      name: 'Dr. Yuni Astuti',
-      specialty: 'Pediatrics',
-      hospitalId: '61',
-      hospitalName: 'Columbia Asia Semarang',
-      hospitalCountry: 'Indonesia',
-      imageUrl: 'https://images.pexels.com/photos/5452293/pexels-photo-5452293.jpeg',
-      languages: ['Indonesian', 'English'],
-      experienceYears: 16,
-      procedures: ['Pediatric Cardiology', 'Neonatology', 'Pediatric Pulmonology'],
-      gender: 'Female',
-      rating: 4.7,
-      reviewCount: 178
+    id: '116',
+    name: 'Dr. Yuni Astuti',
+    specialty: 'Pediatrics',
+    hospitalId: '61',
+    hospitalName: 'Columbia Asia Semarang',
+    hospitalCountry: 'Indonesia',
+    imageUrl: 'https://images.pexels.com/photos/5452293/pexels-photo-5452293.jpeg',
+    languages: ['Indonesian', 'English'],
+    experienceYears: 16,
+    procedures: ['Pediatric Cardiology', 'Neonatology', 'Pediatric Pulmonology'],
+    gender: 'Female',
+    rating: 4.7,
+    reviewCount: 178
   },
   // RS Dr. Soetomo - Surabaya (ID: 62)
   {
-      id: '117',
-      name: 'Dr. Agus Santoso',
-      specialty: 'Neurology',
-      hospitalId: '62',
-      hospitalName: 'RS Dr. Soetomo',
-      hospitalCountry: 'Indonesia',
-      imageUrl: 'https://images.pexels.com/photos/5452201/pexels-photo-5452201.jpeg',
-      languages: ['Indonesian', 'English', 'Javanese'],
-      experienceYears: 28,
-      procedures: ['Brain Surgery', 'Stroke Treatment', 'Epilepsy Surgery'],
-      gender: 'Male',
-      rating: 4.9,
-      reviewCount: 345
+    id: '117',
+    name: 'Dr. Agus Santoso',
+    specialty: 'Neurology',
+    hospitalId: '62',
+    hospitalName: 'RS Dr. Soetomo',
+    hospitalCountry: 'Indonesia',
+    imageUrl: 'https://images.pexels.com/photos/5452201/pexels-photo-5452201.jpeg',
+    languages: ['Indonesian', 'English', 'Javanese'],
+    experienceYears: 28,
+    procedures: ['Brain Surgery', 'Stroke Treatment', 'Epilepsy Surgery'],
+    gender: 'Male',
+    rating: 4.9,
+    reviewCount: 345
   },
   {
-      id: '118',
-      name: 'Dr. Nurul Hidayati',
-      specialty: 'Cardiology',
-      hospitalId: '62',
-      hospitalName: 'RS Dr. Soetomo',
-      hospitalCountry: 'Indonesia',
-      imageUrl: 'https://images.pexels.com/photos/5452293/pexels-photo-5452293.jpeg',
-      languages: ['Indonesian', 'English', 'Arabic'],
-      experienceYears: 23,
-      procedures: ['Heart Transplant', 'CABG', 'Valve Surgery'],
-      gender: 'Female',
-      rating: 4.8,
-      reviewCount: 287
+    id: '118',
+    name: 'Dr. Nurul Hidayati',
+    specialty: 'Cardiology',
+    hospitalId: '62',
+    hospitalName: 'RS Dr. Soetomo',
+    hospitalCountry: 'Indonesia',
+    imageUrl: 'https://images.pexels.com/photos/5452293/pexels-photo-5452293.jpeg',
+    languages: ['Indonesian', 'English', 'Arabic'],
+    experienceYears: 23,
+    procedures: ['Heart Transplant', 'CABG', 'Valve Surgery'],
+    gender: 'Female',
+    rating: 4.8,
+    reviewCount: 287
   },
   // Siloam Hospitals Surabaya (ID: 63)
   {
-      id: '119',
-      name: 'Dr. Wahyu Kurniawan',
-      specialty: 'Orthopedics',
-      hospitalId: '63',
-      hospitalName: 'Siloam Hospitals Surabaya',
-      hospitalCountry: 'Indonesia',
-      imageUrl: 'https://images.pexels.com/photos/5452201/pexels-photo-5452201.jpeg',
-      languages: ['Indonesian', 'English'],
-      experienceYears: 24,
-      procedures: ['Robotic Joint Surgery', 'Spine Surgery', 'Sports Medicine'],
-      gender: 'Male',
-      rating: 4.9,
-      reviewCount: 298
+    id: '119',
+    name: 'Dr. Wahyu Kurniawan',
+    specialty: 'Orthopedics',
+    hospitalId: '63',
+    hospitalName: 'Siloam Hospitals Surabaya',
+    hospitalCountry: 'Indonesia',
+    imageUrl: 'https://images.pexels.com/photos/5452201/pexels-photo-5452201.jpeg',
+    languages: ['Indonesian', 'English'],
+    experienceYears: 24,
+    procedures: ['Robotic Joint Surgery', 'Spine Surgery', 'Sports Medicine'],
+    gender: 'Male',
+    rating: 4.9,
+    reviewCount: 298
   },
   {
-      id: '120',
-      name: 'Dr. Fitri Rahayu',
-      specialty: 'Oncology',
-      hospitalId: '63',
-      hospitalName: 'Siloam Hospitals Surabaya',
-      hospitalCountry: 'Indonesia',
-      imageUrl: 'https://images.pexels.com/photos/5452293/pexels-photo-5452293.jpeg',
-      languages: ['Indonesian', 'English', 'Mandarin'],
-      experienceYears: 20,
-      procedures: ['Cancer Surgery', 'Chemotherapy', 'Targeted Therapy'],
-      gender: 'Female',
-      rating: 4.8,
-      reviewCount: 256
+    id: '120',
+    name: 'Dr. Fitri Rahayu',
+    specialty: 'Oncology',
+    hospitalId: '63',
+    hospitalName: 'Siloam Hospitals Surabaya',
+    hospitalCountry: 'Indonesia',
+    imageUrl: 'https://images.pexels.com/photos/5452293/pexels-photo-5452293.jpeg',
+    languages: ['Indonesian', 'English', 'Mandarin'],
+    experienceYears: 20,
+    procedures: ['Cancer Surgery', 'Chemotherapy', 'Targeted Therapy'],
+    gender: 'Female',
+    rating: 4.8,
+    reviewCount: 256
   }
 
 ];
@@ -4575,7 +4642,7 @@ export const DOCTORS: Doctor[] = [
 //    - Do NOT output any text before the <thinking> tag.
 //    - Output 4-5 numbered steps.
 //    - **CRITICAL FORMATTING**: Start each step with the specific format: "1. **Step Title**: Content".
-   
+
 //    REQUIRED STEPS:
 //    1. **Document Triage** (If file attached): Explicitly classify the document. Is it Tier 1, 2, or 3? Is it Medical? If Tier 3 or Non-Medical, set next steps to rejection.
 //    2. **Clinical Triage**: Assess intent and urgency.
