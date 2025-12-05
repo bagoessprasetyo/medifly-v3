@@ -1319,7 +1319,7 @@ export const HOSPITALS: Hospital[] = [
       'https://storage.googleapis.com/web-bih-bh-devel/public/assets/general/334c5250-9ab3-4eec-a6b8-c578e0ca7629.webp',
     ],
     priceRange: '$$$',
-    description: 'Bali International Hospital in Sanur offers world-class healthcare for locals & expats. Experience advanced medical care in Bali.',
+    description: 'Bali International Hospital (BIH), the flagship institution in the Sanur Special Economic Zone, is dedicated to ending the need for Indonesians to travel abroad for premium healthcare. BIH delivers world-class, personalized care through five Centers of Excellence (CoEs): Cardiology, Oncology, Neurology, Gastroenterology/Hepatology, and Orthopedics. The hospital features advanced medical technology, including specialized equipment like LINAC and 3 Tesla MRI within the Oncology CoE (in partnership with Icon Cancer Centre). With 255 beds, 38 ICUs, and 8 operating rooms, BIH is setting new international standards. It strategically blends medical excellence and clinical expertise with a focus on patient comfort, embodying the principle of World-Class Care, Balinese Heart to become a premier medical tourism destination in Southeast Asia.',
     accreditation: ['Sapporo Cardio Vascular Clinic Partner', 'Icon Cancer Center Partner', 'SingHealth Knowledge Partner'],
     languages: ['Indonesian', 'English', 'German', 'Japanese', 'Malay', 'Arabic'],
   },

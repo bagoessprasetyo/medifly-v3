@@ -665,11 +665,12 @@ export const HospitalPage: React.FC<HospitalPageProps> = ({
                 <h2 className="text-3xl font-medium text-center tracking-tight mb-12">Our Top Expertise</h2>
                 <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-3">
                     {[
-                        { icon: Wind, title: "Pulmonology", desc: "Advanced care for lungs with leading specialists and integrated treatments." },
-                        { icon: HeartPulse, title: "Cardiology", desc: "Trusted heart specialists offering preventive and corrective care." },
-                        { icon: Microscope, title: "Oncology", desc: "Expert cancer care and support utilizing latest surgery protocols." },
-                        { icon: BrainCircuit, title: "Neurology", desc: "Specialized brain & nerve care with precise diagnosis tools." },
-                        { icon: Droplet, title: "Hematology", desc: "State-of-the-art care, diagnosis and concerns for blood-related issues." },
+                        { icon: HeartPulse, title: "Cardiology", desc: "Full-spectrum cardiovascular care with expert cardiologists, from prevention to advanced treatment options." },
+                        { icon: Microscope, title: "Oncology", desc: "Comprehensive care for brain, spine, and nervous system disorders by expert neurologists." },
+                        { icon: BrainCircuit, title: "Neurology", desc: "Comprehensive care for brain, spine, and nervous system disorders by expert neurologists." },
+                        { icon: Wind, title: "Gastroenterology & Hepatology", desc: "Specialized care for liver and digestive diseases with advanced diagnostics and global-standard treatments." },
+                        { icon: Droplet, title: "Orthopedic", desc: "Expert orthopedic care for bones, joints, and injuries, ensuring fast, effective recovery." },
+                        // { icon: Droplet, title: "Pediatric", desc: "State-of-the-art care, diagnosis and concerns for blood-related issues." },
                     ].map((item, idx) => (
                         <div key={idx} className="group p-6 rounded-xl border border-gray-100 bg-white hover:shadow-lg hover:border-gray-200 transition-all duration-300 cursor-pointer" onClick={() => onViewSpecialization?.(item.title)}>
                             <div className="w-10 h-10 rounded-full bg-[#F9FFA1] flex items-center justify-center mb-4 text-lime-700"><item.icon strokeWidth={1.5} className="w-5 h-5" /></div>
@@ -678,14 +679,14 @@ export const HospitalPage: React.FC<HospitalPageProps> = ({
                         </div>
                     ))}
                 </div>
-                <div className="mt-20 rounded-2xl ">
+                {/* <div className="mt-20 rounded-2xl ">
                     <h4 className="text-center text-2xl font-medium text-gray-900 mb-10">Other Specializations Available</h4>
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mx-auto">
                         {["Fertility & IVF", "Gastroenterology", "Internal Medicine", "Aesthetics", "Dermatology", "General Surgery", "Dental Care", "Diabetes & Chronic Diseases Care", "ENT"].map((spec, i) => (
                             <div key={i} onClick={() => onViewSpecialization?.(spec)} className="bg-white px-6 hover:bg-black hover:text-white py-4 rounded-lg border border-gray-100 text-sm font-medium text-gray-800 transition-all cursor-pointer flex justify-between items-center group">{spec}<ArrowRight className="w-4 h-4 text-white" /></div>
                         ))}
                     </div>
-                </div>
+                </div> */}
             </section>
 
             {/* 2. Doctors Section */}
@@ -894,9 +895,9 @@ export const HospitalPage: React.FC<HospitalPageProps> = ({
                     <div className="col-span-1 lg:col-span-2 overflow-hidden relative">
                         <div id="experts-scroll" className="flex gap-6 overflow-x-auto no-scrollbar pb-6 scroll-smooth">
                             {[
-                                { name: "Rachel Yew", role: "Chief Executive Officer", img: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=400", uni: "University of Malaysia", exp: "15 Years" },
-                                { name: "Dr. Kelvin Ching", role: "Chief Medical Officer", img: "https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&q=80&w=400", uni: "University of Glasgow", exp: "20 Years" },
-                                { name: "Dr. Kamal Amzan", role: "Chief Operations Officer", img: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&q=80&w=400", uni: "University of Malaya", exp: "MBA Healthcare" }
+                                { name: "Mark A. Erhart", role: "President Commissioner", desc: "Leading the hospital’s governance with extensive experience in healthcare facility management, guiding BIH toward its goal as a top medical tourism destination in Asia.", img: "https://myclnq.co/wp-content/uploads/2024/12/Mark-Erhart-Photo-.jpg", uni: "University of Malaysia", exp: "15 Years" },
+                                { name: "Dr. Dewi F. Fitriana, MPH", role: "President Director", desc: "Public-health leader with over a decade of hospital management experience, driving BIH’s mission for patient-centred, holistic care at international standards.", img: "https://www.hospitalmanagementasia.com/wp-content/uploads/2024/07/HMA24-Spk-Mod-Photos-8.png", uni: "University of Glasgow", exp: "20 Years" },
+                                { name: "Dr. Noel Yeo, MBA, PBM", role: "Chief Commercial & Operations Officer", desc: "Former COO at major Singaporean healthcare groups, bringing strong operational and business leadership to ensure efficient, world-class service delivery at BIH.", img: "https://gov-web-sing.s3.ap-southeast-1.amazonaws.com/uploads/2019/03/WhatsApp-Image-2019-03-26-at-8.jpg", uni: "University of Malaya", exp: "MBA Healthcare" }
                             ].map((exec, i) => (
                                 <div key={i} className="min-w-[280px] md:min-w-[320px]">
                                     <div className="h-48 overflow-hidden rounded-t-xl bg-gray-100">
@@ -905,11 +906,11 @@ export const HospitalPage: React.FC<HospitalPageProps> = ({
                                     <div className="bg-gray-50 p-6 rounded-b-xl border-x border-b border-gray-100">
                                         <h3 className="font-medium text-slate-900">{exec.name}</h3>
                                         <p className="text-sm text-slate-900 mb-4">{exec.role}</p>
-                                        <p className="text-sm text-slate-700 leading-relaxed mb-4 line-clamp-3">Leading with extensive experience to ensure the highest operational and clinical standards.</p>
-                                        <div className="flex flex-col gap-1 text-[14px] font-medium text-slate-900">
+                                        <p className="text-sm text-slate-700 leading-relaxed mb-4 line-clamp-3">{exec.desc}</p>
+                                        {/* <div className="flex flex-col gap-1 text-[14px] font-medium text-slate-900">
                                             <span className="flex items-center"><GraduationCap className="w-3 h-3 mr-1" /> {exec.uni}</span>
                                             <span className="flex items-center"><Award className="w-3 h-3 mr-1" /> {exec.exp}</span>
-                                        </div>
+                                        </div> */}
                                     </div>
                                 </div>
                             ))}
