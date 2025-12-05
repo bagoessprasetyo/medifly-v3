@@ -10,29 +10,32 @@ interface LayoutProps {
   onNavigateToPackages?: () => void;
   onStartTour?: () => void;
   isHomePage?: boolean;
+  onOpenCTA?: () => void;
 }
 
-export const Layout: React.FC<LayoutProps> = ({ 
+export const Layout: React.FC<LayoutProps> = ({
   children,
   onNavigateToHome,
   onNavigateToMarketplace,
   onNavigateToDoctors,
   onNavigateToPackages,
   onStartTour,
-  isHomePage = false
+  isHomePage = false,
+  onOpenCTA
 }) => {
 
   return (
     <div className="min-h-full flex flex-col bg-white font-sans text-slate-900 relative">
       <div className="sticky top-0 z-50 w-full bg-white/80 backdrop-blur-md border-b border-slate-100">
-          <Navbar
-            onNavigateToHome={onNavigateToHome}
-            onNavigateToMarketplace={onNavigateToMarketplace}
-            onNavigateToDoctors={onNavigateToDoctors}
-            onNavigateToPackages={onNavigateToPackages}
-            onStartTour={onStartTour}
-            isHomePage={isHomePage}
-          />
+        <Navbar
+          onNavigateToHome={onNavigateToHome}
+          onNavigateToMarketplace={onNavigateToMarketplace}
+          onNavigateToDoctors={onNavigateToDoctors}
+          onNavigateToPackages={onNavigateToPackages}
+          onStartTour={onStartTour}
+          isHomePage={isHomePage}
+          onOpenCTA={onOpenCTA}
+        />
       </div>
       <main className="flex-1 w-full">
         {children}

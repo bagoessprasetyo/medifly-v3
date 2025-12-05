@@ -30,6 +30,7 @@ import { HospitalInsightsPage } from './components/HospitalInsights';
 import { AnimatePresence } from 'framer-motion';
 import { PageTransition } from './components/PageTransition';
 import { CountryPage } from './components/CountryPage';
+import { InquiryFormModal } from './components/ui/InquiryFormModal';
 
 const safePushState = (url: string) => {
     try {
@@ -61,6 +62,7 @@ const MainApp: React.FC = () => {
     const [viewedResearchTitle, setViewedResearchTitle] = useState<string | null>(null);
     const [viewedTreatmentName, setViewedTreatmentName] = useState<string | null>(null);
     const [viewedCountry, setViewedCountry] = useState<string | null>(null);
+    const [isInquiryModalOpen, setIsInquiryModalOpen] = useState(false);
 
     useEffect(() => {
         const savedSessions = localStorage.getItem('medifly_sessions');
@@ -511,6 +513,7 @@ const MainApp: React.FC = () => {
         onNavigateToDoctors: navigateToDoctors,
         onNavigateToPackages: navigateToPackages,
         isHomePage: page === 'home',
+        onOpenCTA: () => setIsInquiryModalOpen(true),
     };
 
     return (
@@ -779,6 +782,12 @@ const MainApp: React.FC = () => {
                     </AnimatePresence>
                 </Layout>
             </div>
+
+            {/* Inquiry Form Modal */}
+            <InquiryFormModal
+                isOpen={isInquiryModalOpen}
+                onClose={() => setIsInquiryModalOpen(false)}
+            />
         </div>
     );
 }
