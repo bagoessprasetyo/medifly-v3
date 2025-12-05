@@ -287,6 +287,7 @@ export const Hero: React.FC<HeroProps> = ({ onQuickSearch }) => {
                         {/* Card 1 */}
                         <div
                             onMouseEnter={() => setTreatment(t("Hospitals in Malaysia covered by my insurance?"))}
+                            onMouseLeave={() => setTreatment('')}
                             className="min-w-[240px] md:min-w-[280px]  h-[200px] md:h-[240px] bg-[#F2F2F2] rounded-2xl p-4 md:p-5 flex flex-col justify-between shrink-0 snap-center snap-always hover:shadow-xl hover:-translate-y-1 transition-all duration-300 border border-transparent hover:border-slate-200 cursor-pointer"
                         >
                             <div>
@@ -300,6 +301,7 @@ export const Hero: React.FC<HeroProps> = ({ onQuickSearch }) => {
                         {/* Card 2 */}
                         <div
                             onMouseEnter={() => setTreatment(t("What surgery options do I have for an ACL tear?"))}
+                            onMouseLeave={() => setTreatment('')}
                             className="min-w-[240px] md:min-w-[280px] h-[200px] md:h-[240px] bg-[#F2F2F2] rounded-2xl p-4 md:p-5 flex flex-col justify-between shrink-0 snap-center snap-always hover:shadow-xl hover:-translate-y-1 transition-all duration-300 border border-transparent hover:border-slate-200 cursor-pointer"
                         >
                             <div>
@@ -314,6 +316,7 @@ export const Hero: React.FC<HeroProps> = ({ onQuickSearch }) => {
                         {/* Card 3 */}
                         <div
                             onMouseEnter={() => setTreatment(t("Show me the top 10 wellness centers in Bali."))}
+                            onMouseLeave={() => setTreatment('')}
                             className="min-w-[240px] md:min-w-[280px] h-[200px] md:h-[240px] bg-[#F2F2F2] rounded-2xl p-4 md:p-5 flex flex-col justify-between shrink-0 snap-center snap-always hover:shadow-xl hover:-translate-y-1 transition-all duration-300 border border-transparent hover:border-slate-200 cursor-pointer"
                         >
                             <div>
@@ -327,6 +330,7 @@ export const Hero: React.FC<HeroProps> = ({ onQuickSearch }) => {
                         {/* Card 4 */}
                         <div
                             onMouseEnter={() => setTreatment(t("Top 5 Medical checkup packages in Singapore?"))}
+                            onMouseLeave={() => setTreatment('')}
                             className="min-w-[240px] md:min-w-[280px] h-[200px] md:h-[240px] bg-[#F2F2F2] rounded-2xl p-4 md:p-5 flex flex-col justify-between shrink-0 snap-center snap-always hover:shadow-xl hover:-translate-y-1 transition-all duration-300 border border-transparent hover:border-slate-200 cursor-pointer"
                         >
                             <div>
@@ -341,6 +345,7 @@ export const Hero: React.FC<HeroProps> = ({ onQuickSearch }) => {
                         {/* Card 5 */}
                         <div
                             onMouseEnter={() => setTreatment(t("Can I talk to a doctor before planning my trip?"))}
+                            onMouseLeave={() => setTreatment('')}
                             className="min-w-[240px] md:min-w-[280px] h-[200px] md:h-[240px] bg-[#F2F2F2] rounded-2xl p-4 md:p-5 flex flex-col justify-between shrink-0 snap-center snap-always hover:shadow-xl hover:-translate-y-1 transition-all duration-300 border border-transparent hover:border-slate-200 cursor-pointer"
                         >
                             <div>
@@ -354,6 +359,7 @@ export const Hero: React.FC<HeroProps> = ({ onQuickSearch }) => {
                         {/* Card 6 */}
                         <div
                             onMouseEnter={() => setTreatment(t("Compare IVF prices in Thailand VS Singapore"))}
+                            onMouseLeave={() => setTreatment('')}
                             className="min-w-[240px] md:min-w-[280px] h-[200px] md:h-[240px] bg-[#F2F2F2] rounded-2xl p-4 md:p-5 flex flex-col justify-between shrink-0 snap-center snap-always hover:shadow-xl hover:-translate-y-1 transition-all duration-300 border border-transparent hover:border-slate-200 cursor-pointer"
                         >
                             <div>
